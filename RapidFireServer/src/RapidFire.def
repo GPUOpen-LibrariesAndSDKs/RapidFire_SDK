@@ -1,0 +1,17 @@
+EXPORTS
+rfCreateEncodeSession
+rfDeleteEncodeSession
+rfCreateEncoder
+rfCreateEncoder2
+rfRegisterRenderTarget
+rfRemoveRenderTarget
+rfGetRenderTargetState
+rfResizeSession
+rfEncodeFrame
+rfGetEncodedFrame
+rfGetSourceFrame
+rfSetEncodeParameter
+rfGetEncodeParameter
+rfGetMouseData
+rfReleaseEvent
+

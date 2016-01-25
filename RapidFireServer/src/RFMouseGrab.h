@@ -1,0 +1,113 @@
+#pragma once
+
+#include <mutex>
+
+#include <Windows.h>
+
+#include "RapidFireServer.h"
+#include "RFLock.h"
+
+class DOPPDrvInterface;
+
+class RFMouseGrab
+{
+public:
+
+	explicit RFMouseGrab(DOPPDrvInterface* pDrv, unsigned int displayId);
+	~RFMouseGrab();
+
+	// Returns mouse shape data.
+	// bBlockin [in]: If true the function blocks until a mouse shape change occured.
+	// md      [out]: Shape data of the mouse
+	// 
+	// Returns true if the data in md is new, otherwise false. If bBlocking is true, the data in md
+	// is always new and the function returns true as well.
+	bool    getShapeData(bool bBlocking, RFMouseData& md);
+
+	// This function will signal m_hNewDataEvent and can be used to unblock a thread
+	// that waits for mouse updates.
+	bool    releaseEvent();
+
+private:
+
+	struct BitmapBuffer
+	{
+		unsigned int            uiBufferSize;
+		void*                   pBuffer;
+		BITMAP                  BitMap;
+	};
+
+	static DWORD WINAPI ShapeNotificationThread(void*);
+
+	typedef HCURSOR(WINAPI* GET_CURSOR_FRAME_INFO)(HCURSOR, LPCWSTR, DWORD, DWORD*, DWORD*);
+
+	GET_CURSOR_FRAME_INFO	m_fnGetCursorFrameInfo;
+
+	struct AnimatedCursorInfo
+	{
+		DWORD	dwFrameIndex;
+		DWORD	dwUpdateCounter;
+		DWORD	dwDisplayRate;
+		DWORD	dwTotalFrames;
+		HCURSOR	hAnimatedCursor;
+	};
+
+	AnimatedCursorInfo m_animatedCursorInfo;
+
+	HCURSOR m_hcFallBackCursor;
+
+	bool createThreads();
+	bool createEvents();
+
+	// Loop that waits until it gets signaled from KMD.
+	void updateLoop();
+	void updateMouseShapeData(bool bIncrementAnimationIndex, bool bGetMouseVisibility);
+
+	bool copyBitmapToBuffer(const HBITMAP hBitmap, BitmapBuffer& buffer);
+
+	unsigned char getMaxAlpha(const BitmapBuffer& color) const;
+	bool writeMaskToAlphaAndPremultiplyColors(const BitmapBuffer& mask, BitmapBuffer& color);
+	bool convertColorToMonochrome(const BitmapBuffer& color, BitmapBuffer& mask);
+
+	bool m_bRunning;
+	bool m_bShapeUpdated;
+	bool m_bVisibilityUpdated;
+
+	// Event that gets signaled by updateLoop.
+	// If getShapeData is blocking, it needs to wait until m_hNewCursorStateEvent is signaled.
+	HANDLE m_hNewCursorStateEvent;
+
+	enum CURSOR_SHAPECHANGE_TYPE
+	{
+		CURSOR_SHAPE_CHANGED = 0,
+		MAX_CURSOR_SHAPECHANGE_TYPES,
+	};
+	// Events that gets signaled by the driver on shape and visibility changes.
+	HANDLE m_hShapeChangedEvents[MAX_CURSOR_SHAPECHANGE_TYPES];
+	unsigned int m_uiDisplayId;
+
+	// Mutex to safely update mouse data
+	RFLock m_MouseDataMutex;
+
+	HANDLE m_hCursorEventsThread;
+	DWORD m_dwThreadId;
+
+	DOPPDrvInterface* m_pDrv;
+
+	bool m_bVisible;
+
+	struct MouseData
+	{
+		RFMouseData mouseData;
+		BitmapBuffer maskBuffer;
+		BitmapBuffer colorBuffer;
+	};
+
+	void StoreBitmapBuffer(const BitmapBuffer& src, RFBitmapBuffer& dest);
+
+	MouseData m_renderedMouseData;
+	MouseData m_changedMouseData;
+
+	RFMouseGrab(const RFMouseGrab&);
+	RFMouseGrab& operator=(const RFMouseGrab& rhs);
+};
