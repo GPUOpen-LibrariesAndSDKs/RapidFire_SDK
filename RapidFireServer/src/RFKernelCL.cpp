@@ -1,20 +1,24 @@
-/*****************************************************************************
-* Copyright (C) 2013 Advanced Micro Devices, Inc.
-* All rights reserved.
-*
-* This software is provided by the copyright holders and contributors "As is"
-* And any express or implied warranties, including, but not limited to, the
-* implied warranties of merchantability, non-infringement, and fitness for a
-* particular purpose are disclaimed. In no event shall the copyright holder or
-* contributors be liable for any direct, indirect, incidental, special,
-* exemplary, or consequential damages (including, but not limited to,
-* procurement of substitute goods or services; loss of use, data, or profits;
-* or business interruption) however caused and on any theory of liability,
-* whether in contract, strict liability, or tort (including negligence or
-* otherwise) arising in any way out of the use of this software, even if
-* advised of the possibility of such damage.
-*****************************************************************************/
-
+//
+// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Kernels to run CSC
@@ -24,8 +28,8 @@
 //      vDim.y = height of input image
 //      vDim.z = Aligned width  of output buffer
 //      vDim.w = Aligned height of output buffer
-//      Since the oitput of the CSC is sent to an encoder there might be restrictions on the 
-//      image sice. Those are representedin the aligned width and aligned height.
+//      Since the output of the CSC is sent to an encoder there might be restrictions on the 
+//      image size. Those are represented in the aligned width and aligned height.
 //
 // const int isOpenGLObj
 //      if true, the CSC will mirror the result
@@ -258,7 +262,7 @@ const char* str_cl_kernels =
     "    if(uiGlobalId_X >= vDim.x || uiGlobalId_Y >= vDim.y)               \n"
     "        return;                                                        \n"
     "\n"
-	"   int2 ImgCoord;                                                      \n"
+    "   int2 ImgCoord;                                                      \n"
     "\n"
     "   if (mirror)                                                         \n"
     "   {                                                                   \n"
@@ -271,7 +275,7 @@ const char* str_cl_kernels =
     "\n"
     "   uint uiBufferOffset = (uiGlobalId_X + (uiGlobalId_Y * vDim.z )) * 4;    \n"
     "\n"
-	"   uchar4 pixel = convert_uchar4_sat(255.0f * read_imagef(rgbaIn, imageSampler, ImgCoord));    \n"
+    "   uchar4 pixel = convert_uchar4_sat(255.0f * read_imagef(rgbaIn, imageSampler, ImgCoord));    \n"
     "\n"  
     "   if (nTargetOrdering == 1)   \n"
     "   {\n"
