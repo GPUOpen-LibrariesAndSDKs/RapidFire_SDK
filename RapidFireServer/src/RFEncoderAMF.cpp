@@ -533,10 +533,10 @@ bool RFEncoderAMF::applyConfiguration(const RFEncoderSettings* pConfig)
         {
             std::cout << g_PropertyNameMap[i].RFPropertyName << std::endl;
         }
-        retValue |= (rfStatus == RF_STATUS_OK);
+        retValue &= (rfStatus == RF_STATUS_OK);
     }
 
-    return (rfStatus == RF_STATUS_OK);
+    return retValue;
 }
 
 
