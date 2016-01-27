@@ -34,12 +34,12 @@
 #include "RapidFireServer.h"
 
 typedef RFStatus		    (RAPIDFIRE_API *RF_CREATE_ENCODE_SESSION)     (RFEncodeSession* s, RFProperties* properties);
-typedef void                (RAPIDFIRE_API *RF_DELETE_ENCODE_SESSION)     (RFEncodeSession* s);
+typedef RFStatus            (RAPIDFIRE_API *RF_DELETE_ENCODE_SESSION)     (RFEncodeSession* s);
 typedef RFStatus            (RAPIDFIRE_API *RF_CREATE_ENCODER)            (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset p);
 typedef RFStatus            (RAPIDFIRE_API *RF_CREATE_ENCODER2)           (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight, const RFProperties* properties);
 typedef RFStatus            (RAPIDFIRE_API *RF_REGISTER_RENDERTARGET)     (RFEncodeSession s, RFRenderTarget rt, unsigned int uiRTWidth, unsigned int uiRTHeight, unsigned int* idx);
 typedef RFStatus            (RAPIDFIRE_API *RF_REMOVE_RENDERTARGET)       (RFEncodeSession s, unsigned int idx);
-typedef RFRenderTargetState (RAPIDFIRE_API *RF_GET_RENDERTARGET_STATE)    (RFEncodeSession s, unsigned int idx);
+typedef RFStatus            (RAPIDFIRE_API *RF_GET_RENDERTARGET_STATE)    (RFEncodeSession s, RFRenderTargetState* state, unsigned int idx);
 typedef RFStatus            (RAPIDFIRE_API *RF_RESIZE_SESSION)            (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight);
 typedef RFStatus            (RAPIDFIRE_API *RF_ENCODE_FRAME)              (RFEncodeSession s, unsigned int idx);
 typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODED_FRAME)         (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);

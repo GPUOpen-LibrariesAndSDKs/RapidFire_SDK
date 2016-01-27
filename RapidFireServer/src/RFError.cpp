@@ -321,6 +321,12 @@ RFLogFile::~RFLogFile()
 }
 
 
+void RFLogFile::logMessage(MessageType mt, const std::string& strMsg)
+{
+    logMessage (mt, strMsg, RF_STATUS_OK);
+}
+
+
 void RFLogFile::logMessage(MessageType mt, const std::string& strMsg, RFStatus err)
 {
     if (m_LogFile.is_open())
@@ -346,7 +352,7 @@ void RFLogFile::logMessage(MessageType mt, const std::string& strMsg, RFStatus e
                 break;
         }
 
-        if (err != 0)
+        if (err != RF_STATUS_OK)
         {
             m_LogFile << err << " " << getErrorStringRF(err) << "  ";
         }

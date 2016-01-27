@@ -26,6 +26,8 @@
 #include <sstream>
 #include <string>
 
+#include "RapidFireServer.h"
+
 void rfError(int code, const char* err, const char* file, int line);
 
 const char* getErrorStringRF(int code);
@@ -36,7 +38,7 @@ const char* getErrorStringCL(int code);
 
 #define SAFE_CALL_RF(expr)  \
     { \
-        int code = expr; \
+        RFStatus code = expr; \
         if (code != RF_STATUS_OK) \
         { \
             rfError(code, getErrorStringRF(code), __FILE__, __LINE__); \
@@ -65,7 +67,8 @@ public:
     explicit RFLogFile(const std::string& strLogFileName);
     ~RFLogFile();
 
-    void logMessage(MessageType mtype, const std::string& strMessage, int err = 0);
+    void logMessage(MessageType mtype, const std::string& strMessage);
+    void logMessage(MessageType mtype, const std::string& strMessage, RFStatus err);
 
 private:
 

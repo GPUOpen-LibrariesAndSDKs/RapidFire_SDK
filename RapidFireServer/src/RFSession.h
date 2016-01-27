@@ -51,7 +51,7 @@ public:
 
     RFStatus              registerRenderTarget(RFTexture rt, unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx);
 
-    RFRenderTargetState   getRenderTargetState(unsigned int idx)  const;
+    RFStatus              getRenderTargetState(RFRenderTargetState* state, unsigned int idx)  const;
 
     RFStatus              removeRenderTarget(unsigned int idx);
 

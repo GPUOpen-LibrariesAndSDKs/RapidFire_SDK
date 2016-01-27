@@ -144,10 +144,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
         if (rfStatus == RF_STATUS_OK)
         {
-            rfStatus  = rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource);
-            rfStatus |= rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference);
+            bool success = (RF_STATUS_OK == rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource));
+            success &= (RF_STATUS_OK == rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference));
 
-            if (rfStatus == RF_STATUS_OK)
+            if (success)
             {
                 renderer.updateTexture(static_cast<char*>(pSource), static_cast<char*>(pDifference));
             }

@@ -170,10 +170,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     unsigned int rf_fbo_idx[2];
 
     // Register rendertargets to the RapidFire session
-    rfStatus  = rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRTTextures[0]), g_stream_width, g_stream_height, &rf_fbo_idx[0]);
-    rfStatus |= rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRTTextures[1]), g_stream_width, g_stream_height, &rf_fbo_idx[1]);
+    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRTTextures[0]), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRTTextures[1]), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
-    if (rfStatus != RF_STATUS_OK)
+    if (!success)
     {
         MessageBox(NULL, "Failed to register rendertargets", "RF Error", MB_ICONERROR | MB_OK);
         rfDeleteEncodeSession(&rfSession);

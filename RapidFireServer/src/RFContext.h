@@ -99,7 +99,7 @@ public:
     RFStatus            buildCLProgram(const std::string& strKernelFileName, const char* pSources, cl_program& clProgram) const;
 
     // Gets the state of a GL/D3D object.
-    RFRenderTargetState getInputMemObjState(unsigned int idx) const;
+    RFStatus            getInputMemObjState(RFRenderTargetState* state, unsigned int idx) const;
 
     // Copys CSC results to the GPU or sys memory.
     void                getResultBuffer(unsigned int idx, cl_mem* pBuffer) const;

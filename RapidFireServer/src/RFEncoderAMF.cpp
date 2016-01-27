@@ -524,6 +524,7 @@ bool RFEncoderAMF::applyConfiguration(const RFEncoderSettings* pConfig)
     }
 
     unsigned int uiNumSupportedProperties = sizeof(g_PropertyNameMap) / sizeof(struct MAPPING_ENTRY);
+    bool retValue = true;
 
     for (unsigned int i = 0; i < uiNumSupportedProperties; ++i)
     {
@@ -532,7 +533,7 @@ bool RFEncoderAMF::applyConfiguration(const RFEncoderSettings* pConfig)
         {
             std::cout << g_PropertyNameMap[i].RFPropertyName << std::endl;
         }
-        rfStatus |= r;
+        retValue |= (rfStatus == RF_STATUS_OK);
     }
 
     return (rfStatus == RF_STATUS_OK);

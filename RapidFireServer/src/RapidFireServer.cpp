@@ -50,16 +50,18 @@ RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, RFPropert
 }
 
 
-void RAPIDFIRE_API rfDeleteEncodeSession(RFEncodeSession* s)
+RFStatus RAPIDFIRE_API rfDeleteEncodeSession(RFEncodeSession* s)
 {
     RFSession* pEncodeSession = reinterpret_cast<RFSession*>(*s);
 
-    if (pEncodeSession)
+    if (!pEncodeSession)
     {
-        delete pEncodeSession;
+        return RF_STATUS_INVALID_SESSION;
     }
 
+    delete pEncodeSession;
     *s = nullptr;
+    return RF_STATUS_OK;
 }
 
 
@@ -144,16 +146,17 @@ RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession s, unsigned int idx)
 }
 
 
-RFRenderTargetState RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession s, unsigned int idx)
+RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession s, RFRenderTargetState* state, unsigned int idx)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
     if (!pSession)
     {
-        return RF_STATE_INVALID;
+        *state = RF_STATE_INVALID;
+        return RF_STATUS_INVALID_SESSION;
     }
 
-    return pSession->getRenderTargetState(idx);
+    return pSession->getRenderTargetState(state, idx);
 }
 
 

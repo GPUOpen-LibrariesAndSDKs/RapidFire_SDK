@@ -196,7 +196,7 @@ RFStatus RFEncoderDM::init(const RFContextCL* pContextCL, const RFEncoderSetting
 
     if (!createBuffers())
     {
-        return false;
+        return RF_STATUS_OPENCL_FAIL;
     }
 
     // m_uiPreviousBuffer will strore the index of the previously encoded buffer. For the first frame we set it to the maximum. 

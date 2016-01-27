@@ -144,10 +144,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
 
     // Register FBOs to RapidFire session
-    rfStatus  = rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(fbo[0].getColorTex()), g_stream_width, g_stream_height, &rf_fbo_idx[0]);
-    rfStatus |= rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(fbo[1].getColorTex()), g_stream_width, g_stream_height, &rf_fbo_idx[1]);
+    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(fbo[0].getColorTex()), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(fbo[1].getColorTex()), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
-    if (rfStatus != RF_STATUS_OK)
+    if (!success)
     {
         MessageBox(NULL, "Failed to register FBO", "RF Error", MB_ICONERROR | MB_OK);
         rfDeleteEncodeSession(&rfSession);

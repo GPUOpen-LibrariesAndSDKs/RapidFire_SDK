@@ -611,7 +611,7 @@ RFStatus RFContextCL::finalizeContext(const cl_context_properties* pContextPrope
 
     if (!pContextProperties)
     {
-        return false;
+        return RF_STATUS_INVALID_OPENCL_ENV;
     }
 
     m_clCtx = clCreateContext(pContextProperties, 1, &m_clDevId, nullptr, nullptr, &nStatus);
@@ -1176,15 +1176,16 @@ RFStatus RFContextCL::removeCLInputMemObj(unsigned int idx)
 }
 
 
-RFRenderTargetState RFContextCL::getInputMemObjState(unsigned int idx) const
+RFStatus RFContextCL::getInputMemObjState(RFRenderTargetState* state, unsigned int idx) const
 {
     if (idx >= MAX_NUM_RENDER_TARGETS)
     {
-        RF_Error(RF_STATUS_INVALID_INDEX, "Index is out of range");
-        return RF_STATE_INVALID;
+        *state = RF_STATE_INVALID;
+        return RF_STATUS_INVALID_INDEX;
     }
 
-    return m_rtState[idx];
+    *state = m_rtState[idx];
+    return RF_STATUS_OK;
 }
 
 

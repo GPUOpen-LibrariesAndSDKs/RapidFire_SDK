@@ -55,51 +55,51 @@ typedef intptr_t            RFProperties;
 typedef void*               RFEncodeSession;  
 typedef void*               RFRenderTarget;
 
-typedef int                 RFStatus;    
-
-
 /**************************************************************************
 * The RapidFire Server API status *
 **************************************************************************/
-#define RF_STATUS_OK                          0
-#define RF_STATUS_FAIL                       -1
-#define RF_STATUS_MEMORY_FAIL                -2
-#define RF_STATUS_RENDER_TARGET_FAIL         -3
-#define RF_STATUS_OPENGL_FAIL                -4
-#define RF_STATUS_OPENCL_FAIL                -5
-#define RF_STATUS_DOPP_FAIL                  -6
-
-#define RF_STATUS_AMF_FAIL                   -8
-
-#define RF_STATUS_QUEUE_FULL                 -10
-#define RF_STATUS_NO_ENCODED_FRAME           -11
-
-#define RF_STATUS_PARAM_ACCESS_DENIED        -13
-#define RF_STATUS_MOUSEGRAB_FAIL             -14
-#define RF_STATUS_MOUSEGRAB_NO_CHANGE        -15
-#define RF_STATUS_DOPP_NO_UPDATE             -16
-
-#define RF_STATUS_INVALID_SESSION            -30
-#define RF_STATUS_INVALID_CONTEXT            -31
-#define RF_STATUS_INVALID_TEXTURE            -32
-#define RF_STATUS_INVALID_DIMENSION          -33
-#define RF_STATUS_INVALID_INDEX              -34
-#define RF_STATUS_INVALID_FORMAT             -35
-#define RF_STATUS_INVALID_CONFIG             -36
-#define RF_STATUS_INVALID_ENCODER            -37
-#define RF_STATUS_INVALID_AUDIO_CODEC        -38
-#define RF_STATUS_INVALID_RENDER_TARGET      -39
-#define RF_STATUS_INVALID_CAPTURE_SOURCE     -40
-#define RF_STATUS_INVALID_DESKTOP_ID         -41
-#define RF_STATUS_INVALID_WINDOW             -42
-#define RF_STATUS_INVALID_OPENGL_CONTEXT     -43
-#define RF_STATUS_INVALID_D3D_DEVICE         -44
-#define RF_STATUS_INVALID_D3D_OBJECT         -45
-#define RF_STATUS_INVALID_OPENCL_ENV         -46
-#define RF_STATUS_INVALID_OPENCL_CONTEXT     -47
-#define RF_STATUS_INVALID_OPENCL_MEMOBJ      -48
-#define RF_STATUS_INVALID_SESSION_PROPERTIES -49
-#define RF_STATUS_INVALID_ENCODER_PARAMETER  -50
+enum RFStatus
+{
+    RF_STATUS_OK                          = 0,
+    RF_STATUS_FAIL                        = 1,
+    RF_STATUS_MEMORY_FAIL                 = 2,
+    RF_STATUS_RENDER_TARGET_FAIL          = 3,
+    RF_STATUS_OPENGL_FAIL                 = 4,
+    RF_STATUS_OPENCL_FAIL                 = 5,
+    RF_STATUS_DOPP_FAIL                   = 6,
+                                          
+    RF_STATUS_AMF_FAIL                    = 8,
+                                          
+    RF_STATUS_QUEUE_FULL                  = 10,
+    RF_STATUS_NO_ENCODED_FRAME            = 11,
+                                          
+    RF_STATUS_PARAM_ACCESS_DENIED         = 13,
+    RF_STATUS_MOUSEGRAB_FAIL              = 14,
+    RF_STATUS_MOUSEGRAB_NO_CHANGE         = 15,
+    RF_STATUS_DOPP_NO_UPDATE              = 16,
+                                          
+    RF_STATUS_INVALID_SESSION             = 30,
+    RF_STATUS_INVALID_CONTEXT             = 31,
+    RF_STATUS_INVALID_TEXTURE             = 32,
+    RF_STATUS_INVALID_DIMENSION           = 33,
+    RF_STATUS_INVALID_INDEX               = 34,
+    RF_STATUS_INVALID_FORMAT              = 35,
+    RF_STATUS_INVALID_CONFIG              = 36,
+    RF_STATUS_INVALID_ENCODER             = 37,
+    RF_STATUS_INVALID_AUDIO_CODEC         = 38,
+    RF_STATUS_INVALID_RENDER_TARGET       = 39,
+    RF_STATUS_INVALID_CAPTURE_SOURCE      = 40,
+    RF_STATUS_INVALID_DESKTOP_ID          = 41,
+    RF_STATUS_INVALID_WINDOW              = 42,
+    RF_STATUS_INVALID_OPENGL_CONTEXT      = 43,
+    RF_STATUS_INVALID_D3D_DEVICE          = 44,
+    RF_STATUS_INVALID_D3D_OBJECT          = 45,
+    RF_STATUS_INVALID_OPENCL_ENV          = 46,
+    RF_STATUS_INVALID_OPENCL_CONTEXT      = 47,
+    RF_STATUS_INVALID_OPENCL_MEMOBJ       = 48,
+    RF_STATUS_INVALID_SESSION_PROPERTIES  = 49,
+    RF_STATUS_INVALID_ENCODER_PARAMETER   = 50,
+};
 
 
 /**************************************************************************
@@ -170,10 +170,6 @@ typedef int                 RFStatus;
 #define RF_ENCODER_OUTPUT_HEIGHT                0x1084
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
 *******************************************************************************
 * @typedef RFBitmapBuffer
@@ -182,18 +178,18 @@ extern "C" {
 * @uiWidth:  Width of the bitmap.
 * @uiHeight: Height of the bitmap.
 * @uiPitch:  Pitch of the bitmap.
-* @uiBitsPerPixxel: Bits per pixel of the bitmap.
+* @uiBitsPerPixel: Bits per pixel of the bitmap.
 * @pPixels:  Data of the bitmap.
 *
 *******************************************************************************
 */
 typedef struct
 {
-	unsigned int	uiWidth;
-	unsigned int	uiHeight;
-	unsigned int	uiPitch;
-	unsigned int	uiBitsPerPixel;
-	void*			pPixels;
+    unsigned int	uiWidth;
+    unsigned int	uiHeight;
+    unsigned int	uiPitch;
+    unsigned int	uiBitsPerPixel;
+    void*			pPixels;
 } RFBitmapBuffer;
 
 /**
@@ -217,11 +213,11 @@ typedef struct
 */
 typedef struct
 {
-	bool            bVisible;
-	unsigned int    uiXHot;
-	unsigned int    uiYHot;
-	RFBitmapBuffer	mask;
-	RFBitmapBuffer	color;
+    bool            bVisible;
+    unsigned int    uiXHot;
+    unsigned int    uiYHot;
+    RFBitmapBuffer	mask;
+    RFBitmapBuffer	color;
 } RFMouseData;
 
 /**
@@ -239,7 +235,15 @@ typedef struct
 *
 *******************************************************************************
 */
-enum RFFormat { RF_FORMAT_UNKNOWN = -1, RF_RGBA8 = 0, RF_ARGB8 = 1, RF_BGRA8 = 2, RF_NV12 = 3, RF_I420 = 4 };
+enum RFFormat
+{ 
+    RF_FORMAT_UNKNOWN = -1,
+    RF_RGBA8          =  0,
+    RF_ARGB8          =  1,
+    RF_BGRA8          =  2,
+    RF_NV12           =  3,
+    RF_I420           =  4
+};
 
 /**
 *******************************************************************************
@@ -254,7 +258,13 @@ enum RFFormat { RF_FORMAT_UNKNOWN = -1, RF_RGBA8 = 0, RF_ARGB8 = 1, RF_BGRA8 = 2
 *
 *******************************************************************************
 */
-enum RFEncodePreset { RF_PRESET_NONE = -1, RF_PRESET_FAST = 0, RF_PRESET_BALANCED = 1, RF_PRESET_QUALITY = 2 };
+enum RFEncodePreset
+{
+    RF_PRESET_NONE     = -1,
+    RF_PRESET_FAST     =  0,
+    RF_PRESET_BALANCED =  1,
+    RF_PRESET_QUALITY  =  2
+};
 
 /**
 *******************************************************************************
@@ -267,7 +277,13 @@ enum RFEncodePreset { RF_PRESET_NONE = -1, RF_PRESET_FAST = 0, RF_PRESET_BALANCE
 *
 *******************************************************************************
 */
-enum RFEncoderID { RF_ENCODER_UNKNOWN = -1, RF_AMF = 0, RF_IDENTITY = 2, RF_DIFFERENCE = 3 };
+enum RFEncoderID
+{
+    RF_ENCODER_UNKNOWN = -1,
+    RF_AMF             =  0,
+    RF_IDENTITY        =  1,
+    RF_DIFFERENCE      =  2
+};
 
 /**
 *******************************************************************************
@@ -282,7 +298,12 @@ enum RFEncoderID { RF_ENCODER_UNKNOWN = -1, RF_AMF = 0, RF_IDENTITY = 2, RF_DIFF
 *
 *******************************************************************************
 */
-enum RFRenderTargetState { RF_STATE_INVALID = 0, RF_STATE_FREE = 1, RF_STATE_BLOCKED = 2 };
+enum RFRenderTargetState
+{
+    RF_STATE_INVALID = 0,
+    RF_STATE_FREE    = 1,
+    RF_STATE_BLOCKED = 2
+};
 
 /**
 *******************************************************************************
@@ -301,11 +322,19 @@ enum RFRenderTargetState { RF_STATE_INVALID = 0, RF_STATE_FREE = 1, RF_STATE_BLO
 *
 *******************************************************************************
 */
-enum RFNotification { RFDesktopNotification = 1, RFMouseShapeNotification = 2 };
+enum RFNotification
+{
+    RFDesktopNotification    = 1,
+    RFMouseShapeNotification = 2
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
 *******************************************************************************
-* @fn rfCreateEncodeSession2
+* @fn rfCreateEncodeSession
 * @brief This function creates an encode session.
 *        It also creates OpenCL environment based on input properties.
 *
@@ -326,10 +355,10 @@ RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, RFPropert
 *
 * @param[in] session: The encoding session to be deleted.
 *
-* @return void: No return value.
+* @return void: RF_STATUS_OK if successful; otherwise an error code.
 *******************************************************************************
 */
-void RAPIDFIRE_API rfDeleteEncodeSession(RFEncodeSession* session);
+RFStatus RAPIDFIRE_API rfDeleteEncodeSession(RFEncodeSession* session);
 
 /**
 *******************************************************************************
@@ -399,7 +428,7 @@ RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession session, RFRenderT
 * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
 *******************************************************************************
 */
- RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession session, unsigned int idx);
+RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession session, unsigned int idx);
 
 /**
 *******************************************************************************
@@ -407,14 +436,15 @@ RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession session, RFRenderT
 * @brief This function gets the state of render target whose index is idx.
 *
 * @param[in] session: The encoding session.
+* @param[out] state:  RF_STATE_INVALID if the render target is not known;
+*                     RF_STATE_FREE if it is not used by the API;
+*                     RF_STATE_BLOCKED if it is currently in use by the API.
 * @param[in] idx:     The index of the render target.
 *
-* @return RFRenderTargetState: RF_STATE_INVALID if the render target is not known;
-*                              RF_STATE_FREE if it is not used by the API;
-*                              RF_STATE_BLOCKED if it is currently in use by the API.
+* @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
 *******************************************************************************
 */
-RFRenderTargetState RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession session, unsigned int idx);
+RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession session, RFRenderTargetState* state, unsigned int idx);
 
 /**
 *******************************************************************************

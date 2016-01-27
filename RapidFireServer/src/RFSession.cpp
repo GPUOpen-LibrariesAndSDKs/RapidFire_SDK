@@ -221,7 +221,7 @@ RFStatus RFSession::registerRenderTarget(RFTexture rt, unsigned int uiWidth, uns
 
 RFStatus RFSession::removeRenderTarget(unsigned int idx)
 {
-    // LOCAL LOCK: Make sure no other thread of this session is using the resources
+    // Local lock: Make sure no other thread of this session is using the resources
     RFReadWriteAccess enabler(&m_SessionLock);
 
     SAFE_CALL_RF(m_pContextCL->removeCLInputMemObj(idx));
@@ -230,10 +230,17 @@ RFStatus RFSession::removeRenderTarget(unsigned int idx)
 }
 
 
-RFRenderTargetState RFSession::getRenderTargetState(unsigned int idx) const
+RFStatus RFSession::getRenderTargetState(RFRenderTargetState* state, unsigned int idx) const
 {
-    return m_pContextCL->getInputMemObjState(idx);
+    if (!m_pContextCL || !m_pContextCL->isValid())
+    {
+        *state = RF_STATE_INVALID;
+        return RF_STATUS_INVALID_OPENCL_CONTEXT;
+    }
+
+    return m_pContextCL->getInputMemObjState(state, idx);
 }
+
 
 // The application may register one or more render targets and will call encodeFrame with the id
 // of the registered RT. Internally more buffers are used e.g. to store frames needed for diff
@@ -554,7 +561,7 @@ RFStatus RFSession::createEncoder()
     }
 
     // Check if a valid context exists.
-    if (!m_pContextCL->isValid())
+    if (!m_pContextCL || !m_pContextCL->isValid())
     {
         m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[rfCreateEncoder] No valid OpenCL context");
         return RF_STATUS_INVALID_OPENCL_CONTEXT;
