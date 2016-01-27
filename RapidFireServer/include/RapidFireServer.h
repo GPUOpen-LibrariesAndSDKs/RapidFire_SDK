@@ -105,69 +105,75 @@ enum RFStatus
 /**************************************************************************
 *  Session parameters *
 **************************************************************************/
-#define RF_GL_GRAPHICS_CTX                0x1001
-#define RF_GL_DEVICE_CTX                  0x1002
-#define RF_D3D9_DEVICE                    0x1003
-#define RF_D3D9EX_DEVICE                  0x1004
-#define RF_D3D11_DEVICE                   0x1005
-#define RF_DESKTOP                        0x1007
-#define RF_DESKTOP_DSP_ID                 0x1008
-#define RF_DESKTOP_UPDATE_ON_CHANGE       0x1009
-#define RF_DESKTOP_BLOCK_UNTIL_CHANGE     0x1010
-#define RF_WINDOW                         0x1011
-#define RF_FLIP_SOURCE                    0x1012
-#define RF_ASYNC_SOURCE_COPY              0x1013
-#define RF_ENCODER                        0x1014
-#define RF_ENCODER_BLOCKING_READ          0x1015
-#define RF_MOUSE_DATA                     0x1016
+enum RFSessionParams
+{
+    RF_GL_GRAPHICS_CTX                = 0x1001,
+    RF_GL_DEVICE_CTX                  = 0x1002,
+    RF_D3D9_DEVICE                    = 0x1003,
+    RF_D3D9EX_DEVICE                  = 0x1004,
+    RF_D3D11_DEVICE                   = 0x1005,
+    RF_DESKTOP                        = 0x1007,
+    RF_DESKTOP_DSP_ID                 = 0x1008,
+    RF_DESKTOP_UPDATE_ON_CHANGE       = 0x1009,
+    RF_DESKTOP_BLOCK_UNTIL_CHANGE     = 0x1010,
+    RF_WINDOW                         = 0x1011,
+    RF_FLIP_SOURCE                    = 0x1012,
+    RF_ASYNC_SOURCE_COPY              = 0x1013,
+    RF_ENCODER                        = 0x1014,
+    RF_ENCODER_BLOCKING_READ          = 0x1015,
+    RF_MOUSE_DATA                     = 0x1016,
+};
 
 
 /**************************************************************************
 * The video encoder parameters *
 **************************************************************************/
-#define RF_ENCODER_FORMAT                       0x1111
-#define RF_ENCODER_PROFILE                      0x1112
-#define RF_ENCODER_LEVEL                        0x1113
-#define RF_ENCODER_PSNR                         0x1114 
+enum RFEncoderParams
+{
+    RF_ENCODER_FORMAT                       = 0x1111,
+    RF_ENCODER_PROFILE                      = 0x1112,
+    RF_ENCODER_LEVEL                        = 0x1113,
+    RF_ENCODER_PSNR                         = 0x1114, 
 
-#define RF_ENCODER_BITRATE                      0x1121
-#define RF_ENCODER_PEAK_BITRATE                 0x1122
-#define RF_ENCODER_RATE_CONTROL_METHOD          0x1123
-#define RF_ENCODER_MIN_QP                       0x1124
-#define RF_ENCODER_MAX_QP                       0x1125
-#define RF_ENCODER_GOP_SIZE                     0x1126
-#define RF_ENCODER_VBV_BUFFER_SIZE              0x1127
-#define RF_ENCODER_VBV_BUFFER_FULLNESS          0x1128
-#define RF_ENCODER_ENFORCE_HRD                  0x1129
-#define RF_ENCODER_FRAME_RATE                   0x1130
-#define RF_ENCODER_FRAME_RATE_DEN               0x1131
+    RF_ENCODER_BITRATE                      = 0x1121,
+    RF_ENCODER_PEAK_BITRATE                 = 0x1122,
+    RF_ENCODER_RATE_CONTROL_METHOD          = 0x1123,
+    RF_ENCODER_MIN_QP                       = 0x1124,
+    RF_ENCODER_MAX_QP                       = 0x1125,
+    RF_ENCODER_GOP_SIZE                     = 0x1126,
+    RF_ENCODER_VBV_BUFFER_SIZE              = 0x1127,
+    RF_ENCODER_VBV_BUFFER_FULLNESS          = 0x1128,
+    RF_ENCODER_ENFORCE_HRD                  = 0x1129,
+    RF_ENCODER_FRAME_RATE                   = 0x1130,
+    RF_ENCODER_FRAME_RATE_DEN               = 0x1131,
 
-#define RF_ENCODER_IDR_PERIOD                   0x1141
-#define RF_ENCODER_INTRA_REFRESH_NUM_MB         0x1142
-#define RF_ENCODER_DEBLOCKING_FILTER            0x1143
-#define RF_ENCODER_NUM_SLICES_PER_FRAME         0x1144
-#define RF_ENCODER_QUALITY_PRESET               0x1145
+    RF_ENCODER_IDR_PERIOD                   = 0x1141,
+    RF_ENCODER_INTRA_REFRESH_NUM_MB         = 0x1142,
+    RF_ENCODER_DEBLOCKING_FILTER            = 0x1143,
+    RF_ENCODER_NUM_SLICES_PER_FRAME         = 0x1144,
+    RF_ENCODER_QUALITY_PRESET               = 0x1145,
 
-#define RF_ENCODER_MOTION_RANGE                 0x1151
-#define RF_ENCODER_HALF_PIXEL                   0x1152
-#define RF_ENCODER_QUARTER_PIXEL				0x1153
+    RF_ENCODER_MOTION_RANGE                 = 0x1151,
+    RF_ENCODER_HALF_PIXEL                   = 0x1152,
+    RF_ENCODER_QUARTER_PIXEL				= 0x1153,
 
-#define RF_DIFF_ENCODER_BLOCK_S              	0x1154
-#define RF_DIFF_ENCODER_BLOCK_T                	0x1155
-#define RF_DIFF_ENCODER_LOCK_BUFFER             0x1156
+    RF_DIFF_ENCODER_BLOCK_S              	= 0x1154,
+    RF_DIFF_ENCODER_BLOCK_T                	= 0x1155,
+    RF_DIFF_ENCODER_LOCK_BUFFER             = 0x1156,
 
-// Pre Submit parameters
-#define RF_ENCODER_FORCE_INTRA_REFRESH          0x1061   
-#define RF_ENCODER_FORCE_I_FRAME                0x1062
-#define RF_ENCODER_FORCE_P_FRAME                0x1063
-#define RF_ENCODER_INSERT_SPS                   0x1064
-#define RF_ENCODER_INSERT_PPS                   0x1065
+    // Pre Submit parameters
+    RF_ENCODER_FORCE_INTRA_REFRESH          = 0x1061,   
+    RF_ENCODER_FORCE_I_FRAME                = 0x1062,
+    RF_ENCODER_FORCE_P_FRAME                = 0x1063,
+    RF_ENCODER_INSERT_SPS                   = 0x1064,
+    RF_ENCODER_INSERT_PPS                   = 0x1065,
 
-// Read only parameter
-#define RF_ENCODER_WIDTH                        0x1081
-#define RF_ENCODER_HEIGHT                       0x1082
-#define RF_ENCODER_OUTPUT_WIDTH                 0x1083
-#define RF_ENCODER_OUTPUT_HEIGHT                0x1084
+    // Read only parameter
+    RF_ENCODER_WIDTH                        = 0x1081,
+    RF_ENCODER_HEIGHT                       = 0x1082,
+    RF_ENCODER_OUTPUT_WIDTH                 = 0x1083,
+    RF_ENCODER_OUTPUT_HEIGHT                = 0x1084,
+};
 
 
 /**
