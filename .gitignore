@@ -5,8 +5,10 @@
 *.user
 
 # Build results
-bin/
+build/
 RapidFireServer/lib/
+RapidFireServer/bin/
+Samples/bin/
 
 # Visual Studo 2015 cache/options directory
 .vs/
