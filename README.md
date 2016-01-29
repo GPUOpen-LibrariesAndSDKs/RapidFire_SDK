@@ -1,6 +1,6 @@
 # RapidFire SDK
 
-The RapidFire SDK provides an interface for cloud gaming and virtualization applications to use AMD FirePro GPUs. OpenGL 4.2, DirectX 9 and DirectX 11 textures as well as screen capturing can be used as input to generate an H.264 or uncompressed stream output.
+The RapidFire SDK provides an interface for cloud gaming and virtualization applications to reduce the encoding latency by utilizing AMD FirePro GPUs. OpenGL 4.2, DirectX 9 and DirectX 11 textures as well as screen capturing can be used as input to generate an H.264 or uncompressed stream output. While the encoding itself is handled by RapidFire, the developer keeps full control over the configuration of the stream with the ability to adjust key encoding paramters such as resolution, frame rate and bit rate control throughout the streaming process.
 
 ### Prerequisites
 * AMD FirePro&trade; GCN-based GPU
