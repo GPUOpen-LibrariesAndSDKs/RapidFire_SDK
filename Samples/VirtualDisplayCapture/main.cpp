@@ -94,7 +94,7 @@ bool removeConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, in
 
 const unsigned int g_uiVirtualDisplayWidth = 1920;
 const unsigned int g_uiVirtualDisplayHeight = 1080;
-const unsigned int g_fRefreshRate = 60.0f;
+const float g_fRefreshRate = 60.0f;
 const RFWrapper& g_rfDll = RFWrapper::getInstance();
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd)
@@ -370,7 +370,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
     FreeLibrary(hADLDll);
 
-    return msg.wParam;
+    return static_cast<int>(msg.wParam);
 }
 
 bool InitializeADL()
