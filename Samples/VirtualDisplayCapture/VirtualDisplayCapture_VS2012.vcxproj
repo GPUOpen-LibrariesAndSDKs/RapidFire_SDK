@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F3AB8122-3599-44D4-A0EA-97531F9C4B81}</ProjectGuid>
+    <ProjectGuid>{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DifferenceEncoding</RootNamespace>
-    <ProjectName>MultiDesktopCapture</ProjectName>
+    <ProjectName>VirtualDisplayCapture</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -94,7 +94,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW;../../external/ADL</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -104,6 +104,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+xcopy /Y /D EDID_Emulation.bin $(OutDir)
 xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop32.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -114,7 +115,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW;../../external/ADL</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,6 +125,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+xcopy /Y /D EDID_Emulation.bin $(OutDir)
 xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop32.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -136,7 +138,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW;../../external/ADL</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +150,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+xcopy /Y /D EDID_Emulation.bin $(OutDir)
 xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop32.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -160,7 +163,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW;../../external/ADL</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -172,6 +175,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+xcopy /Y /D EDID_Emulation.bin $(OutDir)
 xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop32.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

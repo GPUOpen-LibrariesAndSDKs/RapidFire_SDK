@@ -25,3 +25,7 @@ ipch/
 *.psess
 *.vsp
 *.vspx
+
+# Files produced by RapidFire
+*.log
+RGBA8_frame_*.rgb

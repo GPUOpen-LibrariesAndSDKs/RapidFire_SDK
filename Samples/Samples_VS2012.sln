@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLEncoding", "GLEncoding\GL
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiDesktopCapture", "MultiDesktopCapture\MultiDesktopCapture_VS2012.vcxproj", "{F3AB8122-3599-44D4-A0EA-97531F9C4B81}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtualDisplayCapture", "VirtualDisplayCapture\VirtualDisplayCapture_VS2012.vcxproj", "{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -103,6 +105,18 @@ Global
 		{F3AB8122-3599-44D4-A0EA-97531F9C4B81}.Release|x64.ActiveCfg = Release|x64
 		{F3AB8122-3599-44D4-A0EA-97531F9C4B81}.Release|x64.Build.0 = Release|x64
 		{F3AB8122-3599-44D4-A0EA-97531F9C4B81}.Release|x64.Deploy.0 = Release|x64
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Debug|Win32.Build.0 = Debug|Win32
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Debug|Win32.Deploy.0 = Debug|Win32
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Debug|x64.ActiveCfg = Debug|x64
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Debug|x64.Build.0 = Debug|x64
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Debug|x64.Deploy.0 = Debug|x64
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Release|Win32.ActiveCfg = Release|Win32
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Release|Win32.Build.0 = Release|Win32
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Release|Win32.Deploy.0 = Release|Win32
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Release|x64.ActiveCfg = Release|x64
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Release|x64.Build.0 = Release|x64
+		{A1BC5BFD-C175-442C-A8F9-B12D80F7B63E}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

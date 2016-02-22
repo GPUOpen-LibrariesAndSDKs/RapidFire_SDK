@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2008 - 2013 Advanced Micro Devices, Inc.
- 
+
 //  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
 //  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
 //  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
@@ -180,6 +180,11 @@
 #define ADL_DISPLAY_ADJUST_UNDERSCAN		(1<<6)
 // @}
 
+///Down-scale support
+#define ADL_DISPLAY_CAPS_DOWNSCALE		(1 << 0)
+
+/// Sharpness support
+#define ADL_DISPLAY_CAPS_SHARPNESS      (1 << 0)
 
 /// \defgroup define_desktop_config Desktop Configuration Flags
 /// These flags are used by ADL_DesktopConfig_xxx
@@ -850,14 +855,14 @@ typedef enum ADLThreadingModel
 ///////////////////////////////////////////////////////////////////////////
 enum ADLPurposeCode
 { 
-	ADL_PURPOSECODE_NORMAL	= 0, 
-	ADL_PURPOSECODE_HIDE_MODE_SWITCH, 
-	ADL_PURPOSECODE_MODE_SWITCH, 
-	ADL_PURPOSECODE_ATTATCH_DEVICE, 
-	ADL_PURPOSECODE_DETACH_DEVICE, 
-	ADL_PURPOSECODE_SETPRIMARY_DEVICE, 
-	ADL_PURPOSECODE_GDI_ROTATION, 
-	ADL_PURPOSECODE_ATI_ROTATION
+    ADL_PURPOSECODE_NORMAL	= 0, 
+    ADL_PURPOSECODE_HIDE_MODE_SWITCH, 
+    ADL_PURPOSECODE_MODE_SWITCH, 
+    ADL_PURPOSECODE_ATTATCH_DEVICE, 
+    ADL_PURPOSECODE_DETACH_DEVICE, 
+    ADL_PURPOSECODE_SETPRIMARY_DEVICE, 
+    ADL_PURPOSECODE_GDI_ROTATION, 
+    ADL_PURPOSECODE_ATI_ROTATION
 };
 ///////////////////////////////////////////////////////////////////////////
 // ADLAngle Enumeration
@@ -875,8 +880,8 @@ enum ADLAngle
 ///////////////////////////////////////////////////////////////////////////
 enum ADLOrientationDataType 
 { 
-	ADL_ORIENTATIONTYPE_OSDATATYPE, 
-	ADL_ORIENTATIONTYPE_NONOSDATATYPE 
+    ADL_ORIENTATIONTYPE_OSDATATYPE, 
+    ADL_ORIENTATIONTYPE_NONOSDATATYPE 
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -884,9 +889,9 @@ enum ADLOrientationDataType
 ///////////////////////////////////////////////////////////////////////////
 enum ADLPanningMode
 { 
-	ADL_PANNINGMODE_NO_PANNING = 0,
-	ADL_PANNINGMODE_AT_LEAST_ONE_NO_PANNING = 1,
-	ADL_PANNINGMODE_ALLOW_PANNING = 2, 
+    ADL_PANNINGMODE_NO_PANNING = 0,
+    ADL_PANNINGMODE_AT_LEAST_ONE_NO_PANNING = 1,
+    ADL_PANNINGMODE_ALLOW_PANNING = 2, 
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -894,7 +899,7 @@ enum ADLPanningMode
 ///////////////////////////////////////////////////////////////////////////
 enum ADLLARGEDESKTOPTYPE
 {
-	ADL_LARGEDESKTOPTYPE_NORMALDESKTOP = 0,
+    ADL_LARGEDESKTOPTYPE_NORMALDESKTOP = 0,
     ADL_LARGEDESKTOPTYPE_PSEUDOLARGEDESKTOP = 1,
     ADL_LARGEDESKTOPTYPE_VERYLARGEDESKTOP = 2
 };
@@ -907,6 +912,17 @@ enum ADLPlatForm
     GRAPHICS_PLATFORM_DESKTOP  = 0,
     GRAPHICS_PLATFORM_MOBILE   = 1
 };
+
+///////////////////////////////////////////////////////////////////////////
+// ADLGraphicCoreGeneration Enumeration
+///////////////////////////////////////////////////////////////////////////
+enum ADLGraphicCoreGeneration
+{
+    ADL_GRAPHIC_CORE_GENERATION_UNDEFINED                   = 0,
+    ADL_GRAPHIC_CORE_GENERATION_PRE_GCN                     = 1,
+    ADL_GRAPHIC_CORE_GENERATION_GCN                         = 2
+};
+
 // Other Definitions for internal use
 
 // Values for ADL_Display_WriteAndReadI2CRev_Get()
@@ -937,6 +953,7 @@ enum ADLPlatForm
 #define ADL_DL_DISPLAYPROPERTY_TYPE_USEUNDERSCANSCALING	 2
 /// Enables ITC processing for HDMI panels that are capable of the feature
 #define ADL_DL_DISPLAYPROPERTY_TYPE_ITCFLAGENABLE        9 
+#define ADL_DL_DISPLAYPROPERTY_TYPE_DOWNSCALE			11
 
 
 /// Values for ADLDisplayContent.iContentType
@@ -949,17 +966,65 @@ enum ADLPlatForm
 
 
 
-
-
 //values for ADLDisplayProperty.iExpansionMode
 #define ADL_DL_DISPLAYPROPERTY_EXPANSIONMODE_CENTER        0
 #define ADL_DL_DISPLAYPROPERTY_EXPANSIONMODE_FULLSCREEN    1
 #define ADL_DL_DISPLAYPROPERTY_EXPANSIONMODE_ASPECTRATIO   2
 
-//values for ADL_Display_DitherState_Get
-#define ADL_DL_DISPLAY_DITHER_UNKNOWN    0
-#define ADL_DL_DISPLAY_DITHER_DISABLED   1
-#define ADL_DL_DISPLAY_DITHER_ENABLED    2
+
+///\defgroup define_dither_states Dithering options
+// @{
+/// Dithering disabled.
+#define ADL_DL_DISPLAY_DITHER_DISABLED              0
+/// Use default driver settings for dithering. Note that the default setting could be dithering disabled.
+#define ADL_DL_DISPLAY_DITHER_DRIVER_DEFAULT        1
+/// Temporal dithering to 6 bpc. Note that if the input is 12 bits, the two least significant bits will be truncated.
+#define ADL_DL_DISPLAY_DITHER_FM6                   2
+/// Temporal dithering to 8 bpc.
+#define ADL_DL_DISPLAY_DITHER_FM8                   3
+/// Temporal dithering to 10 bpc.
+#define ADL_DL_DISPLAY_DITHER_FM10                  4
+/// Spatial dithering to 6 bpc. Note that if the input is 12 bits, the two least significant bits will be truncated.
+#define ADL_DL_DISPLAY_DITHER_DITH6                 5
+/// Spatial dithering to 8 bpc.
+#define ADL_DL_DISPLAY_DITHER_DITH8                 6
+/// Spatial dithering to 10 bpc.
+#define ADL_DL_DISPLAY_DITHER_DITH10                7
+/// Spatial dithering to 6 bpc. Random number generators are reset every frame, so the same input value of a certain pixel will always be dithered to the same output value. Note that if the input is 12 bits, the two least significant bits will be truncated.
+#define ADL_DL_DISPLAY_DITHER_DITH6_NO_FRAME_RAND   8
+/// Spatial dithering to 8 bpc. Random number generators are reset every frame, so the same input value of a certain pixel will always be dithered to the same output value.
+#define ADL_DL_DISPLAY_DITHER_DITH8_NO_FRAME_RAND   9
+/// Spatial dithering to 10 bpc. Random number generators are reset every frame, so the same input value of a certain pixel will always be dithered to the same output value.
+#define ADL_DL_DISPLAY_DITHER_DITH10_NO_FRAME_RAND  10
+/// Truncation to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN6                 11
+/// Truncation to 8 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN8                 12
+/// Truncation to 10 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN10                13
+/// Truncation to 10 bpc followed by spatial dithering to 8 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN10_DITH8          14
+/// Truncation to 10 bpc followed by spatial dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN10_DITH6          15
+/// Truncation to 10 bpc followed by temporal dithering to 8 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN10_FM8            16
+/// Truncation to 10 bpc followed by temporal dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN10_FM6            17
+/// Truncation to 10 bpc followed by spatial dithering to 8 bpc and temporal dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN10_DITH8_FM6      18
+/// Spatial dithering to 10 bpc followed by temporal dithering to 8 bpc.
+#define ADL_DL_DISPLAY_DITHER_DITH10_FM8            19
+/// Spatial dithering to 10 bpc followed by temporal dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_DITH10_FM6            20
+/// Truncation to 8 bpc followed by spatial dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN8_DITH6           21
+/// Truncation to 8 bpc followed by temporal dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_TRUN8_FM6             22
+/// Spatial dithering to 8 bpc followed by temporal dithering to 6 bpc.
+#define ADL_DL_DISPLAY_DITHER_DITH8_FM6             23
+#define ADL_DL_DISPLAY_DITHER_LAST                  ADL_DL_DISPLAY_DITHER_DITH8_FM6
+// @}
+
 
 /// Display Get Cached EDID flag
 #define ADL_MAX_EDIDDATA_SIZE              256 // number of UCHAR
@@ -976,8 +1041,10 @@ enum ADLPlatForm
 ///\defgroup define_display_packet Display Data Packet Types
 // @{
 #define ADL_DL_DISPLAY_DATA_PACKET__TYPE__AVI              0x00000001
-#define ADL_DL_DISPLAY_DATA_PACKET__TYPE__RESERVED         0x00000002
+#define ADL_DL_DISPLAY_DATA_PACKET__TYPE__GAMMUT           0x00000002
 #define ADL_DL_DISPLAY_DATA_PACKET__TYPE__VENDORINFO       0x00000004
+#define ADL_DL_DISPLAY_DATA_PACKET__TYPE__HDR              0x00000008
+#define ADL_DL_DISPLAY_DATA_PACKET__TYPE__SPD              0x00000010
 // @}
 
 // matrix types
@@ -1060,6 +1127,7 @@ enum ADLPlatForm
 #define ADL_ASIC_XGP		(1 << 4)
 #define ADL_ASIC_FUSION		(1 << 5)
 #define ADL_ASIC_FIRESTREAM (1 << 6)
+#define ADL_ASIC_EMBEDDED   (1 << 7)
 // @}
 
 ///\defgroup define_detailed_timing_flags Detailed Timimg Flags
@@ -1112,7 +1180,21 @@ enum ADLPlatForm
 #define ADL_DISPLAY_SLSGRID_CAP_OPTION_RELATIVETO_LANDSCAPE 	0x00000001
 #define ADL_DISPLAY_SLSGRID_CAP_OPTION_RELATIVETO_CURRENTANGLE 	0x00000002
 #define ADL_DISPLAY_SLSGRID_PORTAIT_MODE 						0x00000004
+#define ADL_DISPLAY_SLSGRID_KEEPTARGETROTATION              	0x00000080
 
+#define ADL_DISPLAY_SLSGRID_SAMEMODESLS_SUPPORT		0x00000010
+#define ADL_DISPLAY_SLSGRID_MIXMODESLS_SUPPORT		0x00000020
+#define ADL_DISPLAY_SLSGRID_DISPLAYROTATION_SUPPORT	0x00000040
+#define ADL_DISPLAY_SLSGRID_DESKTOPROTATION_SUPPORT	0x00000080
+ 
+
+#define ADL_DISPLAY_SLSMAP_SLSLAYOUTMODE_FIT        0x0100
+#define ADL_DISPLAY_SLSMAP_SLSLAYOUTMODE_FILL       0x0200
+#define ADL_DISPLAY_SLSMAP_SLSLAYOUTMODE_EXPAND     0x0400
+
+#define ADL_DISPLAY_SLSMAP_IS_SLS        0x1000
+#define ADL_DISPLAY_SLSMAP_IS_SLSBUILDER 0x2000
+#define ADL_DISPLAY_SLSMAP_IS_CLONEVT     0x4000
 
 #define ADL_DISPLAY_SLSMAPCONFIG_GET_OPTION_RELATIVETO_LANDSCAPE 		0x00000001
 #define ADL_DISPLAY_SLSMAPCONFIG_GET_OPTION_RELATIVETO_CURRENTANGLE 	0x00000002
@@ -1123,6 +1205,18 @@ enum ADLPlatForm
 #define ADL_DISPLAY_SLSMAPCONFIG_REARRANGE_OPTION_RELATIVETO_LANDSCAPE 	0x00000001
 #define ADL_DISPLAY_SLSMAPCONFIG_REARRANGE_OPTION_RELATIVETO_CURRENTANGLE 	0x00000002
 
+#define ADL_SLS_SAMEMODESLS_SUPPORT         0x0001
+#define ADL_SLS_MIXMODESLS_SUPPORT          0x0002
+#define ADL_SLS_DISPLAYROTATIONSLS_SUPPORT  0x0004
+#define ADL_SLS_DESKTOPROTATIONSLS_SUPPORT  0x0008
+
+#define ADL_SLS_TARGETS_INVALID     0x0001
+#define ADL_SLS_MODES_INVALID       0x0002
+#define ADL_SLS_ROTATIONS_INVALID   0x0004
+#define ADL_SLS_POSITIONS_INVALID   0x0008
+#define ADL_SLS_LAYOUTMODE_INVALID  0x0010
+
+#define ADL_DISPLAY_SLSDISPLAYOFFSET_VALID        0x0002
 
 #define ADL_DISPLAY_SLSGRID_RELATIVETO_LANDSCAPE 		0x00000010
 #define ADL_DISPLAY_SLSGRID_RELATIVETO_CURRENTANGLE 	0x00000020
@@ -1135,12 +1229,19 @@ enum ADLPlatForm
 /// The bit mask identifies this map is currently in used for the current adapter.
 #define ADL_DISPLAY_SLSMAP_CURRENTCONFIG		0x00000004
 
- ///For onlay active SLS  map info
+///For onlay active SLS  map info
 #define ADL_DISPLAY_SLSMAPINDEXLIST_OPTION_ACTIVE		0x00000001
 
 ///For Bezel
 #define ADL_DISPLAY_BEZELOFFSET_STEPBYSTEPSET			0x00000004
 #define ADL_DISPLAY_BEZELOFFSET_COMMIT					0x00000008
+
+typedef enum _SLS_ImageCropType {
+    Fit = 1,
+    Fill = 2,
+    Expand = 3
+}SLS_ImageCropType;
+
 
 // @}
 
@@ -1172,9 +1273,9 @@ typedef enum _ADLPXScheme
 /// Just keep the old definitions for compatibility, need to be removed later
 typedef enum PXScheme
 {
-	PX_SCHEME_INVALID   = 0,
-	PX_SCHEME_FIXED     = 1,
-	PX_SCHEME_DYNAMIC   = 2
+    PX_SCHEME_INVALID   = 0,
+    PX_SCHEME_FIXED     = 1,
+    PX_SCHEME_DYNAMIC   = 2
 } PXScheme;
 
 
@@ -1190,22 +1291,22 @@ typedef enum PXScheme
 
 enum ApplicationListType
 {
-	ADL_PX40_MRU,
-	ADL_PX40_MISSED,
-	ADL_PX40_DISCRETE,
-	ADL_PX40_INTEGRATED,
-
-	ADL_PX40_TOTAL
+    ADL_PX40_MRU,
+    ADL_PX40_MISSED,
+    ADL_PX40_DISCRETE,
+    ADL_PX40_INTEGRATED,
+	ADL_MMD_PROFILED,
+    ADL_PX40_TOTAL
 };
 
 typedef enum _ADLProfilePropertyType
 {
-	ADL_PROFILEPROPERTY_TYPE_BINARY		= 0,
-	ADL_PROFILEPROPERTY_TYPE_BOOLEAN,
-	ADL_PROFILEPROPERTY_TYPE_DWORD,
-	ADL_PROFILEPROPERTY_TYPE_QWORD,
-	ADL_PROFILEPROPERTY_TYPE_ENUMERATED,
-	ADL_PROFILEPROPERTY_TYPE_STRING
+    ADL_PROFILEPROPERTY_TYPE_BINARY		= 0,
+    ADL_PROFILEPROPERTY_TYPE_BOOLEAN,
+    ADL_PROFILEPROPERTY_TYPE_DWORD,
+    ADL_PROFILEPROPERTY_TYPE_QWORD,
+    ADL_PROFILEPROPERTY_TYPE_ENUMERATED,
+    ADL_PROFILEPROPERTY_TYPE_STRING
 }ADLProfilePropertyType;
 
 
@@ -1237,6 +1338,8 @@ typedef enum _ADLProfilePropertyType
 #define ADL_GAMUT_SPACE_ADOBE_RGB    (1 << 2)
 #define ADL_GAMUT_SPACE_CIE_RGB      (1 << 3)
 #define ADL_GAMUT_SPACE_CUSTOM       (1 << 4)
+#define ADL_GAMUT_SPACE_CCIR_2020    (1 << 5)
+#define ADL_GAMUT_SPACE_APPCTRL      (1 << 6)
 
 /// Predefine white point values are structed similar to gamut .
 #define ADL_WHITE_POINT_5000K       (1 << 0)
@@ -1260,6 +1363,16 @@ typedef enum _ADLProfilePropertyType
 #define ADL_USE_GAMMA_RAMP                     (1 << 4)
 ///Used for struct ADLRegamma. If the gamma ramp flag is used then the driver could apply de gamma corretion to the supplied curve and this depends on this flag
 #define ADL_APPLY_DEGAMMA                      (1 << 5)
+///specifies that standard SRGB gamma should be applied
+#define ADL_EDID_REGAMMA_PREDEFINED_SRGB       (1 << 1)
+///specifies that PQ gamma curve should be applied
+#define ADL_EDID_REGAMMA_PREDEFINED_PQ         (1 << 2)
+///specifies that PQ gamma curve should be applied, lower max nits
+#define ADL_EDID_REGAMMA_PREDEFINED_PQ_2084_INTERIM (1 << 3)
+///specifies that 3.6 gamma should be applied
+#define ADL_EDID_REGAMMA_PREDEFINED_36         (1 << 6)
+///specifies that previous gama curve should be applied - used after using one of the above predefines
+#define ADL_EDID_REGAMMA_PREDEFINED_RESET      (1 << 7)
 
 // @}
 
@@ -1372,6 +1485,8 @@ typedef enum _ADLProfilePropertyType
 /// requisite rendering adapter. For eample, for adapters in a Crossfire configuration, this bit would be set
 /// on all adapters that are currently not driving the display(s)
 #define ADL_ADAPTERCONFIGSTATE_ANCILLARY_RENDER ( 1 << 1 )
+/// Indicates that scatter gather feature enabled on the adapter
+#define ADL_ADAPTERCONFIGSTATE_SCATTERGATHER ( 1 << 4 )
 /// @}
 
 /// \defgroup define_controllermode_ulModifiers 
@@ -1438,6 +1553,8 @@ enum ADLSampleRate
 #define ADL_OD6_CAPABILITY_PERCENT_ADJUSTMENT               0x00000020
 /// Indicate that Thermal Limit Unlock is supported.
 #define ADL_OD6_CAPABILITY_THERMAL_LIMIT_UNLOCK             0x00000040
+///Indicate that Fan speed needs to be displayed in RPM
+#define ADL_OD6_CAPABILITY_FANSPEED_IN_RPM					0x00000080
 // @}
 
 /// \defgroup define_overdrive6_supported_states 
@@ -1518,6 +1635,277 @@ enum ADLSampleRate
 /// Error Correction is enabled.
 #define ECC_MODE_ON 2
 // @}
+
+/// \defgroup define_board_layout_flags 
+/// These defines are the board layout flags state which indicates what are the valid properties of \ref ADLBoardLayoutInfo . It is used by \ref ADL_Adapter_BoardLayout_Get
+// @{
+/// Indicates the number of slots is valid.
+#define ADL_BLAYOUT_VALID_NUMBER_OF_SLOTS 0x1
+/// Indicates the slot sizes are valid. Size of the slot consists of the length and width.
+#define ADL_BLAYOUT_VALID_SLOT_SIZES 0x2
+/// Indicates the connector offsets are valid.
+#define ADL_BLAYOUT_VALID_CONNECTOR_OFFSETS 0x4
+/// Indicates the connector lengths is valid.
+#define ADL_BLAYOUT_VALID_CONNECTOR_LENGTHS 0x8
+// @}
+
+/// \defgroup define_max_constants 
+/// These defines are the maximum value constants.
+// @{
+/// Indicates the Maximum supported slots on board.
+#define ADL_ADAPTER_MAX_SLOTS 4 
+/// Indicates the Maximum supported connectors on slot.
+#define ADL_ADAPTER_MAX_CONNECTORS 10 
+/// Indicates the Maximum supported properties of connection
+#define ADL_MAX_CONNECTION_TYPES 32 
+/// Indicates the Maximum relative address link count.
+#define ADL_MAX_RELATIVE_ADDRESS_LINK_COUNT 15
+/// Indicates the Maximum size of EDID data block size
+#define ADL_MAX_DISPLAY_EDID_DATA_SIZE 1024
+/// Indicates the Maximum count of Error Records.
+#define ADL_MAX_ERROR_RECORDS_COUNT  256
+/// Indicates the maximum number of power states supported
+#define ADL_MAX_POWER_POLICY    6
+// @}
+
+/// \defgroup define_connection_types 
+/// These defines are the connection types constants which indicates  what are the valid connection type of given connector. It is used by \ref ADL_Adapter_SupportedConnections_Get
+// @{
+/// Indicates the VGA connection type is valid.
+#define ADL_CONNECTION_TYPE_VGA 0
+/// Indicates the DVI_I connection type is valid.
+#define ADL_CONNECTION_TYPE_DVI 1
+/// Indicates the DVI_SL connection type is valid.
+#define ADL_CONNECTION_TYPE_DVI_SL 2
+/// Indicates the HDMI connection type is valid.
+#define ADL_CONNECTION_TYPE_HDMI 3
+/// Indicates the DISPLAY PORT connection type is valid.
+#define ADL_CONNECTION_TYPE_DISPLAY_PORT 4
+/// Indicates the Active dongle DP->DVI(single link) connection type is valid.
+#define ADL_CONNECTION_TYPE_ACTIVE_DONGLE_DP_DVI_SL 5
+/// Indicates the Active dongle DP->DVI(double link) connection type is valid.
+#define ADL_CONNECTION_TYPE_ACTIVE_DONGLE_DP_DVI_DL 6
+/// Indicates the Active dongle DP->HDMI connection type is valid.
+#define ADL_CONNECTION_TYPE_ACTIVE_DONGLE_DP_HDMI 7
+/// Indicates the Active dongle DP->VGA connection type is valid.
+#define ADL_CONNECTION_TYPE_ACTIVE_DONGLE_DP_VGA 8
+/// Indicates the Passive dongle DP->HDMI connection type is valid.
+#define ADL_CONNECTION_TYPE_PASSIVE_DONGLE_DP_HDMI 9
+/// Indicates the Active dongle DP->VGA connection type is valid.
+#define ADL_CONNECTION_TYPE_PASSIVE_DONGLE_DP_DVI 10
+/// Indicates the MST type is valid.
+#define ADL_CONNECTION_TYPE_MST 11
+/// Indicates the active dongle, all types.
+#define ADL_CONNECTION_TYPE_ACTIVE_DONGLE          12
+/// Indicates the Virtual Connection Type.
+#define ADL_CONNECTION_TYPE_VIRTUAL	13
+/// Macros for generating bitmask from index.
+#define ADL_CONNECTION_BITMAST_FROM_INDEX(index) (1 << index)
+// @}
+
+/// \defgroup define_connection_properties
+/// These defines are the connection properties which indicates what are the valid properties of given connection type. It is used by \ref ADL_Adapter_SupportedConnections_Get
+// @{
+/// Indicates the property Bitrate is valid.
+#define ADL_CONNECTION_PROPERTY_BITRATE 0x1
+/// Indicates the property number of lanes is valid.
+#define ADL_CONNECTION_PROPERTY_NUMBER_OF_LANES 0x2
+/// Indicates the property 3D caps is valid.
+#define ADL_CONNECTION_PROPERTY_3DCAPS  0x4
+/// Indicates the property output bandwidth is valid.
+#define ADL_CONNECTION_PROPERTY_OUTPUT_BANDWIDTH 0x8
+/// Indicates the property colordepth is valid.
+#define ADL_CONNECTION_PROPERTY_COLORDEPTH  0x10
+// @}
+
+/// \defgroup define_lanecount_constants
+/// These defines are the Lane count constants which will be used in DP & etc.
+// @{
+/// Indicates if lane count is unknown
+#define ADL_LANECOUNT_UNKNOWN 0
+/// Indicates if lane count is 1
+#define ADL_LANECOUNT_ONE 1
+/// Indicates if lane count is 2
+#define ADL_LANECOUNT_TWO 2
+/// Indicates if lane count is 4
+#define ADL_LANECOUNT_FOUR 4
+/// Indicates if lane count is 8
+#define ADL_LANECOUNT_EIGHT 8
+/// Indicates default value of lane count
+#define ADL_LANECOUNT_DEF ADL_LANECOUNT_FOUR
+// @}
+
+/// \defgroup define_linkrate_constants
+/// These defines are the link rate constants which will be used in DP & etc.
+// @{
+/// Indicates if link rate is unknown
+#define ADL_LINK_BITRATE_UNKNOWN 0
+/// Indicates if link rate is 1.62Ghz
+#define ADL_LINK_BITRATE_1_62_GHZ 0x06
+/// Indicates if link rate is 2.7Ghz
+#define ADL_LINK_BITRATE_2_7_GHZ 0x0A
+/// Indicates if link rate is 3.24Ghz
+#define ADL_LINK_BTIRATE_3_24_GHZ 0x0C
+/// Indicates if link rate is 5.4Ghz
+#define ADL_LINK_BITRATE_5_4_GHZ 0x14
+/// Indicates default value of link rate
+#define ADL_LINK_BITRATE_DEF ADL_LINK_BITRATE_2_7_GHZ 
+// @}
+
+/// \defgroup define_colordepth_constants
+/// These defines are the color depth constants which will be used in DP & etc.
+// @{
+#define ADL_CONNPROP_S3D_ALTERNATE_TO_FRAME_PACK            0x00000001
+// @}
+
+
+/// \defgroup define_colordepth_constants
+/// These defines are the color depth constants which will be used in DP & etc.
+// @{
+/// Indicates if color depth is unknown
+#define ADL_COLORDEPTH_UNKNOWN 0
+/// Indicates if color depth is 666
+#define ADL_COLORDEPTH_666 1
+/// Indicates if color depth is 888
+#define ADL_COLORDEPTH_888 2
+/// Indicates if color depth is 101010		
+#define ADL_COLORDEPTH_101010 3
+/// Indicates if color depth is 121212
+#define ADL_COLORDEPTH_121212 4
+/// Indicates if color depth is 141414
+#define ADL_COLORDEPTH_141414 5
+/// Indicates if color depth is 161616
+#define ADL_COLORDEPTH_161616 6
+/// Indicates default value of color depth
+#define ADL_COLOR_DEPTH_DEF ADL_COLORDEPTH_888
+// @}
+
+
+/// \defgroup define_emulation_status
+/// These defines are the status of emulation
+// @{
+/// Indicates if real device is connected.
+#define ADL_EMUL_STATUS_REAL_DEVICE_CONNECTED 0x1
+/// Indicates if emulated device is presented.
+#define ADL_EMUL_STATUS_EMULATED_DEVICE_PRESENT 0x2
+/// Indicates if emulated device is used.
+#define ADL_EMUL_STATUS_EMULATED_DEVICE_USED  0x4
+/// In case when last active real/emulated device used (when persistence is enabled but no emulation enforced then persistence will use last connected/emulated device).
+#define ADL_EMUL_STATUS_LAST_ACTIVE_DEVICE_USED 0x8
+// @}
+
+/// \defgroup define_emulation_mode
+/// These defines are the modes of emulation
+// @{
+/// Indicates if no emulation is used
+#define ADL_EMUL_MODE_OFF 0
+/// Indicates if emulation is used when display connected
+#define ADL_EMUL_MODE_ON_CONNECTED 1
+/// Indicates if emulation is used when display dis connected
+#define ADL_EMUL_MODE_ON_DISCONNECTED 2
+/// Indicates if emulation is used always
+#define ADL_EMUL_MODE_ALWAYS 3
+// @}
+
+/// \defgroup define_emulation_query
+/// These defines are the modes of emulation
+// @{
+/// Indicates Data from real device
+#define ADL_QUERY_REAL_DATA 0
+/// Indicates Emulated data
+#define ADL_QUERY_EMULATED_DATA 1
+/// Indicates Data currently in use
+#define ADL_QUERY_CURRENT_DATA 2
+// @}
+
+/// \defgroup define_persistence_state
+/// These defines are the states of persistence
+// @{
+/// Indicates persistence is disabled
+#define ADL_EDID_PERSISTANCE_DISABLED 0
+/// Indicates persistence is enabled
+#define ADL_EDID_PERSISTANCE_ENABLED 1
+// @}
+
+/// \defgroup define_connector_types Connector Type
+/// defines for ADLConnectorInfo.iType
+// @{
+/// Indicates unknown Connector type
+#define ADL_CONNECTOR_TYPE_UNKNOWN                 0
+/// Indicates VGA Connector type
+#define ADL_CONNECTOR_TYPE_VGA                     1
+/// Indicates DVI-D Connector type
+#define ADL_CONNECTOR_TYPE_DVI_D                   2
+/// Indicates DVI-I Connector type
+#define ADL_CONNECTOR_TYPE_DVI_I                   3
+/// Indicates Active Dongle-NA Connector type
+#define ADL_CONNECTOR_TYPE_ATICVDONGLE_NA          4
+/// Indicates Active Dongle-JP Connector type
+#define ADL_CONNECTOR_TYPE_ATICVDONGLE_JP          5
+/// Indicates Active Dongle-NONI2C Connector type
+#define ADL_CONNECTOR_TYPE_ATICVDONGLE_NONI2C      6
+/// Indicates Active Dongle-NONI2C-D Connector type
+#define ADL_CONNECTOR_TYPE_ATICVDONGLE_NONI2C_D    7
+/// Indicates HDMI-Type A Connector type
+#define ADL_CONNECTOR_TYPE_HDMI_TYPE_A             8
+/// Indicates HDMI-Type B Connector type
+#define ADL_CONNECTOR_TYPE_HDMI_TYPE_B             9
+/// Indicates Display port Connector type
+#define ADL_CONNECTOR_TYPE_DISPLAYPORT             10
+/// Indicates EDP Connector type
+#define ADL_CONNECTOR_TYPE_EDP                     11
+/// Indicates MiniDP Connector type
+#define ADL_CONNECTOR_TYPE_MINI_DISPLAYPORT        12
+/// Indicates Virtual Connector type
+#define ADL_CONNECTOR_TYPE_VIRTUAL			       13
+// @}
+
+/// \defgroup define_freesync_usecase
+/// These defines are to specify use cases in which FreeSync should be enabled
+/// They are a bit mask. To specify FreeSync for more than one use case, the input value
+/// should be set to include multiple bits set
+// @{
+/// Indicates FreeSync is enabled for Static Screen case
+#define ADL_FREESYNC_USECASE_STATIC                 0x1
+/// Indicates FreeSync is enabled for Video use case
+#define ADL_FREESYNC_USECASE_VIDEO                  0x2
+/// Indicates FreeSync is enabled for Gaming use case
+#define ADL_FREESYNC_USECASE_GAMING                 0x4
+// @}
+
+/// \defgroup define_freesync_caps
+/// These defines are used to retrieve FreeSync display capabilities.
+/// GPU support flag also indicates whether the display is
+/// connected to a GPU that actually supports FreeSync
+// @{
+#define ADL_FREESYNC_CAP_SUPPORTED                      (1 << 0)
+#define ADL_FREESYNC_CAP_GPUSUPPORTED                   (1 << 1)
+#define ADL_FREESYNC_CAP_DISPLAYSUPPORTED               (1 << 2)
+#define ADL_FREESYNC_CAP_CURRENTMODESUPPORTED           (1 << 3)
+#define ADL_FREESYNC_CAP_NOCFXORCFXSUPPORTED            (1 << 4)
+#define ADL_FREESYNC_CAP_NOGENLOCKORGENLOCKSUPPORTED    (1 << 5)
+
+
+/// \defgroup define_MST_CommandLine_execute   
+// @{
+/// Indicates the MST command line for branch message if the bit is set. Otherwise, it is display message
+#define ADL_MST_COMMANDLINE_PATH_MSG                 0x1
+/// Indicates the MST command line to send message in broadcast way it the bit is set
+#define ADL_MST_COMMANDLINE_BROADCAST                  0x2
+ 
+// @}
+
+
+/// \defgroup define_Adapter_CloneTypes_Get  
+// @{
+/// Indicates there is crossGPU clone with non-AMD dispalys
+#define ADL_CROSSGPUDISPLAYCLONE_AMD_WITH_NONAMD                 0x1
+/// Indicates there is crossGPU clone
+#define ADL_CROSSGPUDISPLAYCLONE                  0x2
+
+// @}
+
+ 
 
 // End Bracket for Constants and Definitions. Add new groups ABOVE this line!
 

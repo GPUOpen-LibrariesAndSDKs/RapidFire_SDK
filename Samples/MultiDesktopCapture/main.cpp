@@ -42,7 +42,6 @@
 
 #include "GLWindow.h"
 #include "GLTexRenderer.h"
-#include "RapidFireServer.h"
 #include "RFWrapper.hpp"
 
 const RFWrapper& g_rfDll = RFWrapper::getInstance();

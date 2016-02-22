@@ -219,8 +219,12 @@ typedef struct ADLDDCInfo2
     int iPanelPixelFormat;
 /// Return EDID serial ID.
     int  ulSerialID;
+/// Return HDR Brightness Data
+    int ulMinLuminanceData;
+    int ulAvgLuminanceData;
+    int ulMaxLuminanceData;
 // Reserved for future use
-    int iReserved[26];
+    int iReserved[23];
 } ADLDDCInfo2, *LPADLDDCInfo2;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1621,6 +1625,22 @@ typedef struct ADLBezelOffsetSteppingSize
 } ADLBezelOffsetSteppingSize, *LPADLBezelOffsetSteppingSize;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing information about the overlap offset info for all the displays for each SLS mode.
+///
+/// This structure is used to store the no. of overlapped modes for each SLS Mode once user finishes the configuration from Overlap Widget
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLSLSOverlappedMode
+{
+	/// the SLS mode for which the overlap is configured
+	ADLMode SLSMode;
+	/// the number of target displays in SLS.
+	int iNumSLSTarget;
+    /// the first target array index in the target array
+	int iFirstTargetArrayIndex;
+}ADLSLSTargetOverlap, *LPADLSLSTargetOverlap;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 ///\brief Structure containing information about driver supported PowerExpress Config Caps
 ///
 /// This structure is used to store the driver supported PowerExpress Config Caps
@@ -1886,9 +1906,9 @@ typedef struct _ADLOD6StateInfo
 ////////////////////////////////////////////////////////////////////////////////////////////
 typedef struct _ADLOD6CurrentStatus
 {
-    /// Current engine clock
+    /// Current engine clock in 10 KHz.
     int 	iEngineClock;
-    /// Current memory clock
+    /// Current memory clock in 10 KHz.
     int 	iMemoryClock;
     /// Current GPU activity in percent.  This
     /// indicates how "busy" the GPU is.
@@ -2138,6 +2158,289 @@ typedef struct _ADLOD6MaxClockAdjust
     /// Reserved for future expansion of the structure.
     int iExtMask;
 } ADLOD6MaxClockAdjust;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing the Connector information
+///
+/// this structure is used to get the connector information like length, positions & etc.
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLConnectorInfo
+{
+	///index of the connector(0-based)
+	int iConnectorIndex;
+	///used for disply identification/ordering
+	int iConnectorId;
+	///index of the slot, 0-based index.
+	int iSlotIndex;
+	///Type of the connector. \ref define_connector_types
+	int iType;
+	///Position of the connector(in millimeters), from the right side of the slot.
+	int iOffset;
+	///Length of the connector(in millimeters).
+	int iLength;
+	
+} ADLConnectorInfo;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing the slot information
+///
+/// this structure is used to get the slot information like length of the slot, no of connectors on the slot & etc.
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLBracketSlotInfo
+{
+	///index of the slot, 0-based index.
+	int iSlotIndex;
+	///length of the slot(in millimeters).
+	int iLength;
+	///width of the slot(in millimeters).
+	int iWidth;
+} ADLBracketSlotInfo;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing MST branch information
+///
+/// this structure is used to store the MST branch information
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLMSTRad
+{
+	///depth of the link.
+	int iLinkNumber;
+	/// Relative address, address scheme starts from source side
+	char rad[ADL_MAX_RAD_LINK_COUNT];	
+} ADLMSTRad;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing port information
+///
+/// this structure is used to get the display or MST branch information
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLDevicePort
+{
+	///index of the connector.
+	int iConnectorIndex;
+	///Relative MST address. If MST RAD contains 0 it means DP or Root of the MST topology. For non DP connectors MST RAD is ignored.
+	ADLMSTRad aMSTRad;
+} ADLDevicePort;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing supported connection types and properties
+///
+/// this structure is used to get the supported connection types and supported properties of given connector
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLSupportedConnections
+{
+	///Bit vector of supported connections. Bitmask is defined in constants section. \ref define_connection_types
+	int iSupportedConnections;
+	///Array of bitvectors. Each bit vector represents supported properties for one connection type. Index of this array is connection type (bit number in mask).
+	int iSupportedProperties[ADL_MAX_CONNECTION_TYPES];
+} ADLSupportedConnections;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing connection state of the connector
+///
+/// this structure is used to get the current Emulation status and mode of the given connector
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLConnectionState
+{
+	///The value is bit vector. Each bit represents status. See masks constants for details. \ref define_emulation_status
+	int iEmulationStatus;
+	///It contains information about current emulation mode. See constants for details. \ref define_emulation_mode
+	int iEmulationMode;
+	///If connection is active it will contain display id, otherwise CWDDEDI_INVALID_DISPLAY_INDEX
+	int iDisplayIndex;
+} ADLConnectionState;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing connection properties information 
+///
+/// this structure is used to retrieve the properties of connection type
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLConnectionProperties
+{
+	//Bit vector. Represents actual properties. Supported properties for specific connection type. \ref define_connection_properties
+	int iValidProperties;
+	//Bitrate(in MHz). Could be used for MST branch, DP or DP active dongle. \ref define_linkrate_constants
+	int iBitrate;
+	//Number of lanes in DP connection. \ref define_lanecount_constants
+	int iNumberOfLanes;
+	//Color depth(in bits). \ref define_colordepth_constants
+	int iColorDepth;
+	//3D capabilities. It could be used for some dongles. For instance: alternate framepack. Value of this property is bit vector.
+	int iStereo3DCaps;
+	///Output Bandwidth. Could be used for MST branch, DP or DP Active dongle. \ref define_linkrate_constants
+	int iOutputBandwidth;
+} ADLConnectionProperties;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing connection information 
+///
+/// this structure is used to retrieve the data from driver which includes 
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLConnectionData
+{
+	///Connection type. based on the connection type either iNumberofPorts or IDataSize,EDIDdata is valid, \ref define_connection_types
+	int iConnectionType;
+	///Specifies the connection properties.
+	ADLConnectionProperties aConnectionProperties;
+	///Number of ports
+	int iNumberofPorts;
+	///Number of Active Connections
+	int iActiveConnections;
+	///actual size of EDID data block size.
+	int iDataSize;
+	///EDID Data
+	char EdidData[ADL_MAX_DISPLAY_EDID_DATA_SIZE];	
+} ADLConnectionData;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing information about an controller mode including Number of Connectors
+///
+/// This structure is used to store information of an controller mode
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLAdapterCapsX2
+{
+	/// AdapterID for this adapter
+	int iAdapterID;
+	/// Number of controllers for this adapter
+	int iNumControllers;
+	/// Number of displays for this adapter
+	int iNumDisplays;
+	/// Number of overlays for this adapter
+	int iNumOverlays;
+	/// Number of GLSyncConnectors
+	int iNumOfGLSyncConnectors;
+	/// The bit mask identifies the adapter caps
+	int iCapsMask;
+	/// The bit identifies the adapter caps \ref define_adapter_caps
+	int iCapsValue;
+	/// Number of Connectors for this adapter
+	int iNumConnectors;
+}ADLAdapterCapsX2;
+
+typedef enum _ADL_ERROR_RECORD_SEVERITY
+{
+    ADL_GLOBALLY_UNCORRECTED  = 1,
+    ADL_LOCALLY_UNCORRECTED   = 2,
+    ADL_DEFFERRED             = 3,
+    ADL_CORRECTED             = 4
+}ADL_ERROR_RECORD_SEVERITY;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing information about EDC Error Record
+///
+/// This structure is used to store EDC Error Record
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLErrorRecord
+{
+    // Severity of error
+    ADL_ERROR_RECORD_SEVERITY Severity;
+   
+    // Is the counter valid?
+    int  countValid;
+
+    // Counter value, if valid
+    unsigned int count;
+
+    // Is the location information valid?
+    int locationValid;
+
+    // Physical location of error
+    unsigned int CU; // CU number on which error occurred, if known
+    char StructureName[32]; // e.g. LDS, TCC, etc.
+    
+    // Time of error record creation (e.g. time of query, or time of poison interrupt)
+    char tiestamp[32];
+	
+    unsigned int padding[3];
+}ADLErrorRecord;
+
+typedef enum _ADL_EDC_BLOCK_ID
+{
+    ADL_EDC_BLOCK_ID_SQCIS = 1,
+    ADL_EDC_BLOCK_ID_SQCDS = 2,
+    ADL_EDC_BLOCK_ID_SGPR  = 3,
+    ADL_EDC_BLOCK_ID_VGPR  = 4,
+    ADL_EDC_BLOCK_ID_LDS   = 5,
+    ADL_EDC_BLOCK_ID_GDS   = 6,
+    ADL_EDC_BLOCK_ID_TCL1  = 7,
+    ADL_EDC_BLOCK_ID_TCL2  = 8
+}ADL_EDC_BLOCK_ID;
+
+typedef enum _ADL_ERROR_INJECTION_MODE
+{
+    ADL_ERROR_INJECTION_MODE_SINGLE      = 1,
+    ADL_ERROR_INJECTION_MODE_MULTIPLE    = 2
+}ADL_ERROR_INJECTION_MODE;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing information about EDC Error Injection
+///
+/// This structure is used to store EDC Error Injection
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLErrorInjection
+{
+    ADL_EDC_BLOCK_ID blockId;
+    ADL_ERROR_INJECTION_MODE errorInjectionMode;
+}ADLErrorInjection;;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing per display FreeSync capability information.
+///
+/// This structure is used to store the FreeSync capability of both the display and
+/// the GPU the display is connected to.
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLFreeSyncCap
+{
+    /// FreeSync capability flags. \ref define_freesync_caps
+    int iCaps;
+    /// Reports minimum FreeSync refresh rate supported by the display in micro hertz
+    int iMinRefreshRateInMicroHz;
+    /// Reports maximum FreeSync refresh rate supported by the display in micro hertz
+    int iMaxRefreshRateInMicroHz;
+    /// Reserved
+    int iReserved[5];
+} ADLFreeSyncCap;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+///\brief Structure containing information about Graphic Core 
+///
+/// This structure is used to get Graphic Core Info
+/// \nosubgrouping
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct ADLGraphicCoreInfo
+{
+    /// indicate the graphic core generation
+    int iGCGen;
+	
+    /// Total number of CUs. Valid for GCN (iGCGen == GCN)
+    int iNumCUs;
+
+    /// Number of processing elements per CU. Valid for GCN (iGCGen == GCN)
+    int iNumPEsPerCU;
+    
+    /// Total number of SIMDs. Valid for Pre GCN (iGCGen == Pre-GCN)
+    int iNumSIMDs;
+
+    /// Total number of ROPs. Valid for both GCN and Pre GCN 
+    int iNumROPs;
+
+    /// reserved for future use
+    int iReserved[11];
+}ADLGraphicCoreInfo;
+
 
 #endif /* ADL_STRUCTURES_H_ */
 
