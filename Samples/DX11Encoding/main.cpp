@@ -59,6 +59,7 @@ ID3D11DeviceContext*	g_pImmediateContext = nullptr;
 IDXGISwapChain*			g_pSwapChain = nullptr;
 ID3D11RenderTargetView* g_pRtv = nullptr;
 ID3D11DepthStencilView* g_pDsv = nullptr;
+D3D11_VIEWPORT          g_viewPort = {};
 ID3D11Texture2D*		g_pRTTextures[2] = { nullptr, nullptr };
 ID3D11RenderTargetView*	g_pRTEncoding[2] = { nullptr, nullptr };
 XMFLOAT4X4				g_viewMatrix;
@@ -133,7 +134,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
 
     RFProperties props[] = { RF_ENCODER,      static_cast<RFProperties>(RF_AMF),       // Use HW H.264 encoder
-                             RF_D3D11_DEVICE, reinterpret_cast<RFProperties>(g_pD3DDevice), // pass device and Swapchain to RF
+                             RF_D3D11_DEVICE, reinterpret_cast<RFProperties>(g_pD3DDevice), // pass device to RF
                              0 };
 
     // Create encoding session
@@ -364,6 +365,7 @@ bool Resize()
 
     if (g_pD3DDevice->CreateRenderTargetView(backBuffer, nullptr, &g_pRtv) != S_OK)
     {
+        SAFE_RELEASE(backBuffer);
         return false;
     }
     SAFE_RELEASE(backBuffer);
@@ -387,22 +389,18 @@ bool Resize()
 
     if (g_pD3DDevice->CreateDepthStencilView(depthStencil, nullptr, &g_pDsv) != S_OK)
     {
+        SAFE_RELEASE(depthStencil);
         return false;
     }
 
-    g_pImmediateContext->OMSetRenderTargets(1, &g_pRtv, g_pDsv);
-
     SAFE_RELEASE(depthStencil);
 
-    D3D11_VIEWPORT viewPort;
-    viewPort.TopLeftX = 0;
-    viewPort.TopLeftY = 0;
-    viewPort.Width    = static_cast<float>(g_stream_width);
-    viewPort.Height   = static_cast<float>(g_stream_height);
-    viewPort.MinDepth = 0.0f;
-    viewPort.MaxDepth = 1.0f;
-
-    g_pImmediateContext->RSSetViewports(1, &viewPort);
+    g_viewPort.TopLeftX = 0;
+    g_viewPort.TopLeftY = 0;
+    g_viewPort.Width    = static_cast<float>(g_stream_width);
+    g_viewPort.Height   = static_cast<float>(g_stream_height);
+    g_viewPort.MinDepth = 0.0f;
+    g_viewPort.MaxDepth = 1.0f;
 
     textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
@@ -470,6 +468,7 @@ void Draw(unsigned int rtIdx)
     FLOAT clearColor[4] = { 76.0f / 255.0f, 76.0f / 255.0f, 127.0f / 255.0f, 1.0f };
 
     // draw into rendertarget with id rtIdx
+    g_pImmediateContext->RSSetViewports(1, &g_viewPort);
     g_pImmediateContext->OMSetRenderTargets(1, &g_pRTEncoding[rtIdx], g_pDsv);
     g_pImmediateContext->ClearRenderTargetView(g_pRTEncoding[rtIdx], clearColor);
     g_pImmediateContext->ClearDepthStencilView(g_pDsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -491,8 +490,6 @@ void Draw(unsigned int rtIdx)
     g_pImmediateContext->CopySubresourceRegion(dst, 0, 0, 0, 0, g_pRTTextures[rtIdx], 0, &resourceSize);
 
     SAFE_RELEASE(dst);
-
-    g_pImmediateContext->OMSetRenderTargets(1, &g_pRtv, g_pDsv);
 
     g_pSwapChain->Present(1, 0);
 }
