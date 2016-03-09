@@ -44,6 +44,8 @@ public:
     void    releaseContext() const;
 
     void    resize(unsigned int w, unsigned int h);
+    void    minimized()                  { m_bMinimized = true; }
+    void    restored()                   { m_bMinimized = false; }
 
     operator bool()     const            { return m_bWindowCreated; }
 
@@ -53,6 +55,7 @@ public:
 
     unsigned int getWidth()  const       { return m_uiWidth; }
     unsigned int getHeight() const       { return m_uiHeight; }
+    bool isMinimized() const             { return m_bMinimized; }
 
 private:
 
@@ -66,6 +69,7 @@ private:
 
     bool                    m_bWindowCreated;
     bool                    m_bFullScreen;
+    bool                    m_bMinimized;
     unsigned int            m_uiWidth;
     unsigned int            m_uiHeight;
     unsigned int const      m_uiPosX;

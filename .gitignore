@@ -30,3 +30,4 @@ ipch/
 # Files produced by RapidFire
 *.log
 RGBA8_frame_*.rgb
+*.h264

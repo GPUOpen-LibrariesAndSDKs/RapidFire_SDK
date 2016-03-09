@@ -128,18 +128,19 @@ void RapidFireThread(unsigned int uiDisplayId, LONG wndPosX, LONG wndPosY, DWORD
             break;
         }
 
-        glViewport(0, 0, win.getWidth(), win.getHeight());
+        if (win.isMinimized())
+        {
+            Sleep(100);
+            continue;
+        }
 
-        rfStatus = g_rfDll.rfFunc.rfEncodeFrame(rfSession, uiBufferIndex);
+        g_rfDll.rfFunc.rfEncodeFrame(rfSession, uiBufferIndex);
+
+        rfStatus = g_rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiTexSize, &pPixels);
 
         if (rfStatus == RF_STATUS_OK)
         {
-            rfStatus = g_rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiTexSize, &pPixels);
-
-            if (rfStatus == RF_STATUS_OK)
-            {
-                renderer.updateTexture(static_cast<char*>(pPixels));
-            }
+            renderer.updateTexture(static_cast<char*>(pPixels));
         }
 
         renderer.draw();

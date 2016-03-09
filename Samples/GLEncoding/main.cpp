@@ -120,7 +120,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
       
     // Create encoder using the quality preset
-    rfStatus = rfCreateEncoder(rfSession, g_stream_width, g_stream_height, RF_PRESET_QUALITY);
+    rfStatus = rfCreateEncoder(rfSession, g_stream_width, g_stream_height, RF_PRESET_BALANCED);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -185,7 +185,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             break;
         }
 
-        do 
+        do
         {
             // rfEncode might fail if the queue is full.
             // In this case we need to wait until the reader thread has called rfGetEncodedFrame and removed a frame from the queue.
@@ -198,7 +198,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             }
 
         } while (rfStatus == RF_STATUS_QUEUE_FULL);
-
 
         // Render scene to FBO
         fbo[uiIndex].bind();

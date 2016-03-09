@@ -79,15 +79,14 @@ int main(int argc, char** argv)
     cout << "   Stream width  " << uiStreamWidth << endl;
     cout << "   Stream height " << uiStreamHeight << endl;
 
-    // create encoder and define the size of the stream. RF will scale the desktop to the screen size
+    // Create encoder and define the size of the stream.
+    // RF will scale the desktop to the screen size.
     rfStatus = rfCreateEncoder(rfSession, uiStreamWidth, uiStreamHeight, RF_PRESET_BALANCED);
 
     if (rfStatus != RF_STATUS_OK)
     {
         cerr << "Failed to create HW encoder!" << endl;
-
         rfDeleteEncodeSession(&rfSession);
-
         return -1;
     }
 
@@ -95,7 +94,8 @@ int main(int argc, char** argv)
 
     fstream outFile;
 
-    // Open a file to which the H.264 frames are dumped. The file can be displayed using ffplay.
+    // Open a file to which the H.264 frames are dumped.
+    // The file can be displayed using ffplay.
     outFile.open("./Desktop.h264", fstream::out | fstream::trunc | fstream::binary);
 
     unsigned int uiBuffer        = 0;

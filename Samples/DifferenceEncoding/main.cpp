@@ -140,17 +140,20 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             break;
         }
 
-        rfStatus = rfDll.rfFunc.rfEncodeFrame(rfSession, uiIndex);
-
-        if (rfStatus == RF_STATUS_OK)
+        if (win.isMinimized())
         {
-            bool success = (RF_STATUS_OK == rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource));
-            success &= (RF_STATUS_OK == rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference));
+            Sleep(100);
+            continue;
+        }
 
-            if (success)
-            {
-                renderer.updateTexture(static_cast<char*>(pSource), static_cast<char*>(pDifference));
-            }
+        rfDll.rfFunc.rfEncodeFrame(rfSession, uiIndex);
+
+        bool success = (RF_STATUS_OK == rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource));
+        success &= (RF_STATUS_OK == rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference));
+
+        if (success)
+        {
+            renderer.updateTexture(static_cast<char*>(pSource), static_cast<char*>(pDifference));
         }
 
         renderer.draw();

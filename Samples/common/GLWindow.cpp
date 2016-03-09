@@ -45,6 +45,7 @@ GLWindow::GLWindow(const std::string& strWindowName, unsigned int uiWidth, unsig
     , m_uiPosY(uiPosY)
     , m_bFullScreen(bFullScreen)
     , m_bWindowCreated(false)
+    , m_bMinimized(false)
     , m_hDC(NULL)
     , m_hWND(NULL)
     , m_hGLRC(NULL)
@@ -61,6 +62,7 @@ GLWindow::GLWindow(GLWindow&& other)
     , m_uiPosY(other.m_uiPosY)
     , m_bFullScreen(other.m_bFullScreen)
     , m_bWindowCreated(other.m_bWindowCreated)
+    , m_bMinimized(other.m_bMinimized)
     , m_hWND(other.m_hWND)
     , m_hDC(other.m_hDC)
     , m_hGLRC(other.m_hGLRC)
@@ -284,6 +286,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_SIZE:
             pWin->resize(LOWORD(lParam), HIWORD(lParam));
             glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
+            if (wParam == SIZE_MINIMIZED)
+            {
+                pWin->minimized();
+            }
+            else
+            {
+                pWin->restored();
+            }
             return 0;
 
         case WM_DESTROY:

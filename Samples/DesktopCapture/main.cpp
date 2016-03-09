@@ -55,6 +55,7 @@ int main(int argc, char** argv)
     RFProperties props[] = { RF_ENCODER,                    static_cast<RFProperties>(RF_IDENTITY),
                              RF_DESKTOP,                    static_cast<RFProperties>(1),
                              RF_DESKTOP_BLOCK_UNTIL_CHANGE, static_cast<RFProperties>(1),
+                             RF_FLIP_SOURCE,                static_cast<RFProperties>(1),
                              0 };
 
     rfStatus = rfCreateEncodeSession(&rfSession, props);
@@ -77,7 +78,7 @@ int main(int argc, char** argv)
     cout << "   Stream width  " << uiStreamWidth << endl;
     cout << "   Stream height " << uiStreamHeight << endl;
 
-    // create identity encoder and request ARGB8 format.
+    // create identity encoder and set format to RGBA8.
     RFProperties encoderProps[] = { RF_ENCODER_FORMAT, RF_RGBA8, 0 };
 
     rfStatus = rfCreateEncoder2(rfSession, uiStreamWidth, uiStreamHeight, encoderProps);
@@ -85,9 +86,7 @@ int main(int argc, char** argv)
     if (rfStatus != RF_STATUS_OK)
     {
         cerr << "Failed to create identity encoder!" << endl;
-
         rfDeleteEncodeSession(&rfSession);
-
         return -1;
     }
 
@@ -114,7 +113,7 @@ int main(int argc, char** argv)
 
                     cout << "\nDumping " << path.str();
 
-                    // export argb images to .rgb files that can be viewed with gimp
+                    // export rgba images to .rgb files that can be viewed with gimp
                     writeRGBAimage(static_cast<unsigned char*>(pBitStreamdata), uiStreamWidth, uiStreamHeight, path.str().c_str());
                 }
             }

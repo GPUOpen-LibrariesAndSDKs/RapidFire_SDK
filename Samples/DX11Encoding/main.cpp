@@ -23,8 +23,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 // DX11Encoding shows how to use RapidFire to create an H264 encoded stream from a 
-// DX11 Frame-buffer.
-// First a RF session is created passing the rendering context. The session is configured 
+// DX11 texture.
+// First a RF session is created passing the DirectX 11 device. The session is configured 
 // to use the AMF encoder (HW encoding). The rendertargets that are used by the application are
 // registered, now the application can render to those rendertargets and encodeFrame will use
 // them as input for the encoder and return a H264 frame that is dumped to a file.
@@ -148,7 +148,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
     unsigned int target_fps = 60;
     RFProperties encoder_props[] = { RF_ENCODER_FORMAT,               static_cast<RFProperties>(RF_NV12),
-                                     RF_ENCODER_QUALITY_PRESET,       static_cast<RFProperties>(RF_PRESET_QUALITY),
+                                     RF_ENCODER_QUALITY_PRESET,       static_cast<RFProperties>(RF_PRESET_BALANCED),
                                      RF_ENCODER_LEVEL,                static_cast<RFProperties>(42),
                                      RF_ENCODER_BITRATE,              static_cast<RFProperties>(20000000),
                                      RF_ENCODER_MIN_QP,               static_cast<RFProperties>(18),
@@ -325,7 +325,14 @@ bool CreateDeviceAndSwapChain()
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
     swapchainDesc.Windowed = TRUE;
-    hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevel, 1, D3D11_SDK_VERSION, &swapchainDesc, &g_pSwapChain, &g_pD3DDevice, nullptr, &g_pImmediateContext);
+
+#ifdef _DEBUG
+    DWORD deviceFlags = D3D11_CREATE_DEVICE_DEBUG;
+#else
+    DWORD deviceFlags = NULL;
+#endif
+
+    hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, &featureLevel, 1, D3D11_SDK_VERSION, &swapchainDesc, &g_pSwapChain, &g_pD3DDevice, nullptr, &g_pImmediateContext);
     if (hr != S_OK)
     {
         return false;

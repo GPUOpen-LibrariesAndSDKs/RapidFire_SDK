@@ -115,6 +115,12 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             break;
         }
 
+        if (win.isMinimized())
+        {
+            Sleep(100);
+            continue;
+        }
+
         if (rfGetMouseData(rfSession, false, &md) == RF_STATUS_OK)
         {
             // Typically the mouse pointer is 32x32. The texture that was created is 32x32 as well.
@@ -122,16 +128,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             renderer.updateMouseTexture(static_cast<const unsigned char*>(md.color.pPixels), md.color.uiWidth, md.color.uiHeight, static_cast<const unsigned char*>(md.mask.pPixels), md.mask.uiWidth, md.mask.uiHeight);
         }
 
-        rfStatus = rfEncodeFrame(rfSession, uiIndex);
+        rfEncodeFrame(rfSession, uiIndex);
+
+        rfStatus = rfGetEncodedFrame(rfSession, &uiSize, &pDesktop);
 
         if (rfStatus == RF_STATUS_OK)
         {
-            rfStatus = rfGetEncodedFrame(rfSession, &uiSize, &pDesktop);
-
-            if (rfStatus == RF_STATUS_OK)
-            {
-                renderer.updateDesktopTexture(static_cast<char*>(pDesktop));
-            }
+            renderer.updateDesktopTexture(static_cast<char*>(pDesktop));
         }
 
         renderer.draw();
