@@ -30,8 +30,6 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#include <atomic>
-#include <mutex>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -47,7 +45,6 @@
 const RFWrapper& g_rfDll = RFWrapper::getInstance();
 
 bool             g_bDone = false;
-std::atomic<int> g_threadsTerminated = 0;
 
 void RapidFireThread(unsigned int uiDisplayId, LONG wndPosX, LONG wndPosY, DWORD screenWidth, DWORD screenHeight)
 {
@@ -56,7 +53,6 @@ void RapidFireThread(unsigned int uiDisplayId, LONG wndPosX, LONG wndPosY, DWORD
 
     RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_IDENTITY),
                              RF_DESKTOP_DSP_ID,           static_cast<RFProperties>(uiDisplayId),
-                             RF_DESKTOP_UPDATE_ON_CHANGE, static_cast<RFProperties>(1),
                              RF_FLIP_SOURCE,              static_cast<RFProperties>(1),
                              RF_ASYNC_SOURCE_COPY,        static_cast<RFProperties>(1),
                              0 };
