@@ -564,6 +564,8 @@ bool RFEncoderSettings::createParameterMap()
     Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
     Entry.PresetValue[RF_PRESET_QUALITY].bValue   =  false; 
 
+    m_ParameterMap[RF_ENCODER_FORCE_INTRA_REFRESH] = Entry;
+
 
     ////////////////////////////////////////////////////////////////////////////////////
     // Force I frame (pre Submission)
