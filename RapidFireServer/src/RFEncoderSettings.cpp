@@ -494,7 +494,7 @@ bool RFEncoderSettings::createParameterMap()
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
     Entry.strParameterName                        = "Quality preset";
-    Entry.Value.uiValue                           =  0;    
+    Entry.Value.uiValue                           =  1;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  1;       // Speed
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1;       // Speed
     Entry.PresetValue[RF_PRESET_QUALITY].uiValue  =  0;       // Balanced

@@ -146,17 +146,19 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         return -1;
     }
 
-    unsigned int target_fps = 60;
+    // Set properties to quality preset with 60fps for rfCreateEncoder2
     RFProperties encoder_props[] = { RF_ENCODER_FORMAT,               static_cast<RFProperties>(RF_NV12),
-                                     RF_ENCODER_QUALITY_PRESET,       static_cast<RFProperties>(RF_PRESET_BALANCED),
-                                     RF_ENCODER_LEVEL,                static_cast<RFProperties>(42),
                                      RF_ENCODER_BITRATE,              static_cast<RFProperties>(20000000),
+                                     RF_ENCODER_PEAK_BITRATE,         static_cast<RFProperties>(20000000),
+                                     RF_ENCODER_RATE_CONTROL_METHOD,  static_cast<RFProperties>(0),
                                      RF_ENCODER_MIN_QP,               static_cast<RFProperties>(18),
-                                     RF_ENCODER_MAX_QP,               static_cast<RFProperties>(51),
-                                     RF_ENCODER_GOP_SIZE,             static_cast<RFProperties>(target_fps),
-                                     RF_ENCODER_FRAME_RATE,           static_cast<RFProperties>(target_fps),
-                                     RF_ENCODER_FRAME_RATE_DEN,       static_cast<RFProperties>(1),
-                                     RF_ENCODER_NUM_SLICES_PER_FRAME, static_cast<RFProperties>(1),
+                                     RF_ENCODER_FRAME_RATE,           static_cast<RFProperties>(60),
+                                     RF_ENCODER_VBV_BUFFER_SIZE,      static_cast<RFProperties>(20000000),
+                                     RF_ENCODER_ENFORCE_HRD,          static_cast<RFProperties>(false),
+                                     RF_ENCODER_IDR_PERIOD,           static_cast<RFProperties>(30),
+                                     RF_ENCODER_INTRA_REFRESH_NUM_MB, static_cast<RFProperties>(0),
+                                     RF_ENCODER_DEBLOCKING_FILTER,    static_cast<RFProperties>(true),
+                                     RF_ENCODER_QUALITY_PRESET,       static_cast<RFProperties>(2),
                                      0 };
 
     rfStatus = rfCreateEncoder2(rfSession, g_stream_width, g_stream_height, encoder_props);
