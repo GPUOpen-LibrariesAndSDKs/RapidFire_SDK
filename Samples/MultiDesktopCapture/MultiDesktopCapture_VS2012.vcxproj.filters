@@ -24,9 +24,6 @@
     <ClCompile Include="..\common\GLShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\external\glew\glew.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\GLTexRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

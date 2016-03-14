@@ -45,9 +45,6 @@
     <ClCompile Include="src\RFUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\external\glew\glew.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\RFEncoderAMF.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

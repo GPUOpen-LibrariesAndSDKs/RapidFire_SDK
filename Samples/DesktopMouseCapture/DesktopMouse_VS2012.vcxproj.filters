@@ -27,9 +27,6 @@
     <ClCompile Include="..\common\GLWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\external\glew\glew.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLDesktopRenderer.h">

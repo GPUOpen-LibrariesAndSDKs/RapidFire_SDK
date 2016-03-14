@@ -94,13 +94,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration);../../external/GLEW/lib/$(Configuration)/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32sd.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -114,13 +114,13 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration);../../external/GLEW/lib/$(Configuration)/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32sd.lib;RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -136,15 +136,15 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration);../../external/GLEW/lib/$(Configuration)/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -160,15 +160,15 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFireServer/lib/$(PlatformName)/$(Configuration);../../external/GLEW/lib/$(Configuration)/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -176,7 +176,6 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\external\glew\glew.c" />
     <ClCompile Include="..\common\GLShader.cpp" />
     <ClCompile Include="..\common\GLTexRenderer.cpp" />
     <ClCompile Include="..\common\GLWindow.cpp" />
