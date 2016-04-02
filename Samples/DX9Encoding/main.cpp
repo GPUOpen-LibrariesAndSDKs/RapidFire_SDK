@@ -239,8 +239,8 @@ bool OpenWindow(LPCSTR cClassName_, LPCSTR cWindowName_)
 
 struct Vertex
 {
-    FLOAT X, Y, Z, RHW;
-    DWORD COLOR;
+    float x, y, z, w;
+    DWORD color;
 };
 
 
@@ -254,15 +254,15 @@ bool InitD3D9(HWND hWnd)
         return false;
     }
 
-    D3DPRESENT_PARAMETERS d3dpp = {};
-    d3dpp.Windowed = TRUE;
-    d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    d3dpp.hDeviceWindow = hWnd;
-    d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
-    d3dpp.BackBufferWidth = g_stream_width;
-    d3dpp.BackBufferHeight = g_stream_height;
+    D3DPRESENT_PARAMETERS d3DPresentParams = {};
+    d3DPresentParams.BackBufferFormat = D3DFMT_X8R8G8B8;
+    d3DPresentParams.BackBufferWidth = g_stream_width;
+    d3DPresentParams.BackBufferHeight = g_stream_height;
+    d3DPresentParams.hDeviceWindow = hWnd;
+    d3DPresentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    d3DPresentParams.Windowed = TRUE;
 
-    hr = g_pD3D9Ex->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, nullptr, &g_pD3DDevice);
+    hr = g_pD3D9Ex->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3DPresentParams, nullptr, &g_pD3DDevice);
     if (hr != S_OK)
     {
         return false;
@@ -288,9 +288,9 @@ bool InitD3D9(HWND hWnd)
 
     Vertex vertices[] =
     {
-        { 400.0f,  62.5f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 0, 255), },
-        { 650.0f, 500.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), },
-        { 150.0f, 500.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(255, 0, 0), },
+        { 640.0f,  50.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(255, 0, 0), },
+        { 990.0f, 670.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), },
+        { 290.0f, 670.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 0, 255), },
     };
 
     hr = g_pD3DDevice->CreateVertexBuffer(3 * sizeof(Vertex), 0, D3DFVF_XYZRHW | D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &g_pVBuffer, nullptr);
