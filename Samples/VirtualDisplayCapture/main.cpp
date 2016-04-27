@@ -47,6 +47,7 @@
 
 typedef int(*ADL_MAIN_CONTROL_CREATE) (ADL_MAIN_MALLOC_CALLBACK, int);
 typedef int(*ADL_MAIN_CONTROL_DESTROY) ();
+typedef int(*ADL_DISPLAY_POSSIBLEMODE_GET) (int, int*, ADLMode**);
 typedef int(*ADL_DISPLAY_MODES_GET) (int, int, int*, ADLMode**);
 typedef int(*ADL_DISPLAY_MODES_SET) (int, int, int, ADLMode*);
 typedef int(*ADL_ADAPTER_NUMBEROFADAPTERS_GET) (int*);
@@ -62,6 +63,7 @@ HINSTANCE hADLDll;
 
 ADL_MAIN_CONTROL_CREATE                ADL_Main_Control_Create = NULL;
 ADL_MAIN_CONTROL_DESTROY               ADL_Main_Control_Destroy = NULL;
+ADL_DISPLAY_POSSIBLEMODE_GET           ADL_Display_PossibleMode_Get = NULL;
 ADL_DISPLAY_MODES_SET                  ADL_Display_Modes_Set = NULL;
 ADL_DISPLAY_MODES_GET                  ADL_Display_Modes_Get = NULL;
 ADL_ADAPTER_NUMBEROFADAPTERS_GET       ADL_Adapter_NumberOfAdapters_Get = NULL;
@@ -233,27 +235,48 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
                 // Set the resolution and refresh rate of the virtual display
                 int iNumModes;
-                LPADLMode lpADLMode;
-                if (ADL_OK != ADL_Display_Modes_Get(iAdapterIndex, iDisplayIndex, &iNumModes, &lpADLMode))
+                LPADLMode lpADLSupportedModes;
+
+                if (ADL_OK != ADL_Display_PossibleMode_Get(iAdapterIndex, &iNumModes, &lpADLSupportedModes))
                 {
-                    MessageBox(NULL, "ADL_Display_Modes_Get failed!", "ADL Error", MB_ICONERROR | MB_OK);
+                    MessageBox(NULL, "ADL_Display_PossibleMode_Get failed!", "ADL Error", MB_ICONERROR | MB_OK);
                     removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
                     return -1;
                 }
 
-                lpADLMode->iXRes = g_uiVirtualDisplayWidth;
-                lpADLMode->iYRes = g_uiVirtualDisplayHeight;
-                lpADLMode->fRefreshRate = g_fRefreshRate;
+                int iSelectedMode = 0;
+                for (; iSelectedMode < iNumModes; ++iSelectedMode)
+                {
+                    if (lpADLSupportedModes[iSelectedMode].iXRes == g_uiVirtualDisplayWidth && 
+                        lpADLSupportedModes[iSelectedMode].iYRes == g_uiVirtualDisplayHeight &&
+                        lpADLSupportedModes[iSelectedMode].fRefreshRate == g_fRefreshRate &&
+                        lpADLSupportedModes[iSelectedMode].iColourDepth == 32)
+                    {
+                        lpADLModes[iMode].iXRes = g_uiVirtualDisplayWidth;
+                        lpADLModes[iMode].iYRes = g_uiVirtualDisplayHeight;
+                        lpADLModes[iMode].fRefreshRate = g_fRefreshRate;
+                        lpADLModes[iMode].iColourDepth = 32;
+                        break;
+                    }
+                }
+                
+                if (iSelectedMode == iNumModes)
+                {
+                    MessageBox(NULL, "Requested mode is not supported for the virtual display!", "ADL Error", MB_ICONERROR | MB_OK);
+                    removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
+                    return -1;
+                }
 
-                if (ADL_OK != ADL_Display_Modes_Set(iAdapterIndex, iDisplayIndex, 1, lpADLMode))
+                if (ADL_OK != ADL_Display_Modes_Set(iAdapterIndex, iDisplayIndex, 1, &lpADLModes[iMode]))
                 {
                     MessageBox(NULL, "ADL_Display_Modes_Set failed!", "ADL Error", MB_ICONERROR | MB_OK);
                     removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
                     return -1;
                 }
 
-                ADL_Main_Memory_Free(reinterpret_cast<void**>(&lpADLMode));
+                ADL_Main_Memory_Free(reinterpret_cast<void**>(&lpADLSupportedModes));
             }
+
             break;
         }
     }
@@ -399,6 +422,7 @@ bool InitializeADL()
     {
         ADL_Main_Control_Create = (ADL_MAIN_CONTROL_CREATE)GetProcAddress(hADLDll, "ADL_Main_Control_Create");
         ADL_Main_Control_Destroy = (ADL_MAIN_CONTROL_DESTROY)GetProcAddress(hADLDll, "ADL_Main_Control_Destroy");
+        ADL_Display_PossibleMode_Get = (ADL_DISPLAY_POSSIBLEMODE_GET)GetProcAddress(hADLDll, "ADL_Display_PossibleMode_Get");
         ADL_Display_Modes_Get = (ADL_DISPLAY_MODES_GET)GetProcAddress(hADLDll, "ADL_Display_Modes_Get");
         ADL_Display_Modes_Set = (ADL_DISPLAY_MODES_SET)GetProcAddress(hADLDll, "ADL_Display_Modes_Set");
         ADL_Adapter_NumberOfAdapters_Get = (ADL_ADAPTER_NUMBEROFADAPTERS_GET)GetProcAddress(hADLDll, "ADL_Adapter_NumberOfAdapters_Get");
@@ -411,6 +435,7 @@ bool InitializeADL()
         ADL_Adapter_ConnectionData_Remove = (ADL_ADAPTER_CONNECTIONDATA_REMOVE)GetProcAddress(hADLDll, "ADL_Adapter_ConnectionData_Remove");
         if (NULL == ADL_Main_Control_Create ||
             NULL == ADL_Main_Control_Destroy||
+            NULL == ADL_Display_PossibleMode_Get ||
             NULL == ADL_Display_Modes_Get ||
             NULL == ADL_Display_Modes_Set ||
             NULL == ADL_Adapter_NumberOfAdapters_Get ||
