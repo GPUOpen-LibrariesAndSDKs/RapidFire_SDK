@@ -54,6 +54,7 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder)
         // Add all know parameters to the map.
         m_ParameterMap.addParameter(RF_DESKTOP, RFParameterAttr("RF_DESKTOP", RF_PARAMETER_UINT, 0));
         m_ParameterMap.addParameter(RF_DESKTOP_DSP_ID, RFParameterAttr("RF_DESKTOP_DSP_ID", RF_PARAMETER_UINT, 0));
+        m_ParameterMap.addParameter(RF_DESKTOP_INTERNAL_DSP_ID, RFParameterAttr("RF_DESKTOP_INTERNAL_DSP_ID", RF_PARAMETER_UINT, UINT_MAX));
         m_ParameterMap.addParameter(RF_DESKTOP_BLOCK_UNTIL_CHANGE, RFParameterAttr("RF_DESKTOP_BLOCK_UNTIL_CHANGE", RF_PARAMETER_BOOL, 0));
         m_ParameterMap.addParameter(RF_DESKTOP_UPDATE_ON_CHANGE, RFParameterAttr("RF_DESKTOP_UPDATE_ON_CHANGE", RF_PARAMETER_BOOL, 0));
         m_ParameterMap.addParameter(RF_MOUSE_DATA, RFParameterAttr("RF_MOUSE_DATA", RF_PARAMETER_BOOL, 0));
@@ -116,11 +117,13 @@ RFStatus RFDOPPSession::createContextFromGfx()
 
     unsigned int uiCCCDesktopId = 0;
     unsigned int uiWinDisplayId = 0;
+    unsigned int uiInternalDisplayId = UINT_MAX;
 
     // The application can either specify a desktop or a display. The factory will make sure that only 
     // one of the two values is set.
     m_ParameterMap.getParameterValue(RF_DESKTOP, uiCCCDesktopId);
     m_ParameterMap.getParameterValue(RF_DESKTOP_DSP_ID, uiWinDisplayId);
+    m_ParameterMap.getParameterValue(RF_DESKTOP_INTERNAL_DSP_ID, uiInternalDisplayId);
 
     // Application defined a windows display ID. Check if the DisplayManager knows this ID and
     // get corresponding desktop ID.
@@ -147,6 +150,20 @@ RFStatus RFDOPPSession::createContextFromGfx()
             m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, oss.str());
             return RF_STATUS_INVALID_DESKTOP_ID;
         }
+    }
+    else if (uiInternalDisplayId < UINT_MAX)
+    {
+        if (!dpManager.checkInternalDisplayID(uiInternalDisplayId))
+        {
+            std::stringstream oss;
+
+            oss << "[DOPP Create context] " << uiInternalDisplayId << " is an invalid Display ID";
+
+            m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, oss.str());
+            return RF_STATUS_INVALID_DESKTOP_ID;
+        }
+
+        m_uiDisplayId = uiInternalDisplayId;
     }
     else
     {

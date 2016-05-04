@@ -319,6 +319,20 @@ bool DisplayManager::getDisplayIdFromCCCID(unsigned int uiCCCDspIdId, unsigned i
 }
 
 
+bool DisplayManager::checkInternalDisplayID(unsigned int uiInternalDspId) const
+{
+    for (const auto& d : m_Displays)
+    {
+        if (d->uiDisplayId == uiInternalDspId)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 unsigned int DisplayManager::getPrimaryDisplay() const
 {
     for (const auto& d : m_Displays)

@@ -291,7 +291,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
 
     RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_IDENTITY),
-                             RF_DESKTOP,                  static_cast<RFProperties>(uiWindowsDisplayId),
+                             RF_DESKTOP_DSP_ID,           static_cast<RFProperties>(uiWindowsDisplayId),
                              RF_FLIP_SOURCE,              static_cast<RFProperties>(1),
                              RF_ASYNC_SOURCE_COPY,        static_cast<RFProperties>(1),
                              0 };

@@ -122,6 +122,7 @@ enum RFSessionParams
     RF_ENCODER                        = 0x1014,
     RF_ENCODER_BLOCKING_READ          = 0x1015,
     RF_MOUSE_DATA                     = 0x1016,
+    RF_DESKTOP_INTERNAL_DSP_ID        = 0x1017,
 };
 
 

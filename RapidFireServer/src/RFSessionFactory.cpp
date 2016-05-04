@@ -58,6 +58,7 @@ RFStatus createRFSession(RFSession** pSession, const RFProperties* properties)
 
     unsigned int            uiDesktop = 0;
     unsigned int            uiDisplay = 0;
+    unsigned int            uiInternalDisplayId = UINT_MAX;
 
     RFEncoderID             rfEncoder = RF_ENCODER_UNKNOWN;
 
@@ -113,6 +114,10 @@ RFStatus createRFSession(RFSession** pSession, const RFProperties* properties)
                 uiDisplay = static_cast<unsigned int>(p->ptr);
                 break;
 
+            case RF_DESKTOP_INTERNAL_DSP_ID:
+                uiInternalDisplayId = static_cast<unsigned int>(p->ptr);
+                break;
+
             default:
                 parameters[p->name] = p->ptr;
         }
@@ -129,34 +134,39 @@ RFStatus createRFSession(RFSession** pSession, const RFProperties* properties)
     try
     {
         // Make sure we have a valid session description
-        if (hDC && hGLRC && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr && uiDesktop == 0 && uiDisplay == 0)
+        if (hDC && hGLRC && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr && uiDesktop == 0 && uiDisplay == 0 && uiInternalDisplayId == UINT_MAX)
         {
             // GL Session
             *pSession = new RFGLSession(hDC, hGLRC, rfEncoder);
         }
-        else if (pDX9 && hDC == NULL && hGLRC == NULL && pDX9Ex == nullptr && pDX11 == nullptr && uiDesktop == 0 && uiDisplay == 0)
+        else if (pDX9 && hDC == NULL && hGLRC == NULL && pDX9Ex == nullptr && pDX11 == nullptr && uiDesktop == 0 && uiDisplay == 0 && uiInternalDisplayId == UINT_MAX)
         {
             // DX9 Session
             *pSession = new RFDX9Session(pDX9, rfEncoder);
         }
-        else if (pDX9Ex && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX11 == nullptr && uiDesktop == 0 && uiDisplay == 0)
+        else if (pDX9Ex && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX11 == nullptr && uiDesktop == 0 && uiDisplay == 0 && uiInternalDisplayId == UINT_MAX)
         {
             // DX9 Ex Session
             *pSession = new RFDX9Session(pDX9Ex, rfEncoder);
         }
-        else if (pDX11 && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && uiDesktop == 0 && uiDisplay == 0)
+        else if (pDX11 && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && uiDesktop == 0 && uiDisplay == 0 && uiInternalDisplayId == UINT_MAX)
         {
             // DX11 Session
             *pSession = new RFDX11Session(pDX11, rfEncoder);
         }
-        else if (uiDesktop > 0 && uiDisplay == 0 && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
+        else if (uiDesktop > 0 && uiDisplay == 0  && uiInternalDisplayId == UINT_MAX && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
         {
             // Desktop session based on Desktop ID
             *pSession = new RFDOPPSession(rfEncoder);
         }
-        else if (uiDisplay > 0 && uiDesktop == 0 && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
+        else if (uiDisplay > 0 && uiDesktop == 0  && uiInternalDisplayId == UINT_MAX && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
         {
-            // Desktop session based on Display ID
+            // Desktop session based on windows Display ID
+            *pSession = new RFDOPPSession(rfEncoder);
+        }
+        else if (uiInternalDisplayId < UINT_MAX && uiDisplay == 0 && uiDesktop == 0 && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
+        {
+            // Desktop session based on internal Display ID
             *pSession = new RFDOPPSession(rfEncoder);
         }
     }

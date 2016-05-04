@@ -62,6 +62,9 @@ public:
     // Writes the index of the display that has the CCC ID uiCCCDspId into uiDspId
     bool            getDisplayIdFromCCCID(unsigned int uiCCCDspId, unsigned int& uiDspId) const;
 
+    // Checks that the value passes as internal display ID is a valid display ID
+    bool            checkInternalDisplayID(unsigned int uiInternalDspId) const;
+
     // returns the display id of the primary display.
     unsigned int    getPrimaryDisplay() const;
 
