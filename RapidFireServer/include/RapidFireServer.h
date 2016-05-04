@@ -25,6 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
+* * File Version 1.1.0.4          May 4th 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -168,6 +169,7 @@ enum RFEncoderParams
     RF_ENCODER_FORCE_P_FRAME                = 0x1063,
     RF_ENCODER_INSERT_SPS                   = 0x1064,
     RF_ENCODER_INSERT_PPS                   = 0x1065,
+    RF_ENCODER_INSERT_AUD                   = 0x1066,
 
     // Read only parameter
     RF_ENCODER_WIDTH                        = 0x1081,

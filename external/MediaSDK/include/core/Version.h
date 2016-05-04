@@ -22,6 +22,6 @@
 #define AMF_VERSION_MAJOR 1
 #define AMF_VERSION_MINOR 1
 #define AMF_VERSION_RELEASE 25
-#define AMF_VERSION_BUILD 19
+#define AMF_VERSION_BUILD 20
 
 #endif //#ifndef __AMFVersion_h__

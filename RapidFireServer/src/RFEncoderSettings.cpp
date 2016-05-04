@@ -631,6 +631,22 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
+    // Insert Access unit Delimiter AUD (pre Submission)
+    //
+    // Type : bool
+    // possible values: true, false
+    ////////////////////////////////////////////////////////////////////////////////////
+    Entry.EntryType                               = RF_PARAMETER_BOOL;
+    Entry.strParameterName                        = "Insert AUD";
+    Entry.Value.bValue                            =  true;    
+    Entry.PresetValue[RF_PRESET_FAST].bValue      =  true;   
+    Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  true;    
+    Entry.PresetValue[RF_PRESET_QUALITY].bValue   =  true; 
+
+    m_ParameterMap[RF_ENCODER_INSERT_AUD] = Entry;
+
+
+    ////////////////////////////////////////////////////////////////////////////////////
     // Block size for difference encoder
     //
     // Type : unsigend int

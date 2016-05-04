@@ -66,7 +66,7 @@ namespace amf
         {
             if(m_pInterf != NULL)
             {
-				m_pInterf->Release();
+                m_pInterf->Release();
             }
         }
     public:

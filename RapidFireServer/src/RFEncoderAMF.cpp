@@ -364,6 +364,10 @@ RFStatus RFEncoderAMF::setParameter(const unsigned int uiParameterName, RFParame
     {
         m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_PPS, true));
     }
+    else if (uiParameterName == RF_ENCODER_INSERT_AUD)
+    {
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_AUD, uiValue ? true : false));
+    }
     else
     {
         // Check if parameter is supported by encoder. Presubmit parameters are not part of the map.
@@ -398,7 +402,7 @@ RFParameterState RFEncoderAMF::getParameter(const unsigned int uiParameterName, 
     value = 0;
 
     if ((uiParameterName == RF_ENCODER_FORCE_INTRA_REFRESH) || (uiParameterName == RF_ENCODER_FORCE_I_FRAME) || (uiParameterName == RF_ENCODER_FORCE_P_FRAME) ||
-        (uiParameterName == RF_ENCODER_INSERT_SPS) || (uiParameterName == RF_ENCODER_INSERT_PPS))
+        (uiParameterName == RF_ENCODER_INSERT_SPS) || (uiParameterName == RF_ENCODER_INSERT_PPS) || (uiParameterName == RF_ENCODER_INSERT_AUD))
     {
         // Presubmit var has no permanent value. Indicate that parameters are ready to use.
         return RF_PARAMETER_STATE_READY;
