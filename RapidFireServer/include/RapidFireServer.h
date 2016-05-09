@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.4          May 4th 2016
+* * File Version 1.1.0.5          May 9th 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -135,7 +135,8 @@ enum RFEncoderParams
     RF_ENCODER_FORMAT                       = 0x1111,
     RF_ENCODER_PROFILE                      = 0x1112,
     RF_ENCODER_LEVEL                        = 0x1113,
-    RF_ENCODER_PSNR                         = 0x1114, 
+    RF_ENCODER_USAGE                        = 0x1114,
+    RF_ENCODER_COMMON_LOW_LATENCY_INTERNAL  = 0x1115,
 
     RF_ENCODER_BITRATE                      = 0x1121,
     RF_ENCODER_PEAK_BITRATE                 = 0x1122,
@@ -155,7 +156,6 @@ enum RFEncoderParams
     RF_ENCODER_NUM_SLICES_PER_FRAME         = 0x1144,
     RF_ENCODER_QUALITY_PRESET               = 0x1145,
 
-    RF_ENCODER_MOTION_RANGE                 = 0x1151,
     RF_ENCODER_HALF_PIXEL                   = 0x1152,
     RF_ENCODER_QUARTER_PIXEL				= 0x1153,
 
@@ -389,7 +389,7 @@ RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession session, unsigned int uiW
 *******************************************************************************
 * @fn rfCreateEncoder2
 * @brief This function creates the encoder by passing the static and dynamic properties:
-*        Static:  Profile, Level, Bitrate, FPS, PSNR ...
+*        Static:  Profile, Level, Bitrate, FPS ...
 *        Dynamic: Rate Control Method, Rate Control Options, I Frame Quantization,
 *                 P Frame Quantization, B Frame Quantization, GOP Size,
 *                 VBV Buffer Size, IDR Period, Number Of Slices Per Frame,

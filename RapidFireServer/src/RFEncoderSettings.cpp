@@ -223,6 +223,41 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
+    // Usage
+    // Type : int
+    // possible values:
+    //    -1 (not applied)
+    //     0 (AMF_VIDEO_ENCODER_USAGE_TRANSCONDING)
+    //     1 (AMF_VIDEO_ENCODER_USAGE_ULTRA_LOW_LATENCY)
+    //     2 (AMF_VIDEO_ENCODER_USAGE_LOW_LATENCY)
+    //     3 (AMF_VIDEO_ENCODER_USAGE_WEBCAM)
+    ////////////////////////////////////////////////////////////////////////////////////
+    Entry.EntryType                               = RF_PARAMETER_INT;
+    Entry.strParameterName                        = "Usage";
+    Entry.Value.nValue                            = -1;
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     = -1;
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = -1;
+    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = -1;
+
+    m_ParameterMap[RF_ENCODER_USAGE] = Entry;
+
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Common Low Latency Internal
+    // Type : bool
+    // possible values: true, false
+    ////////////////////////////////////////////////////////////////////////////////////
+    Entry.EntryType                               = RF_PARAMETER_BOOL;
+    Entry.strParameterName                        = "Common Low Latency Internal";
+    Entry.Value.bValue                            = false;
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     = false;
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = false;
+    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = false;
+
+    m_ParameterMap[RF_ENCODER_COMMON_LOW_LATENCY_INTERNAL] = Entry;
+
+
+    ////////////////////////////////////////////////////////////////////////////////////
     // Bitrate
     // Type : uint
     // possible values: 10 KBit/sec - 100 MBit/sec
@@ -266,24 +301,6 @@ bool RFEncoderSettings::createParameterMap()
     Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 30;
 
     m_ParameterMap[RF_ENCODER_FRAME_RATE] = Entry;
-
-
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    // PSNR (Peak Signal Noise Ratio)
-    // Enables PSNR calculations that are reported on completion at the cost of a small decrease in speed.
-    // Type : bool
-    // possible values: true, false
-    ////////////////////////////////////////////////////////////////////////////////////
-    Entry.EntryType                               = RF_PARAMETER_BOOL;
-    Entry.strParameterName                        = "PSNR Control";
-    Entry.Value.bValue                            = false;    
-    Entry.PresetValue[RF_PRESET_FAST].bValue      = false;   
-    Entry.PresetValue[RF_PRESET_BALANCED].bValue  = false; 
-    Entry.PresetValue[RF_PRESET_QUALITY].bValue   = false;
-
-    m_ParameterMap[RF_ENCODER_PSNR] = Entry;
-
 
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -501,22 +518,6 @@ bool RFEncoderSettings::createParameterMap()
 
     m_ParameterMap[RF_ENCODER_QUALITY_PRESET] = Entry;
 
-
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    // ME range
-    // ME range controls the max range of the motion search in pixels
-    // Type : uint
-    // possible values: 4 - 16
-    ////////////////////////////////////////////////////////////////////////////////////
-    Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "ME Range";
-    Entry.Value.uiValue                           =  16;    
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     =  16;   
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  16;    
-    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  =  16; 
-
-    m_ParameterMap[RF_ENCODER_MOTION_RANGE] = Entry;
 
 
     ////////////////////////////////////////////////////////////////////////////////////

@@ -57,26 +57,28 @@ struct MAPPING_ENTRY
 // Since AMF 1.22 FRAMERATE and FRAMERATE_DEN are passed as AMFRate structure. 
 // The AMF Param name is AMF_VIDEO_ENCODER_FRAMERATE. 
 // Therefore both entries point to AMF_VIDEO_ENCODER_FRAMERATE
-static struct MAPPING_ENTRY g_PropertyNameMap[] = { {RF_ENCODER_PROFILE,                 AMF_VIDEO_ENCODER_PROFILE},
-                                                    {RF_ENCODER_LEVEL,                   AMF_VIDEO_ENCODER_PROFILE_LEVEL},
-                                                    {RF_ENCODER_BITRATE,                 AMF_VIDEO_ENCODER_TARGET_BITRATE},
-                                                    {RF_ENCODER_PEAK_BITRATE,            AMF_VIDEO_ENCODER_PEAK_BITRATE},
-                                                    {RF_ENCODER_FRAME_RATE,              AMF_VIDEO_ENCODER_FRAMERATE},
-                                                    {RF_ENCODER_FRAME_RATE_DEN,          AMF_VIDEO_ENCODER_FRAMERATE},
-                                                    {RF_ENCODER_RATE_CONTROL_METHOD,     AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD},
-                                                    {RF_ENCODER_MIN_QP,                  AMF_VIDEO_ENCODER_MIN_QP},
-                                                    {RF_ENCODER_MAX_QP,                  AMF_VIDEO_ENCODER_MAX_QP },
-                                                    {RF_ENCODER_GOP_SIZE,                AMF_VIDEO_ENCODER_GOP_SIZE},
-                                                    {RF_ENCODER_VBV_BUFFER_SIZE,         AMF_VIDEO_ENCODER_VBV_BUFFER_SIZE},
-                                                    {RF_ENCODER_VBV_BUFFER_FULLNESS,     AMF_VIDEO_ENCODER_INITIAL_VBV_BUFFER_FULLNESS},
-                                                    {RF_ENCODER_ENFORCE_HRD,             AMF_VIDEO_ENCODER_ENFORCE_HRD},
-                                                    {RF_ENCODER_IDR_PERIOD,              AMF_VIDEO_ENCODER_IDR_PERIOD},
-                                                    {RF_ENCODER_INTRA_REFRESH_NUM_MB,    AMF_VIDEO_ENCODER_INTRA_REFRESH_NUM_MBS_PER_SLOT},
-                                                    {RF_ENCODER_DEBLOCKING_FILTER,       AMF_VIDEO_ENCODER_DE_BLOCKING_FILTER},
-                                                    {RF_ENCODER_NUM_SLICES_PER_FRAME,    AMF_VIDEO_ENCODER_SLICES_PER_FRAME},
-                                                    {RF_ENCODER_QUALITY_PRESET,          AMF_VIDEO_ENCODER_QUALITY_PRESET},
-                                                    {RF_ENCODER_HALF_PIXEL,              AMF_VIDEO_ENCODER_MOTION_HALF_PIXEL},
-                                                    {RF_ENCODER_QUARTER_PIXEL,           AMF_VIDEO_ENCODER_MOTION_QUARTERPIXEL} };
+static struct MAPPING_ENTRY g_PropertyNameMap[] = { {RF_ENCODER_PROFILE,                     AMF_VIDEO_ENCODER_PROFILE},
+                                                    {RF_ENCODER_LEVEL,                       AMF_VIDEO_ENCODER_PROFILE_LEVEL},
+                                                    {RF_ENCODER_USAGE,                       AMF_VIDEO_ENCODER_USAGE},
+                                                    {RF_ENCODER_COMMON_LOW_LATENCY_INTERNAL, L"CommonLowLatencyInternal"},
+                                                    {RF_ENCODER_BITRATE,                     AMF_VIDEO_ENCODER_TARGET_BITRATE},
+                                                    {RF_ENCODER_PEAK_BITRATE,                AMF_VIDEO_ENCODER_PEAK_BITRATE},
+                                                    {RF_ENCODER_FRAME_RATE,                  AMF_VIDEO_ENCODER_FRAMERATE},
+                                                    {RF_ENCODER_FRAME_RATE_DEN,              AMF_VIDEO_ENCODER_FRAMERATE},
+                                                    {RF_ENCODER_RATE_CONTROL_METHOD,         AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD},
+                                                    {RF_ENCODER_MIN_QP,                      AMF_VIDEO_ENCODER_MIN_QP},
+                                                    {RF_ENCODER_MAX_QP,                      AMF_VIDEO_ENCODER_MAX_QP },
+                                                    {RF_ENCODER_GOP_SIZE,                    AMF_VIDEO_ENCODER_GOP_SIZE},
+                                                    {RF_ENCODER_VBV_BUFFER_SIZE,             AMF_VIDEO_ENCODER_VBV_BUFFER_SIZE},
+                                                    {RF_ENCODER_VBV_BUFFER_FULLNESS,         AMF_VIDEO_ENCODER_INITIAL_VBV_BUFFER_FULLNESS},
+                                                    {RF_ENCODER_ENFORCE_HRD,                 AMF_VIDEO_ENCODER_ENFORCE_HRD},
+                                                    {RF_ENCODER_IDR_PERIOD,                  AMF_VIDEO_ENCODER_IDR_PERIOD},
+                                                    {RF_ENCODER_INTRA_REFRESH_NUM_MB,        AMF_VIDEO_ENCODER_INTRA_REFRESH_NUM_MBS_PER_SLOT},
+                                                    {RF_ENCODER_DEBLOCKING_FILTER,           AMF_VIDEO_ENCODER_DE_BLOCKING_FILTER},
+                                                    {RF_ENCODER_NUM_SLICES_PER_FRAME,        AMF_VIDEO_ENCODER_SLICES_PER_FRAME},
+                                                    {RF_ENCODER_QUALITY_PRESET,              AMF_VIDEO_ENCODER_QUALITY_PRESET},
+                                                    {RF_ENCODER_HALF_PIXEL,                  AMF_VIDEO_ENCODER_MOTION_HALF_PIXEL},
+                                                    {RF_ENCODER_QUARTER_PIXEL,               AMF_VIDEO_ENCODER_MOTION_QUARTERPIXEL} };
 
 
 RFEncoderAMF::RFEncoderAMF()
@@ -532,12 +534,11 @@ bool RFEncoderAMF::applyConfiguration(const RFEncoderSettings* pConfig)
 
     for (unsigned int i = 0; i < uiNumSupportedProperties; ++i)
     {
-        RFStatus r = setAMFProperty(i, pConfig->getParameterType(g_PropertyNameMap[i].RFPropertyName), pConfig->getParameterValue<int>(g_PropertyNameMap[i].RFPropertyName));
-        if (r != RF_STATUS_OK)
+        RFStatus rfStatus = setAMFProperty(i, pConfig->getParameterType(g_PropertyNameMap[i].RFPropertyName), pConfig->getParameterValue<int>(g_PropertyNameMap[i].RFPropertyName));
+        if (rfStatus != RF_STATUS_OK && rfStatus != RF_STATUS_PARAM_ACCESS_DENIED)
         {
-            std::cout << g_PropertyNameMap[i].RFPropertyName << std::endl;
+            retValue = false;
         }
-        retValue &= (rfStatus == RF_STATUS_OK);
     }
 
     return retValue;
@@ -583,6 +584,11 @@ RFStatus RFEncoderAMF::setAMFProperty(unsigned int uiParameterIdx, RFParameterTy
 
         amfErr = m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_FRAMERATE, amfFrameRate);
 
+    }
+    // Handle USAGE as special case: Don't set this paramtere if it was not specified by the user
+    else if (g_PropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_USAGE && value == -1)
+    {
+        return RF_STATUS_OK;
     }
     else if (rfType == RF_PARAMETER_INT)
     {
