@@ -121,7 +121,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             continue;
         }
 
-        if (rfGetMouseData(rfSession, 1, &md) == RF_STATUS_OK)
+        if (rfGetMouseData(rfSession, 0, &md) == RF_STATUS_OK)
         {
             // Typically the mouse pointer is 32x32. The texture that was created is 32x32 as well.
             // Some shapes have a larger dimensions, those will not be drawn by this sample
