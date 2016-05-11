@@ -78,7 +78,7 @@ public:
     RFStatus              getEncodeParameter(const int param, RFProperties& value) const;
 
     // Can be implemented by a derived class to give access to mouse shape data.
-    virtual RFStatus      getMouseData(bool bWaitForShapeChange, RFMouseData& md) const;
+    virtual RFStatus      getMouseData(int iWaitForShapeChange, RFMouseData& md) const;
 
 protected:
 

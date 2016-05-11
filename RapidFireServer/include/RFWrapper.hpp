@@ -22,7 +22,10 @@
 
 /*****************************************************************************
 * RFWrapper.hpp
-* File Version 1.0.1 (CL 36735) September 17th 2015
+* * File Version 1.0.0 (CL 36199) Feb 12th 2015
+* * File Version 1.0.1 (CL 36735) September 17th 2015
+* * File Version 1.1.0.1          January 25th 2016
+* * File Version 1.1.0.6          May 11th 2016
 *****************************************************************************/
 
 #pragma once
@@ -46,7 +49,7 @@ typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODED_FRAME)         (RFEnc
 typedef RFStatus            (RAPIDFIRE_API *RF_GET_SOURCE_FRAME)          (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
 typedef RFStatus            (RAPIDFIRE_API *RF_SET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties value);
 typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties* value);
-typedef RFStatus            (RAPIDFIRE_API *RF_GET_MOUSEDATA)             (RFEncodeSession s, bool bWaitForShapeChange, RFMouseData* md);
+typedef RFStatus            (RAPIDFIRE_API *RF_GET_MOUSEDATA)             (RFEncodeSession s, int iWaitForShapeChange, RFMouseData* md);
 typedef RFStatus            (RAPIDFIRE_API *RF_RELEASE_EVENT)             (RFEncodeSession s, RFNotification const rfNotification);
 
 

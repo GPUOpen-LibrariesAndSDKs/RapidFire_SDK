@@ -41,7 +41,7 @@ RFMouseGrab::RFMouseGrab(DOPPDrvInterface* pDrv, unsigned int uiDisplayId)
     , m_uiDisplayId(uiDisplayId)
     , m_hCursorEventsThread(NULL)
     , m_dwThreadId(0)
-    , m_bVisible(true)
+    , m_iVisible(1)
 {
     HMODULE libUser32 = LoadLibraryA("user32.dll");
     if (!libUser32)
@@ -65,7 +65,7 @@ RFMouseGrab::RFMouseGrab(DOPPDrvInterface* pDrv, unsigned int uiDisplayId)
         throw std::runtime_error("Failed to load IDC_ARROW cursor");
     }
 
-    m_renderedMouseData.mouseData.bVisible = false;
+    m_renderedMouseData.mouseData.iVisible = 0;
     m_renderedMouseData.mouseData.mask.pPixels = nullptr;
     m_renderedMouseData.mouseData.color.pPixels = nullptr;
     m_changedMouseData = m_renderedMouseData;
@@ -118,8 +118,8 @@ RFMouseGrab::~RFMouseGrab()
         m_hCursorEventsThread = NULL;
     }
 
-    m_renderedMouseData.mouseData.bVisible = false;
-    m_changedMouseData.mouseData.bVisible = false;
+    m_renderedMouseData.mouseData.iVisible = 0;
+    m_changedMouseData.mouseData.iVisible = 0;
 
     if (m_renderedMouseData.colorBuffer.pBuffer)
     {
@@ -151,11 +151,11 @@ RFMouseGrab::~RFMouseGrab()
 }
 
 
-bool RFMouseGrab::getShapeData(bool bBlocking, RFMouseData& md)
+bool RFMouseGrab::getShapeData(int iBlocking, RFMouseData& md)
 {
     bool bNewData = false;
 
-    if (bBlocking)
+    if (iBlocking)
     {
         ResetEvent(m_hNewCursorStateEvent);
 
@@ -167,9 +167,9 @@ bool RFMouseGrab::getShapeData(bool bBlocking, RFMouseData& md)
 
         bNewData = m_bShapeUpdated | m_bVisibilityUpdated;
 
-        m_changedMouseData.mouseData.bVisible = m_bVisible;
+        m_changedMouseData.mouseData.iVisible = m_iVisible;
 
-        if (m_bVisible && m_changedMouseData.mouseData.mask.pPixels)
+        if (m_iVisible && m_changedMouseData.mouseData.mask.pPixels)
         {
             md = m_changedMouseData.mouseData;
         }
@@ -331,12 +331,12 @@ void RFMouseGrab::updateMouseShapeData(bool bIncrementAnimationIndex, bool bGetM
 
     if (bGetMouseVisibility)
     {
-        bool bVisible = cursorInfo.flags == CURSOR_SHOWING;
-        if (m_bVisible != bVisible)
+        int iVisible = cursorInfo.flags == CURSOR_SHOWING;
+        if (m_iVisible != iVisible)
         {
             m_bVisibilityUpdated = true;
         }
-        m_bVisible = bVisible;
+        m_iVisible = iVisible;
     }
 
     m_animatedCursorInfo.hAnimatedCursor = m_fnGetCursorFrameInfo(cursorInfo.hCursor, L"", m_animatedCursorInfo.dwFrameIndex, &m_animatedCursorInfo.dwDisplayRate, &m_animatedCursorInfo.dwTotalFrames);

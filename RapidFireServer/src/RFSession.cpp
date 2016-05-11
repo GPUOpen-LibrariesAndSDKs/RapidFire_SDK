@@ -449,7 +449,7 @@ RFStatus RFSession::resize(unsigned int uiWidth, unsigned int uiHeight)
 }
 
 
-RFStatus RFSession::getMouseData(bool bWaitForShapeChange, RFMouseData& md) const
+RFStatus RFSession::getMouseData(int iWaitForShapeChange, RFMouseData& md) const
 {
     return RF_STATUS_FAIL;
 }

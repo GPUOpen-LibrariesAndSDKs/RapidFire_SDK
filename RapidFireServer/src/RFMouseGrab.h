@@ -44,7 +44,7 @@ public:
 	// 
 	// Returns true if the data in md is new, otherwise false. If bBlocking is true, the data in md
 	// is always new and the function returns true as well.
-	bool    getShapeData(bool bBlocking, RFMouseData& md);
+	bool    getShapeData(int iBlocking, RFMouseData& md);
 
 	// This function will signal m_hNewDataEvent and can be used to unblock a thread
 	// that waits for mouse updates.
@@ -112,7 +112,7 @@ private:
 
 	DOPPDrvInterface* m_pDrv;
 
-	bool m_bVisible;
+	int m_iVisible;
 
 	struct MouseData
 	{

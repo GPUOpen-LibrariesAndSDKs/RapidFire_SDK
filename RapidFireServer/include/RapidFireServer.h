@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.5          May 9th 2016
+* * File Version 1.1.0.6          May 11th 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -59,7 +59,7 @@ typedef void*               RFRenderTarget;
 /**************************************************************************
 * The RapidFire Server API status *
 **************************************************************************/
-enum RFStatus
+typedef enum RFStatus
 {
     RF_STATUS_OK                          = 0,
     RF_STATUS_FAIL                        = 1,
@@ -100,13 +100,13 @@ enum RFStatus
     RF_STATUS_INVALID_OPENCL_MEMOBJ       = 48,
     RF_STATUS_INVALID_SESSION_PROPERTIES  = 49,
     RF_STATUS_INVALID_ENCODER_PARAMETER   = 50,
-};
+} RFStatus;
 
 
 /**************************************************************************
 *  Session parameters *
 **************************************************************************/
-enum RFSessionParams
+typedef enum RFSessionParams
 {
     RF_GL_GRAPHICS_CTX                = 0x1001,
     RF_GL_DEVICE_CTX                  = 0x1002,
@@ -124,13 +124,13 @@ enum RFSessionParams
     RF_ENCODER_BLOCKING_READ          = 0x1015,
     RF_MOUSE_DATA                     = 0x1016,
     RF_DESKTOP_INTERNAL_DSP_ID        = 0x1017,
-};
+} RFSessionParams;
 
 
 /**************************************************************************
 * The video encoder parameters *
 **************************************************************************/
-enum RFEncoderParams
+typedef enum RFEncoderParams
 {
     RF_ENCODER_FORMAT                       = 0x1111,
     RF_ENCODER_PROFILE                      = 0x1112,
@@ -176,7 +176,7 @@ enum RFEncoderParams
     RF_ENCODER_HEIGHT                       = 0x1082,
     RF_ENCODER_OUTPUT_WIDTH                 = 0x1083,
     RF_ENCODER_OUTPUT_HEIGHT                = 0x1084,
-};
+} RFEncoderParams;
 
 
 /**
@@ -206,7 +206,7 @@ typedef struct
 * @typedef RFMouseData
 * @brief This structure is used to return the cursor shape data.
 *
-* @bVisible: true if the cursor is visible and false otherwise.
+* @iVisible: 1 if the cursor is visible and 0 otherwise.
 * @uiXHot:   X position of hot spot.
 * @uiYHot:   Y postiion of hot spot.
 * @mask:	 The cursor bitmask bitmap. If the cursor is monochrome, this bitmask
@@ -222,7 +222,7 @@ typedef struct
 */
 typedef struct
 {
-    bool            bVisible;
+    int             iVisible;
     unsigned int    uiXHot;
     unsigned int    uiYHot;
     RFBitmapBuffer	mask;
@@ -244,7 +244,7 @@ typedef struct
 *
 *******************************************************************************
 */
-enum RFFormat
+typedef enum RFFormat
 { 
     RF_FORMAT_UNKNOWN = -1,
     RF_RGBA8          =  0,
@@ -252,7 +252,7 @@ enum RFFormat
     RF_BGRA8          =  2,
     RF_NV12           =  3,
     RF_I420           =  4
-};
+} RFFormat;
 
 /**
 *******************************************************************************
@@ -267,13 +267,13 @@ enum RFFormat
 *
 *******************************************************************************
 */
-enum RFEncodePreset
+typedef enum RFEncodePreset
 {
     RF_PRESET_NONE     = -1,
     RF_PRESET_FAST     =  0,
     RF_PRESET_BALANCED =  1,
     RF_PRESET_QUALITY  =  2
-};
+} RFEncodePreset;
 
 /**
 *******************************************************************************
@@ -286,13 +286,13 @@ enum RFEncodePreset
 *
 *******************************************************************************
 */
-enum RFEncoderID
+typedef enum RFEncoderID
 {
     RF_ENCODER_UNKNOWN = -1,
     RF_AMF             =  0,
     RF_IDENTITY        =  1,
     RF_DIFFERENCE      =  2
-};
+} RFEncoderID;
 
 /**
 *******************************************************************************
@@ -307,12 +307,12 @@ enum RFEncoderID
 *
 *******************************************************************************
 */
-enum RFRenderTargetState
+typedef enum RFRenderTargetState
 {
     RF_STATE_INVALID = 0,
     RF_STATE_FREE    = 1,
     RF_STATE_BLOCKED = 2
-};
+} RFRenderTargetState;
 
 /**
 *******************************************************************************
@@ -331,11 +331,11 @@ enum RFRenderTargetState
 *
 *******************************************************************************
 */
-enum RFNotification
+typedef enum RFNotification
 {
     RFDesktopNotification    = 1,
     RFMouseShapeNotification = 2
-};
+} RFNotification;
 
 #ifdef __cplusplus
 extern "C" {
@@ -557,13 +557,13 @@ RFStatus RAPIDFIRE_API rfGetEncodeParameter(RFEncodeSession session, const int p
 * be created with the RF_MOUSE_DATA set to true.
 *
 * @param[in] session:             The encoding session.
-* @param[in] bWaitForShapeChange: If true the call blocks until the mouse shape changed
+* @param[in] iWaitForShapeChange: If set to 1 the call blocks until the mouse shape changed
 * @param[out] mouseData:          Mouse shape data
 *
 * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
 *******************************************************************************
 */
-RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession session, bool bWaitForShapeChange, RFMouseData* mouseData);
+RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession session, int iWaitForShapeChange, RFMouseData* mouseData);
 
 /**
 *******************************************************************************

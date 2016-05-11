@@ -341,14 +341,14 @@ RFStatus RFDOPPSession::registerTexture(RFTexture rt, unsigned int uiWidth, unsi
 }
 
 
-RFStatus RFDOPPSession::getMouseData(bool bWaitForShapeChange, RFMouseData& md) const
+RFStatus RFDOPPSession::getMouseData(int iWaitForShapeChange, RFMouseData& md) const
 {
     if (!m_pMouseGrab)
     {
         return RF_STATUS_FAIL;
     }
 
-    if (!m_pMouseGrab->getShapeData(bWaitForShapeChange, md))
+    if (!m_pMouseGrab->getShapeData(iWaitForShapeChange, md))
     {
         return RF_STATUS_MOUSEGRAB_NO_CHANGE;
     }

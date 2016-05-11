@@ -212,7 +212,7 @@ RFStatus RAPIDFIRE_API rfGetSourceFrame(RFEncodeSession session, unsigned int* u
 }
 
 
-RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, bool bWaitForShapeChange, RFMouseData* md)
+RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, int iWaitForShapeChange, RFMouseData* md)
 {
     RFSession* pEncodeSession = reinterpret_cast<RFSession*>(s);
 
@@ -221,7 +221,7 @@ RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, bool bWaitForShapeChang
         return RF_STATUS_INVALID_SESSION;
     }
 
-    return pEncodeSession->getMouseData(bWaitForShapeChange, *md);
+    return pEncodeSession->getMouseData(iWaitForShapeChange, *md);
 }
 
 

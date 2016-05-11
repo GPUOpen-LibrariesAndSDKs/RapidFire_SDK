@@ -53,7 +53,7 @@ private:
 
     virtual RFStatus    releaseSessionEvents(RFNotification const rfEvent)      override;
 
-    virtual RFStatus    getMouseData(bool bWaitForShapeChange, RFMouseData& md) const override;
+    virtual RFStatus    getMouseData(int iWaitForShapeChange, RFMouseData& md) const override;
 
     bool                createGLContext();
     void                dumpDspInfo(const DisplayManager& dpManager);
