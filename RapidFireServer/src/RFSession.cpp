@@ -1068,10 +1068,6 @@ void RFSession::dumpContextProperties()
                 oss << "RF_NV12";
                 break;
 
-            case RF_I420:
-                oss << "RF_I420";
-                break;
-
             default:
                 oss << "RF_UNKNOWN";
                 break;

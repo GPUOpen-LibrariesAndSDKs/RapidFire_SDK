@@ -239,8 +239,6 @@ typedef struct
 * @RF_BGRA8: 32-bit RGB with Alpha, each pixel is represented by one byte each
 *            for the red, green, blue, and alpha channels.
 * @RF_NV12:  8-bit Y plane followed by an interleaved U/V plane with 2x2 subsampling.
-* @RF_I420:  8-bit Y plane followed by 8-bit 2x2 subsampled U plane,
-*            and finally followed by 8-bit 2x2 subsampled V plane.
 *
 *******************************************************************************
 */
@@ -250,8 +248,7 @@ typedef enum RFFormat
     RF_RGBA8          =  0,
     RF_ARGB8          =  1,
     RF_BGRA8          =  2,
-    RF_NV12           =  3,
-    RF_I420           =  4
+    RF_NV12           =  3
 } RFFormat;
 
 /**

@@ -74,7 +74,7 @@ RFStatus RFEncoderIdentity::init(const RFContextCL* pContextCL, const RFEncoderS
     {
         m_nBufferSize = m_uiAlignedWidth * m_uiAlignedHeight * 4;
     }
-    else if (m_format == RF_NV12 || m_format == RF_I420)
+    else if (m_format == RF_NV12)
     {
         m_nBufferSize = (m_uiAlignedWidth * m_uiAlignedHeight) + (m_uiAlignedWidth * m_uiAlignedHeight) / 2;
     }
@@ -103,7 +103,7 @@ RFStatus RFEncoderIdentity::resize(unsigned int uiWidth, unsigned int uiHeight)
     {
         m_nBufferSize = m_uiAlignedWidth * m_uiAlignedHeight * 4;
     }
-    else if (m_format == RF_NV12 || m_format == RF_I420)
+    else if (m_format == RF_NV12)
     {
         m_nBufferSize = (m_uiAlignedWidth * m_uiAlignedHeight) + (m_uiAlignedWidth * m_uiAlignedHeight) / 2;
     }
@@ -118,7 +118,7 @@ RFStatus RFEncoderIdentity::resize(unsigned int uiWidth, unsigned int uiHeight)
 
 bool RFEncoderIdentity::isFormatSupported(RFFormat format) const
 {
-    if (format == RF_RGBA8 || format == RF_ARGB8 || format == RF_BGRA8 || format == RF_NV12 || format == RF_I420)
+    if (format == RF_RGBA8 || format == RF_ARGB8 || format == RF_BGRA8 || format == RF_NV12)
     {
         return true;
     }

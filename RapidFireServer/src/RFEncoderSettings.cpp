@@ -193,8 +193,8 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Profile
-    // Type : int
+    // H.264 profile
+    // Type : uint
     // possible values: 66 (Baseline), 77 (main), 100 (High)
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
@@ -208,7 +208,7 @@ bool RFEncoderSettings::createParameterMap()
    
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // profile Level
+    // H.264 profile level
     // Type : uint
     // possible values: 10, 11, 12, 13, 20, 21, 22, 30, 31, 32, 4, 41, 42, 50, 51
     ////////////////////////////////////////////////////////////////////////////////////
@@ -223,10 +223,11 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Usage
+    // Encoder usage. 
+    // This parameter configures the whole parameter set to a preset according to the usage.
     // Type : int
     // possible values:
-    //    -1 (not applied)
+    //    -1 (not set)
     //     0 (AMF_VIDEO_ENCODER_USAGE_TRANSCONDING)
     //     1 (AMF_VIDEO_ENCODER_USAGE_ULTRA_LOW_LATENCY)
     //     2 (AMF_VIDEO_ENCODER_USAGE_LOW_LATENCY)
@@ -289,12 +290,12 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // FPS
+    // Frame Rate
     // Type : uint
-    // possible values: NA
+    // possible values: 1*FrameRateDen - 120*FrameRateDen
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "FPS";
+    Entry.strParameterName                        = "Frame Rate";
     Entry.Value.uiValue                           = 60;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     = 60;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 60; 
@@ -304,29 +305,29 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Rate control method
+    // Rate Control Method
     // 
     // Type : uint
-    // possible values: 0 (PEAK_CONSTRAINED_VBR), 1 (LATENCY_CONTRAINED_VBR), 2 (CBR)
+    // possible values: 0 (Constrained QP), 1 (Constand Bitrate), 2 (Peak Constrained VBR), 3 (Latency Cosntrained VBR)
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Rate Control method";
-    Entry.Value.uiValue                           = 1;    
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     = 1;   
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 0; 
-    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 0;
+    Entry.strParameterName                        = "Rate Control Method";
+    Entry.Value.uiValue                           = 3;    
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     = 3;   
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 2; 
+    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 2;
 
     m_ParameterMap[RF_ENCODER_RATE_CONTROL_METHOD] = Entry;
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Minimum Quantizer
+    // Minimum Quantizer Parameter
     // 
     // Type : uint
     // possible values: 0 - 51
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Minimum Quantizer";
+    Entry.strParameterName                        = "Minimum Quantizer Parameter";
     Entry.Value.uiValue                           = 22;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     = 22;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 22; 
@@ -337,13 +338,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Maximum Quantizer
+    // Maximum Quantizer Parameter
     // 
     // Type : uint
     // possible values: 0 - 51
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Maximum Quantizer";
+    Entry.strParameterName                        = "Maximum Quantizer Parameter";
     Entry.Value.uiValue                           = 51;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     = 51;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 51; 
@@ -354,13 +355,13 @@ bool RFEncoderSettings::createParameterMap()
  
     
     ////////////////////////////////////////////////////////////////////////////////////
-    // GOP Size
+    // Rate Control GOP Size
     // 
     // Type : uint
     // possible values: 0 - 1000
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "GOP Size";
+    Entry.strParameterName                        = "Rate Control GOP Size";
     Entry.Value.uiValue                           = 60;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     = 60;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 60; 
@@ -371,13 +372,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // VBV (Video Buffering Verifier) Buffer size
+    // VBV (Video Buffering Verifier) Buffer Size in Bits
     // 
     // Type : uint
     // possible values: 1 KBit - 100 MBit
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "VBV Size";
+    Entry.strParameterName                        = "VBV Buffer Size";
     Entry.Value.uiValue                           =   110000;    // 110 KBit
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =   110000;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1000000;    // 1 MBit
@@ -388,13 +389,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // VBV initial fullness
+    // VBV Initial Fullness
     // 
     // Type : uint
     // possible values: 0 - 64
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "VBV Fullness";
+    Entry.strParameterName                        = "VBV Initial Fullness";
     Entry.Value.uiValue                           =  64; 
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  64;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  64;    
@@ -404,7 +405,7 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Enforce HRD (Hypothetical Reference Decoder)
+    // Disables/enables constraints on QP variation within a picture to meet HRD requirement(s)
     // 
     // Type : bool
     // possible values: true, false
@@ -421,13 +422,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Framerate denominator
+    // Frame Rate Denominator
     // 
     // Type : uint
-    // possible values: 1-max
+    // possible values: 1 - MaxInt
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Framerate Den";
+    Entry.strParameterName                        = "Frame Rate Denominator";
     Entry.Value.bValue                            =  1;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  1;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1;    
@@ -438,7 +439,7 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // IDR period sets the maximum interval between IDR-frames 
+    // IDR period. IDRPeriod = 0 turns IDR off
     // 
     // Type : uint
     // possible values: 0 - 1000
@@ -454,13 +455,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Intra refresh num MB per slot
+    // Number of intra-refresh macro-blocks per slot
     // 
     // Type : uint
-    // possible values: 0 - #MB per frame
+    // possible values: 0 - #MBs per frame
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Intra refresh, number of MB per slot";
+    Entry.strParameterName                        = "Number of Intra-Refresh Macro-Blocks per Slot";
     Entry.Value.uiValue                           =  225;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  225;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  225;    
@@ -471,14 +472,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // DeBlocking filter
-    // Filter to avoid blocking artifacts
+    // De-Blocking filter
     //
     // Type : bool
     // possible values: true, false
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_BOOL;
-    Entry.strParameterName                        = "Deblocking Filter";
+    Entry.strParameterName                        = "De-Blocking Filter";
     Entry.Value.bValue                            =  false;    
     Entry.PresetValue[RF_PRESET_FAST].bValue      =  false;   
     Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
@@ -491,10 +491,10 @@ bool RFEncoderSettings::createParameterMap()
     // Num slices per frame
     // 
     // Type : uint
-    // possible values: 1 - #Mbits per frame
+    // possible values: 1 - #MBs per frame
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Num slices per frame";
+    Entry.strParameterName                        = "Num Slices per Frame";
     Entry.Value.uiValue                           =  1;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  1;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1;    
@@ -504,16 +504,16 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Quality preset
+    // Quality Preset
     // 
     // Type : uint
-    // possible values: 0 (Balanced), 1 (Speed), 2 (QUALITY)
+    // possible values: 0 (Balanced), 1 (Quality), 2 (Speed)
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Quality preset";
-    Entry.Value.uiValue                           =  1;    
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     =  1;       // Speed
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1;       // Speed
+    Entry.strParameterName                        = "Quality Preset";
+    Entry.Value.uiValue                           =  2;    
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     =  2;       // Speed
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  2;       // Speed
     Entry.PresetValue[RF_PRESET_QUALITY].uiValue  =  0;       // Balanced
 
     m_ParameterMap[RF_ENCODER_QUALITY_PRESET] = Entry;
@@ -521,13 +521,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Half pixel
+    // Half Pixel Motion Estimation
     // 
     // Type : uint
     // possible values: 0,1
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Half pixel";
+    Entry.strParameterName                        = "Half Pixel Motion Estimation";
     Entry.Value.uiValue                           =  1;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  1;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1;    
@@ -537,13 +537,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Quater pixel
+    // Quarter Pixel Motion Estimation
     // 
     // Type : uint
     // possible values: 0,1
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Quarter pixel";
+    Entry.strParameterName                        = "Quarter Pixel Motion Estimation";
     Entry.Value.uiValue                           =  1;    
     Entry.PresetValue[RF_PRESET_FAST].uiValue     =  1;   
     Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  1;    
@@ -553,13 +553,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Force Intra refresh frame (pre Submission)
+    // Force Intra-Refresh Frames Picture Type (pre Submission)
     //
     // Type : bool
     // possible values: true, false
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_BOOL;
-    Entry.strParameterName                        = "Intra Refresh";
+    Entry.strParameterName                        = "Intra-Refresh Frames Picture Type";
     Entry.Value.bValue                            =  false;    
     Entry.PresetValue[RF_PRESET_FAST].bValue      =  false;   
     Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
@@ -569,13 +569,13 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Force I frame (pre Submission)
+    // Force I-Frames Picture Type (pre Submission)
     //
     // Type : bool
     // possible values: true, false
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_BOOL;
-    Entry.strParameterName                        = "Force I Frame";
+    Entry.strParameterName                        = "Force I-Frames Picture Type";
     Entry.Value.bValue                            =  false;    
     Entry.PresetValue[RF_PRESET_FAST].bValue      =  false;   
     Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
@@ -584,13 +584,13 @@ bool RFEncoderSettings::createParameterMap()
     m_ParameterMap[RF_ENCODER_FORCE_I_FRAME] = Entry;
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Force P frame (pre Submission)
+    // Force P-Frames Picture Type (pre Submission)
     //
     // Type : bool
     // possible values: true, false
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_BOOL;
-    Entry.strParameterName                        = "Force P Frame";
+    Entry.strParameterName                        = "Force P-Frames Picture Type";
     Entry.Value.bValue                            =  false;    
     Entry.PresetValue[RF_PRESET_FAST].bValue      =  false;   
     Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
@@ -600,7 +600,7 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Insert Sequence Parameter Set SPS (pre Submission)
+    // Insert Sequence Parameter Set (pre Submission)
     //
     // Type : bool
     // possible values: true, false
@@ -616,7 +616,7 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Insert Picture Parameter Set PPS (pre Submission)
+    // Insert Picture Parameter Set (pre Submission)
     //
     // Type : bool
     // possible values: true, false
@@ -632,7 +632,7 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Insert Access unit Delimiter AUD (pre Submission)
+    // Insert Access Unit Delimiter (pre Submission)
     //
     // Type : bool
     // possible values: true, false
@@ -648,7 +648,7 @@ bool RFEncoderSettings::createParameterMap()
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Block size for difference encoder
+    // Block Size for Difference Encoder
     //
     // Type : unsigend int
     // possible values: BLOCK_SIZE_S * BLOCK_SIZE_T == 64

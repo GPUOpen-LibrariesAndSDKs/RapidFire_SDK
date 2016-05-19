@@ -122,10 +122,6 @@ void dumpCLBuffer(cl_mem clBuffer, RFContextCL* pContext, unsigned int uiWidth, 
         uiBufferSize = (uiWidth * uiHeight) + (uiWidth * uiHeight) / 2;
         break;
 
-    case RF_I420:
-        uiBufferSize = uiWidth * uiHeight * 2;
-        break;
-
     case RF_RGBA8:
     case RF_ARGB8:
     case RF_BGRA8:
@@ -177,10 +173,6 @@ void dumpCLBuffer(cl_mem clBuffer, RFContextCL* pContext, unsigned int uiWidth, 
             else if (rfFormat == RF_NV12)
             {
                 writeNV12Image(reinterpret_cast<unsigned char*>(pTmp), uiWidth, uiHeight, pFileName);
-            }
-            else if (rfFormat == RF_I420)
-            {
-                writeYUVImage(reinterpret_cast<unsigned char*>(pTmp), uiWidth, uiHeight, pFileName);
             }
 
             clEnqueueUnmapMemObject(pContext->getCmdQueue(), clImageBuffer, pTmp, 0, nullptr, nullptr);

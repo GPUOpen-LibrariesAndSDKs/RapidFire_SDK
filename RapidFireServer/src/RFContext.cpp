@@ -883,13 +883,6 @@ RFStatus RFContextCL::createBuffers(RFFormat format, unsigned int uiWidth, unsig
             m_nOutputBufferSize = (m_uiAlignedOutputWidth * m_uiAlignedOutputHeight) + (m_uiAlignedOutputWidth * m_uiAlignedOutputHeight) / 2;
             break;
 
-        case RF_I420:
-            m_uiCSCKernelIdx = RF_KERNEL_RGBA_TO_I420;
-            // I420: width * height for Y plane + width * (height / 2) for the U plane + width * (height / 2) for the V plane
-            // only first half of each line in U or V plane is used.
-            m_nOutputBufferSize = m_uiAlignedOutputWidth * m_uiAlignedOutputHeight * 2;
-            break;
-
         case RF_RGBA8:
         case RF_ARGB8:
         case RF_BGRA8:
