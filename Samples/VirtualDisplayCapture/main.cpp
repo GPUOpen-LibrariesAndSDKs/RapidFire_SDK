@@ -58,22 +58,31 @@ typedef int(*ADL_ADAPTER_SUPPORTEDCONNECTIONS_GET) (int, ADLDevicePort, ADLSuppo
 typedef int(*ADL_ADAPTER_CONNECTIONDATA_SET) (int, ADLDevicePort, ADLConnectionData);
 typedef int(*ADL_ADAPTER_CONNECTIONDATA_REMOVE) (int, ADLDevicePort);
 typedef int(*ADL_ADAPTER_EMULATIONMODE_SET) (int, ADLDevicePort, int);
+typedef int(*ADL_DISPLAY_MODETIMINGOVERRIDEX2_GET) (int, ADLDisplayID, ADLDisplayModeX2*, ADLDisplayModeInfo*);
+typedef int(*ADL_DISPLAY_MODETIMINGOVERRIDE_SET) (int, int, ADLDisplayModeInfo*, int);
+typedef int(*ADL_ADAPTER_MODETIMINGOVERRIDE_CAPS) (int, int*);
+typedef int(*ADL_DISPLAY_MODETIMINGOVERRIDE_DELETE) (int, ADLDisplayID, ADLDisplayModeX2*, int);
 
 HINSTANCE hADLDll;
 
-ADL_MAIN_CONTROL_CREATE                ADL_Main_Control_Create = NULL;
-ADL_MAIN_CONTROL_DESTROY               ADL_Main_Control_Destroy = NULL;
-ADL_DISPLAY_POSSIBLEMODE_GET           ADL_Display_PossibleMode_Get = NULL;
-ADL_DISPLAY_MODES_SET                  ADL_Display_Modes_Set = NULL;
-ADL_DISPLAY_MODES_GET                  ADL_Display_Modes_Get = NULL;
-ADL_ADAPTER_NUMBEROFADAPTERS_GET       ADL_Adapter_NumberOfAdapters_Get = NULL;
-ADL_ADAPTER_ADAPTERINFO_GET            ADL_Adapter_AdapterInfo_Get = NULL;
-ADL_ADAPTERX2_CAPS                     ADL_AdapterX2_Caps = NULL;
-ADL_ADAPTER_CONNECTIONSTATE_GET        ADL_Adapter_ConnectionState_Get = NULL;
-ADL_ADAPTER_SUPPORTEDCONNECTIONS_GET   ADL_Adapter_SupportedConnections_Get = NULL;
-ADL_ADAPTER_CONNECTIONDATA_SET         ADL_Adapter_ConnectionData_Set = NULL;
-ADL_ADAPTER_CONNECTIONDATA_REMOVE      ADL_Adapter_ConnectionData_Remove = NULL;
-ADL_ADAPTER_EMULATIONMODE_SET          ADL_Adapter_EmulationMode_Set = NULL;
+ADL_MAIN_CONTROL_CREATE                 ADL_Main_Control_Create = NULL;
+ADL_MAIN_CONTROL_DESTROY                ADL_Main_Control_Destroy = NULL;
+ADL_DISPLAY_POSSIBLEMODE_GET            ADL_Display_PossibleMode_Get = NULL;
+ADL_DISPLAY_MODES_SET                   ADL_Display_Modes_Set = NULL;
+ADL_DISPLAY_MODES_GET                   ADL_Display_Modes_Get = NULL;
+ADL_ADAPTER_NUMBEROFADAPTERS_GET        ADL_Adapter_NumberOfAdapters_Get = NULL;
+ADL_ADAPTER_ADAPTERINFO_GET             ADL_Adapter_AdapterInfo_Get = NULL;
+ADL_ADAPTERX2_CAPS                      ADL_AdapterX2_Caps = NULL;
+ADL_ADAPTER_CONNECTIONSTATE_GET         ADL_Adapter_ConnectionState_Get = NULL;
+ADL_ADAPTER_SUPPORTEDCONNECTIONS_GET    ADL_Adapter_SupportedConnections_Get = NULL;
+ADL_ADAPTER_CONNECTIONDATA_SET          ADL_Adapter_ConnectionData_Set = NULL;
+ADL_ADAPTER_CONNECTIONDATA_REMOVE       ADL_Adapter_ConnectionData_Remove = NULL;
+ADL_ADAPTER_EMULATIONMODE_SET           ADL_Adapter_EmulationMode_Set = NULL;
+ADL_DISPLAY_MODETIMINGOVERRIDEX2_GET    ADL_Display_ModeTimingOverrideX2_Get = NULL;
+ADL_DISPLAY_MODETIMINGOVERRIDE_SET      ADL_Display_ModeTimingOverride_Set = NULL;
+ADL_ADAPTER_MODETIMINGOVERRIDE_CAPS     ADL_Adapter_ModeTimingOverride_Caps = NULL;
+ADL_DISPLAY_MODETIMINGOVERRIDE_DELETE   ADL_Display_ModeTimingOverride_Delete = NULL;
+
 
 void* __stdcall ADL_Main_Memory_Alloc(int iSize)
 {
@@ -94,10 +103,13 @@ bool InitializeADL();
 bool setConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int iConnectionType, const char* FileName);
 bool removeConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int iPreviousEmulationMode);
 
-const unsigned int g_uiVirtualDisplayWidth = 1920;
-const unsigned int g_uiVirtualDisplayHeight = 1080;
-const float g_fRefreshRate = 60.0f;
+const unsigned int g_uiVirtualDisplayWidth = 1937;
+const unsigned int g_uiVirtualDisplayHeight = 1075;
+const unsigned int g_uiRefreshRate = 60;
 const RFWrapper& g_rfDll = RFWrapper::getInstance();
+bool g_bAddedCustomResolution = false;
+ADLDisplayID g_customDisplayID;
+ADLDisplayModeX2 g_customDisplayMode;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -249,23 +261,61 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
                 {
                     if (lpADLSupportedModes[iSelectedMode].iXRes == g_uiVirtualDisplayWidth && 
                         lpADLSupportedModes[iSelectedMode].iYRes == g_uiVirtualDisplayHeight &&
-                        lpADLSupportedModes[iSelectedMode].fRefreshRate == g_fRefreshRate &&
+                        lpADLSupportedModes[iSelectedMode].fRefreshRate == g_uiRefreshRate &&
                         lpADLSupportedModes[iSelectedMode].iColourDepth == 32)
                     {
-                        lpADLModes[iMode].iXRes = g_uiVirtualDisplayWidth;
-                        lpADLModes[iMode].iYRes = g_uiVirtualDisplayHeight;
-                        lpADLModes[iMode].fRefreshRate = g_fRefreshRate;
-                        lpADLModes[iMode].iColourDepth = 32;
                         break;
                     }
                 }
                 
+                // Display mode not available so we have to add a custom display mode if the display supports it
                 if (iSelectedMode == iNumModes)
                 {
-                    MessageBox(NULL, "Requested mode is not supported for the virtual display!", "ADL Error", MB_ICONERROR | MB_OK);
-                    removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
-                    return -1;
+                    int iOverrideSupported = 0;
+                    if (ADL_OK != ADL_Adapter_ModeTimingOverride_Caps(iAdapterIndex, &iOverrideSupported))
+                    {
+                        MessageBox(NULL, "ADL_Adapter_ModeTimingOverride_Caps failed!", "ADL Error", MB_ICONERROR | MB_OK);
+                        removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
+                        return -1;
+                    }
+
+                    if (ADL_FALSE == iOverrideSupported)
+                    {
+                        MessageBox(NULL, "Requested display mode is not supported and adapter does not support adding custom resolutions!", "ADL Error", MB_ICONERROR | MB_OK);
+                        removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
+                        return -1;
+                    }
+
+                    g_customDisplayMode.iWidth = g_uiVirtualDisplayWidth;
+                    g_customDisplayMode.iHeight = g_uiVirtualDisplayHeight;
+                    g_customDisplayMode.iRefreshRate = g_uiRefreshRate;
+                    g_customDisplayMode.iScanType = 0; // 0 = progressive / ADL_DL_TIMINGFLAG_INTERLACED = interlaced
+                    g_customDisplayMode.iTimingStandard = ADL_DL_MODETIMING_STANDARD_CVT;
+                    g_customDisplayID = lpADLModes[iMode].displayID;
+
+                    ADLDisplayModeInfo dspModeInfo = {};
+
+                    if (ADL_OK != ADL_Display_ModeTimingOverrideX2_Get(iAdapterIndex, lpADLModes[iMode].displayID, &g_customDisplayMode, &dspModeInfo))
+                    {
+                        MessageBox(NULL, "ADL_Display_ModeTimingOverrideX2_Get failed!", "ADL Error", MB_ICONERROR | MB_OK);
+                        removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
+                        return -1;
+                    }
+
+                    if (ADL_OK != ADL_Display_ModeTimingOverride_Set(iAdapterIndex, iDisplayIndex, &dspModeInfo, 1))
+                    {
+                        MessageBox(NULL, "ADL_Display_ModeTimingOverride_Set failed!", "ADL Error", MB_ICONERROR | MB_OK);
+                        removeConnectionData(iAmdAdapterIndex, devicePort, iPreviousEmulationMode);
+                        return -1;
+                    }
+
+                    g_bAddedCustomResolution = true;
                 }
+
+                lpADLModes[iMode].iXRes = g_uiVirtualDisplayWidth;
+                lpADLModes[iMode].iYRes = g_uiVirtualDisplayHeight;
+                lpADLModes[iMode].fRefreshRate = g_uiRefreshRate;
+                lpADLModes[iMode].iColourDepth = 32;
 
                 if (ADL_OK != ADL_Display_Modes_Set(iAdapterIndex, iDisplayIndex, 1, &lpADLModes[iMode]))
                 {
@@ -433,6 +483,10 @@ bool InitializeADL()
         ADL_Adapter_ConnectionData_Set = (ADL_ADAPTER_CONNECTIONDATA_SET)GetProcAddress(hADLDll, "ADL_Adapter_ConnectionData_Set");
         ADL_Adapter_EmulationMode_Set = (ADL_ADAPTER_EMULATIONMODE_SET)GetProcAddress(hADLDll, "ADL_Adapter_EmulationMode_Set");
         ADL_Adapter_ConnectionData_Remove = (ADL_ADAPTER_CONNECTIONDATA_REMOVE)GetProcAddress(hADLDll, "ADL_Adapter_ConnectionData_Remove");
+        ADL_Display_ModeTimingOverrideX2_Get = (ADL_DISPLAY_MODETIMINGOVERRIDEX2_GET)GetProcAddress(hADLDll, "ADL_Display_ModeTimingOverrideX2_Get");
+        ADL_Display_ModeTimingOverride_Set = (ADL_DISPLAY_MODETIMINGOVERRIDE_SET)GetProcAddress(hADLDll, "ADL_Display_ModeTimingOverride_Set");
+        ADL_Adapter_ModeTimingOverride_Caps = (ADL_ADAPTER_MODETIMINGOVERRIDE_CAPS)GetProcAddress(hADLDll, "ADL_Adapter_ModeTimingOverride_Caps");
+        ADL_Display_ModeTimingOverride_Delete = (ADL_DISPLAY_MODETIMINGOVERRIDE_DELETE)GetProcAddress(hADLDll, "ADL_Display_ModeTimingOverride_Delete");
         if (NULL == ADL_Main_Control_Create ||
             NULL == ADL_Main_Control_Destroy||
             NULL == ADL_Display_PossibleMode_Get ||
@@ -445,7 +499,11 @@ bool InitializeADL()
             NULL == ADL_Adapter_SupportedConnections_Get ||
             NULL == ADL_Adapter_ConnectionData_Set ||
             NULL == ADL_Adapter_ConnectionData_Remove ||
-            NULL == ADL_Adapter_EmulationMode_Set)
+            NULL == ADL_Adapter_EmulationMode_Set ||
+            NULL == ADL_Display_ModeTimingOverrideX2_Get ||
+            NULL == ADL_Display_ModeTimingOverride_Set ||
+            NULL == ADL_Adapter_ModeTimingOverride_Caps ||
+            NULL == ADL_Display_ModeTimingOverride_Delete)
         {
             MessageBox(NULL, "Failed to get ADL function pointers\n", "ADL Error", MB_ICONERROR | MB_OK);
             return false;
@@ -547,17 +605,29 @@ bool setConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int i
 
 bool removeConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int iPreviousEmulationMode)
 {
+    bool ret = true;
+
+    // Delete custom display mode if we added one
+    if (g_bAddedCustomResolution)
+    {
+        if (ADL_OK != ADL_Display_ModeTimingOverride_Delete(iAdapterIndex, g_customDisplayID, &g_customDisplayMode, 1))
+        {
+            MessageBox(NULL, "ADL_Display_ModeTimingOverride_Delete failed!", "ADL Error", MB_ICONERROR | MB_OK);
+            ret = false;
+        }
+    }
+
     if (ADL_OK != ADL_Adapter_EmulationMode_Set(iAdapterIndex, devicePort, iPreviousEmulationMode))
     {
         MessageBox(NULL, "ADL_Adapter_EmulationMode_Set failed!", "ADL Error", MB_ICONERROR | MB_OK);
-        return false;
+        ret = false;
     }
 
     if (ADL_OK != ADL_Adapter_ConnectionData_Remove(iAdapterIndex, devicePort))
     {
         MessageBox(NULL, "ADL_Adapter_ConnectionData_Remove failed!", "ADL Error", MB_ICONERROR | MB_OK);
-        return false;
+        ret = false;
     }
 
-    return true;
+    return ret;
 }
