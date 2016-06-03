@@ -69,7 +69,6 @@ GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv)
     , m_uiPresentHeight(0)
     , m_pShader(nullptr)
     , m_uiBaseMap(0)
-    , m_uiVertexBuffer(0)
     , m_uiVertexArray(0)
     , m_pFBO(nullptr)
     , m_pTexture(nullptr)
@@ -128,11 +127,6 @@ GLDOPPCapture::~GLDOPPCapture()
         if (m_pTexture)
         {
             glDeleteTextures(m_uiNumTargets, m_pTexture);
-        }
-
-        if (m_uiVertexBuffer)
-        {
-            glDeleteBuffers(1, &m_uiVertexBuffer);
         }
 
         if (m_uiVertexArray)
@@ -227,8 +221,8 @@ RFStatus GLDOPPCapture::initDOPP(unsigned int uiPresentWidth, unsigned int uiPre
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -242,7 +236,7 @@ RFStatus GLDOPPCapture::initDOPP(unsigned int uiPresentWidth, unsigned int uiPre
         return RF_STATUS_DOPP_FAIL;
     }
 
-    createQuad(fRotation);
+    glGenVertexArrays(1, &m_uiVertexArray);
 
     m_bTrackDesktopChanges = bTrackDesktopChanges;
     m_bBlocking = bBlocking;
@@ -308,8 +302,8 @@ bool GLDOPPCapture::createRenderTargets()
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_pFBO[i]);
 
@@ -352,8 +346,8 @@ RFStatus GLDOPPCapture::resizeDesktopTexture()
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
         // Get the size of the desktop. Usually these are the same values as returned by GetSystemMetrics(SM_CXSCREEN)
         // and GetSystemMetrics(SM_CYSCREEN). In some cases they might differ, e.g. if a rotated desktop is used.
@@ -423,18 +417,19 @@ bool GLDOPPCapture::initEffect()
 
     const char* strVertexShader =
     {
-        "#version 420                                                \n"
-        "                                                            \n"
-        "layout(location = 0) in vec4 inVertex;                      \n"
-        "layout(location = 4) in vec2 inTexCoord;                    \n"
-        "                                                            \n"
-        "varying vec2 Texcoord;                                      \n"
-        "                                                            \n"
-        "void main(void)                                             \n"
-        "{                                                           \n"
-        "    gl_Position = inVertex;								 \n"
-        "    Texcoord    = inTexCoord;                               \n"
-        "}                                                           \n"
+        "#version 420                                                                     \n"
+        "                                                                                 \n"
+        "out vec2 Texcoord;                                                               \n"
+        "                                                                                 \n"
+        "void main( void )                                                                \n"
+        "{                                                                                \n"
+        "   switch(gl_VertexID)                                                           \n"
+        "   {                                                                             \n"
+        "      case 0: gl_Position = vec4(-1, -1, 0, 1); Texcoord = vec2(0, 0); break;    \n"
+        "      case 1: gl_Position = vec4(-1, 3, 0, 1); Texcoord = vec2(0, 2); break;     \n"
+        "      case 2: gl_Position = vec4(3, -1, 0, 1); Texcoord = vec2(2, 0); break;     \n"
+        "   }                                                                             \n"
+        "}                                                                                \n"
     };
 
     const char* strFragmentShader =
@@ -535,7 +530,7 @@ bool GLDOPPCapture::processDesktop(unsigned int idx)
         glUniform1i(m_uiBaseMap, 1);
 
         glBindVertexArray(m_uiVertexArray);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
         m_pShader->unbind();
@@ -565,37 +560,6 @@ unsigned int GLDOPPCapture::getFramebufferTex(unsigned int idx) const
     }
 
     return 0;
-}
-
-
-void GLDOPPCapture::createQuad(float fRotation)
-{
-    const float phi = (static_cast<float>(M_PI) * fRotation) / 180.0f;
-
-    const float vec[] = { -cosf(phi) - sinf(phi),  -sinf(phi) + cosf(phi),  0.0f, 1.0f,   // -1.0f,  1.0f, 0.0f, 1.0f,
-                          -cosf(phi) + sinf(phi),  -sinf(phi) - cosf(phi),  0.0f, 1.0f,   // -1.0f, -1.0f, 0.0f, 1.0f,   
-                           cosf(phi) - sinf(phi),   sinf(phi) + cosf(phi),  0.0f, 1.0f,   //  1.0f,  1.0f, 0.0f, 1.0f,  
-                           cosf(phi) + sinf(phi),   sinf(phi) - cosf(phi),  0.0f, 1.0f }; //  1.0f, -1.0f, 0.0f, 1.0f  
-
-    const float tex[] = { 0.0f, 1.0f,   0.0f,  0.0f,   1.0f, 1.0f,   1.0f, 0.0f };
-
-    glGenVertexArrays(1, &m_uiVertexArray);
-    glBindVertexArray(m_uiVertexArray);
-
-    glGenBuffers(1, &m_uiVertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, m_uiVertexBuffer);
-
-    glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), vec, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 16 * sizeof(float), 8 * sizeof(float), tex);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(4);
-
-    glVertexAttribPointer((GLuint)0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribPointer((GLuint)4, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(16 * sizeof(float)));
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 }
 
 

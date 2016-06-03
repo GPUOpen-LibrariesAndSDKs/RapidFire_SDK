@@ -69,7 +69,6 @@ private:
     bool                setupDOPPExtension();
     bool                createRenderTargets();
     bool                initEffect();
-    void                createQuad(float fRotation);
 
     void                notificationLoop();   
 
@@ -87,7 +86,6 @@ private:
     GLShader*                   m_pShader;
     GLuint                      m_uiBaseMap;
 
-    GLuint                      m_uiVertexBuffer;
     GLuint                      m_uiVertexArray;
     
     GLuint*                     m_pFBO;
