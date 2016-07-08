@@ -25,12 +25,12 @@
 #include <CL/cl.h>
 #include <components/VideoEncoderVCE.h>
 
+#include "AMFWrapper.h"
 #include "RFError.h"
-
-#define CHECK_AMF_ERROR(a) if (a != AMF_OK) return RF_STATUS_AMF_FAIL;
 
 using namespace amf;
 
+#define CHECK_AMF_ERROR(a) if (a != AMF_OK) return RF_STATUS_AMF_FAIL;
 
 RFContextAMF::RFContextAMF()
     : RFContextCL()
@@ -86,7 +86,7 @@ RFStatus RFContextAMF::createContext(DeviceCtx hDC, GraphicsCtx hGLRC)
         return RF_STATUS_FAIL;
     }
 
-    amfErr = AMFCreateContext(&m_amfContext);
+    amfErr = AMFWrapper::CreateContext(&m_amfContext);
     CHECK_AMF_ERROR(amfErr);
 
     // Pass OpenGL context to AMF. If a valuid DC is provided the HWND is not used.
@@ -120,7 +120,7 @@ RFStatus RFContextAMF::createContext(ID3D11Device* pD3DDevice)
         return RF_STATUS_INVALID_D3D_DEVICE;
     }
 
-    amfErr = AMFCreateContext(&m_amfContext);
+    amfErr = AMFWrapper::CreateContext(&m_amfContext);
     CHECK_AMF_ERROR(amfErr);
 
     amfErr = m_amfContext->InitDX11(pD3DDevice);
@@ -154,7 +154,7 @@ RFStatus RFContextAMF::createContext(IDirect3DDevice9Ex* pD3DDeviceEx)
         return RF_STATUS_INVALID_D3D_DEVICE;
     }
 
-    amfErr = AMFCreateContext(&m_amfContext);
+    amfErr = AMFWrapper::CreateContext(&m_amfContext);
     CHECK_AMF_ERROR(amfErr);
 
     amfErr = m_amfContext->InitDX9(pD3DDeviceEx);
@@ -184,7 +184,7 @@ RFStatus RFContextAMF::createContext(IDirect3DDevice9* pD3DDevice)
         return RF_STATUS_INVALID_D3D_DEVICE;
     }
 
-    amfErr = AMFCreateContext(&m_amfContext);
+    amfErr = AMFWrapper::CreateContext(&m_amfContext);
     CHECK_AMF_ERROR(amfErr);
 
     amfErr = m_amfContext->InitDX9(pD3DDevice);

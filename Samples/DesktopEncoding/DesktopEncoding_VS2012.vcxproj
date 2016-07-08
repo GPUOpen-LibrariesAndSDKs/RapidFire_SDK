@@ -103,8 +103,7 @@
       <AdditionalDependencies>RapidFireServer.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -123,8 +122,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <AdditionalDependencies>RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -147,8 +145,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <AdditionalDependencies>RapidFireServer.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -171,8 +168,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
       <AdditionalDependencies>RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

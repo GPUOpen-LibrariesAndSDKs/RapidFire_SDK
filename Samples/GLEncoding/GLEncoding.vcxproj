@@ -103,7 +103,6 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -124,7 +123,6 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -149,7 +147,6 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -174,7 +171,6 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

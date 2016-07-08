@@ -32,6 +32,7 @@
 #include <core/PropertyStorageEx.h>
 #include <core/Surface.h>
 
+#include "AMFWrapper.h"
 #include "RFEncoderSettings.h"
 #include "RFError.h"
 #include "RFTypes.h"
@@ -160,7 +161,7 @@ RFStatus RFEncoderAMF::init(const RFContextCL* pContextCL, const RFEncoderSettin
         return RF_STATUS_AMF_FAIL;
     }
 
-    amfErr = AMFCreateComponent(m_amfContext, AMFVideoEncoderVCE_AVC, &m_amfEncoder);
+    amfErr = AMFWrapper::CreateComponent(m_amfContext, AMFVideoEncoderVCE_AVC, &m_amfEncoder);
 
     if (amfErr != AMF_OK)
     {

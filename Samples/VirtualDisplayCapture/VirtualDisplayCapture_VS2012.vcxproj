@@ -104,8 +104,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D EDID_Emulation.bin $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop32.dll $(OutDir)</Command>
+xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -125,8 +124,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D EDID_Emulation.bin $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop64.dll $(OutDir)</Command>
+xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -150,8 +148,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D EDID_Emulation.bin $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop32.dll $(OutDir)</Command>
+xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -175,8 +172,7 @@ xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFireServer\bin\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D EDID_Emulation.bin $(OutDir)
-xcopy /Y /D ..\..\external\MediaSDK\bin\msvs11\Release\Win$(PlatformArchitecture)\amf-core-windesktop64.dll $(OutDir)</Command>
+xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.6          May 11th 2016
+* * File Version 1.1.0.9          July 8th 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_

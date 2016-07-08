@@ -97,17 +97,19 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;GLEW_STATIC;PPA_DISABLE;RF_SERVER_EXPORTS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./include;./src;../external/MediaSDK/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../external/MediaSDK/lib/msvs11/$(Configuration)/win$(PlatformArchitecture);../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32sd.lib;amf-core-windesktop$(PlatformArchitecture).lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32sd.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -121,15 +123,17 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;GLEW_STATIC;PPA_DISABLE;RF_SERVER_EXPORTS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./include;./src;../external/MediaSDK/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../external/MediaSDK/lib/msvs11/$(Configuration)/win$(PlatformArchitecture);../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32sd.lib;amf-core-windesktop$(PlatformArchitecture).lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32sd.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -145,18 +149,20 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;NDEBUG;PPA_DISABLE;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;RF_SERVER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./include;./src;../external/MediaSDK/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>../external/MediaSDK/lib/msvs11/$(Configuration)/win$(PlatformArchitecture);../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;amf-core-windesktop$(PlatformArchitecture).lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -172,18 +178,20 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;NDEBUG;PPA_DISABLE;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;RF_SERVER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./include;./src;../external/MediaSDK/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>../external/MediaSDK/lib/msvs11/$(Configuration)/win$(PlatformArchitecture);../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;amf-core-windesktop$(PlatformArchitecture).lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2012/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -191,6 +199,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AMFWrapper.cpp" />
     <ClCompile Include="src\DisplayManager.cpp" />
     <ClCompile Include="src\RapidFireServer.cpp" />
     <ClCompile Include="src\RFContext.cpp" />
@@ -216,6 +225,7 @@
     <ClInclude Include="include\RapidFireServer.h" />
     <ClInclude Include="include\RFWrapper.hpp" />
     <ClInclude Include="res\resource.h" />
+    <ClInclude Include="src\AMFWrapper.h" />
     <ClInclude Include="src\DisplayManager.h" />
     <ClInclude Include="src\RFContext.h" />
     <ClInclude Include="src\RFContextAMF.h" />

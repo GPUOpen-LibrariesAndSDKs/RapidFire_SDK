@@ -78,6 +78,9 @@
     <ClCompile Include="src\rgbimage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\AMFWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RFContext.h">
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="include\RapidFireServer.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AMFWrapper.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
