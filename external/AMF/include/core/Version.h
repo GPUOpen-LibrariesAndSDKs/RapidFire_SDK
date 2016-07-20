@@ -38,7 +38,7 @@
 #define AMF_VERSION_MAJOR       1
 #define AMF_VERSION_MINOR       3
 #define AMF_VERSION_RELEASE     0
-#define AMF_VERSION_BUILD_NUM   4
+#define AMF_VERSION_BUILD_NUM   5
 
 #define AMF_FULL_VERSION ( (amf_uint64(AMF_VERSION_MAJOR) << 48ull) | (amf_uint64(AMF_VERSION_MINOR) << 32ull) | (amf_uint64(AMF_VERSION_RELEASE) << 16ull)  | amf_uint64(AMF_VERSION_BUILD_NUM))
 

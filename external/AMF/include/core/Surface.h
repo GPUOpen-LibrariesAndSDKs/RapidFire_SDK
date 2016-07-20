@@ -27,6 +27,10 @@
 #include "Data.h"
 #include "Plane.h"
 
+#pragma warning( push )
+#pragma warning(disable : 4263)
+#pragma warning(disable : 4264)
+
 namespace amf
 {
     enum AMF_SURFACE_FORMAT
@@ -125,5 +129,6 @@ namespace amf
     typedef AMFInterfacePtr_T<AMFSurface> AMFSurfacePtr;
     //----------------------------------------------------------------------------------------------
 }
+#pragma warning( pop )
 
 #endif //#ifndef __AMFSurface_h__

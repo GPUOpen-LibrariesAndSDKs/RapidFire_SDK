@@ -26,6 +26,10 @@
 
 #include "Data.h"
 
+#pragma warning( push )
+#pragma warning(disable : 4263)
+#pragma warning(disable : 4264)
+
 namespace amf
 {
     //----------------------------------------------------------------------------------------------
@@ -59,5 +63,6 @@ namespace amf
     typedef AMFInterfacePtr_T<AMFBuffer> AMFBufferPtr;
     //----------------------------------------------------------------------------------------------
 } // namespace
+#pragma warning( pop )
 
 #endif //#ifndef __AMFBuffer_h__

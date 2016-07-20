@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AE76FF5A-9382-4FA1-9137-868E9F3C6064}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>RapidFireServer</RootNamespace>
+    <ProjectName>RapidFireServer</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>bin/VS2015/$(PlatformName)/$(Configuration)/</OutDir>
+    <IntDir>build/VS2015/$(PlatformName)/$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>bin/VS2015/$(PlatformName)/$(Configuration)/</OutDir>
+    <IntDir>build/VS2015/$(PlatformName)/$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>bin/VS2015/$(PlatformName)/$(Configuration)/</OutDir>
+    <IntDir>build/VS2015/$(PlatformName)/$(Configuration)/</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>bin/VS2015/$(PlatformName)/$(Configuration)/</OutDir>
+    <IntDir>build/VS2015/$(PlatformName)/$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)64</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;GLEW_STATIC;PPA_DISABLE;RF_SERVER_EXPORTS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32sd.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;GLEW_STATIC;PPA_DISABLE;RF_SERVER_EXPORTS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32sd.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;NDEBUG;PPA_DISABLE;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;RF_SERVER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>CL_USE_DEPRECATED_OPENCL_2_0_APIS;WIN32;_WINDOWS;NDEBUG;PPA_DISABLE;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;RF_SERVER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./include;./src;../external/AMF/include;../external/GLEW/include;$(AMDAPPSDKROOT)/include;../external/ADL;../external/DoppDriverInterface/include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AMFWrapper.cpp" />
+    <ClCompile Include="src\DisplayManager.cpp" />
+    <ClCompile Include="src\RapidFireServer.cpp" />
+    <ClCompile Include="src\RFContext.cpp" />
+    <ClCompile Include="src\RFContextAMF.cpp" />
+    <ClCompile Include="src\RFDOPPSession.cpp" />
+    <ClCompile Include="src\RFEncoderAMF.cpp" />
+    <ClCompile Include="src\RFEncoderDM.cpp" />
+    <ClCompile Include="src\RFEncoderIdentity.cpp" />
+    <ClCompile Include="src\RFEncoderSettings.cpp" />
+    <ClCompile Include="src\RFError.cpp" />
+    <ClCompile Include="src\RFGfxSession.cpp" />
+    <ClCompile Include="src\RFGLDOPPCapture.cpp" />
+    <ClCompile Include="src\RFGLShader.cpp" />
+    <ClCompile Include="src\RFKernelCL.cpp" />
+    <ClCompile Include="src\RFLock.cpp" />
+    <ClCompile Include="src\RFMouseGrab.cpp" />
+    <ClCompile Include="src\RFSession.cpp" />
+    <ClCompile Include="src\RFSessionFactory.cpp" />
+    <ClCompile Include="src\RFUtils.cpp" />
+    <ClCompile Include="src\rgbimage.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\RapidFireServer.h" />
+    <ClInclude Include="include\RFWrapper.hpp" />
+    <ClInclude Include="res\resource.h" />
+    <ClInclude Include="src\AMFWrapper.h" />
+    <ClInclude Include="src\DisplayManager.h" />
+    <ClInclude Include="src\RFContext.h" />
+    <ClInclude Include="src\RFContextAMF.h" />
+    <ClInclude Include="src\RFDOPPSession.h" />
+    <ClInclude Include="src\RFEncoder.h" />
+    <ClInclude Include="src\RFEncoderAMF.h" />
+    <ClInclude Include="src\RFEncoderDM.h" />
+    <ClInclude Include="src\RFEncoderIdentity.h" />
+    <ClInclude Include="src\RFEncoderSettings.h" />
+    <ClInclude Include="src\RFError.h" />
+    <ClInclude Include="src\RFGfxSession.h" />
+    <ClInclude Include="src\RFGLDOPPCapture.h" />
+    <ClInclude Include="src\RFGLShader.h" />
+    <ClInclude Include="src\RFLock.h" />
+    <ClInclude Include="src\RFMouseGrab.h" />
+    <ClInclude Include="src\RFPlatform.h" />
+    <ClInclude Include="src\RFPropertyMap.h" />
+    <ClInclude Include="src\RFSession.h" />
+    <ClInclude Include="src\RFTypes.h" />
+    <ClInclude Include="src\RFUtils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\RapidFire.def" />
+    <None Include="src\rfDiffMapKernel.cl" />
+    <None Include="src\rfkernels.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\RapidFireServer.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

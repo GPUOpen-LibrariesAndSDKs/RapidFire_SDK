@@ -111,7 +111,7 @@ bool GLWindow::create()
         }
     }
 
-    RECT wndRect = { 0, 0, m_uiWidth, m_uiHeight };
+    RECT wndRect = { 0, 0, static_cast<LONG>(m_uiWidth), static_cast<LONG>(m_uiHeight) };
     AdjustWindowRect(&wndRect, WS_OVERLAPPEDWINDOW, false);
 
     m_hWND = CreateWindow(GLWINDOW_CLASSNAME,

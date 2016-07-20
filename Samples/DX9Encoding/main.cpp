@@ -210,7 +210,7 @@ bool OpenWindow(LPCSTR cClassName_, LPCSTR cWindowName_)
         return false;
     }
 
-    RECT wndRect = { 0, 0, g_stream_width, g_stream_height };
+    RECT wndRect = { 0, 0, static_cast<LONG>(g_stream_width), static_cast<LONG>(g_stream_height) };
     AdjustWindowRect(&wndRect, WS_OVERLAPPEDWINDOW, false);
 
     g_hWnd = CreateWindow(cClassName,

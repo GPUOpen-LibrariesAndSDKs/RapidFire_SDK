@@ -36,6 +36,7 @@
 
 #define AMF_VIDEO_CONVERTER_OUTPUT_FORMAT       L"OutputFormat"             // Values : AMF_SURFACE_NV12 or AMF_SURFACE_BGRA or AMF_SURFACE_YUV420P
 #define AMF_VIDEO_CONVERTER_MEMORY_TYPE         L"MemoryType"               // Values : AMF_MEMORY_DX11 or AMF_MEMORY_DX9 or AMF_MEMORY_UNKNOWN (get from input type)
+#define AMF_VIDEO_CONVERTER_COMPUTE_DEVICE      L"ComputeDevice"            // Values : AMF_MEMORY_COMPUTE_FOR_DX9 enumeration
 
 #define AMF_VIDEO_CONVERTER_OUTPUT_SIZE         L"OutputSize"               // AMFSize  (default=0,0) width in pixels. default means no scaling
 #define AMF_VIDEO_CONVERTER_OUTPUT_RECT         L"OutputRect"               // AMFRect  (default=0, 0, 0, 0) rectangle in pixels. default means no rect
@@ -46,6 +47,12 @@
 
 
 #define AMF_VIDEO_CONVERTER_SCALE               L"ScaleType"
+
+#define AMF_VIDEO_CONVERTER_GAMMA_MODE          L"GammaMode"
+#define AMF_VIDEO_CONVERTER_GAMMA_VALUE         L"GammaValue"
+#define AMF_VIDEO_CONVERTER_PQ_NORM_FACTOR      L"PqNormFactor"
+
+#define AMF_VIDEO_CONVERTER_FORCE_OUTPUT_SURFACE_SIZE   L"ForceOutputSurfaceSize"   // bool (default=false) Force output size from output surface 
 
 enum AMF_VIDEO_CONVERTER_SCALE_ENUM
 {
@@ -61,6 +68,9 @@ enum AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM
     AMF_VIDEO_CONVERTER_COLOR_PROFILE_UNKNOWN = -1,
     AMF_VIDEO_CONVERTER_COLOR_PROFILE_601 = 0,
     AMF_VIDEO_CONVERTER_COLOR_PROFILE_709 = 1,
+	AMF_VIDEO_CONVERTER_COLOR_PROFILE_2020 = 2,
     AMF_VIDEO_CONVERTER_COLOR_PROFILE_COUNT
 };
+
+
 #endif //#ifndef __AMFVideoConverter_h__

@@ -59,7 +59,7 @@ RFMouseGrab::RFMouseGrab(DOPPDrvInterface* pDrv, unsigned int uiDisplayId)
     m_animatedCursorInfo.dwFrameIndex = 0;
     m_animatedCursorInfo.dwUpdateCounter = 0;
 
-    m_hcFallBackCursor = LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW));
+    m_hcFallBackCursor = LoadCursor(NULL, IDC_ARROW);
     if (!m_hcFallBackCursor)
     {
         throw std::runtime_error("Failed to load IDC_ARROW cursor");

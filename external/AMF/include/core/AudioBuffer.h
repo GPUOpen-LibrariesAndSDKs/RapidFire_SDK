@@ -29,6 +29,9 @@
 #pragma once
 
 #include "Data.h"
+#pragma warning( push )
+#pragma warning(disable : 4263)
+#pragma warning(disable : 4264)
 
 namespace amf
 {
@@ -88,5 +91,6 @@ namespace amf
     typedef AMFInterfacePtr_T<AMFAudioBuffer> AMFAudioBufferPtr;
     //----------------------------------------------------------------------------------------------
 } // namespace
+#pragma warning( pop )
 
 #endif //#ifndef __AMFAudioBuffer_h__

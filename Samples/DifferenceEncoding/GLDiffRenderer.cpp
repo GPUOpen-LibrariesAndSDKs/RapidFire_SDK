@@ -149,7 +149,7 @@ void GLDiffRenderer::updateTexture(const char* pSource, const char* pDiffMap) co
 
     glBindTexture(GL_TEXTURE_2D, m_uiDiffTexture);
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_uiDiffMapDimension[0], m_uiDiffMapDimension[1], GL_RED, GL_UNSIGNED_BYTE, reinterpret_cast<void*>(m_uiSourceTextureSize));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_uiDiffMapDimension[0], m_uiDiffMapDimension[1], GL_RED, GL_UNSIGNED_BYTE, reinterpret_cast<void*>(static_cast<uintptr_t>(m_uiSourceTextureSize)));
 
     glBindTexture(GL_TEXTURE_2D, 0);
 

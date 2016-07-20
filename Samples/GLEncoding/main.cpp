@@ -144,8 +144,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
 
     // Register FBOs to RapidFire session
-    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(fbo[0].getColorTex()), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
-    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(fbo[1].getColorTex()), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
+    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(static_cast<uintptr_t>(fbo[0].getColorTex())), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(static_cast<uintptr_t>(fbo[1].getColorTex())), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
     if (!success)
     {

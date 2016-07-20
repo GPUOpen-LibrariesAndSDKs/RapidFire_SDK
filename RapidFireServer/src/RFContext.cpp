@@ -1070,7 +1070,10 @@ bool RFContextCL::configureKernels()
     m_CSCKernels[RF_KERNEL_RGBA_COPY].uiLocalWorkSize[0] = 16;
     m_CSCKernels[RF_KERNEL_RGBA_COPY].uiLocalWorkSize[1] = 16;
 
-    cl_int4 vDim = { m_uiOutputWidth, m_uiOutputHeight, m_uiAlignedOutputWidth, m_uiAlignedOutputHeight };
+    cl_int4 vDim = { static_cast<int>(m_uiOutputWidth),
+                     static_cast<int>(m_uiOutputHeight),
+                     static_cast<int>(m_uiAlignedOutputWidth),
+                     static_cast<int>(m_uiAlignedOutputHeight) };
 
     for (unsigned int i = 0; i < RF_KERNEL_NUMBER; ++i)
     {
