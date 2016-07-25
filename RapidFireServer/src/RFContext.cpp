@@ -1383,7 +1383,7 @@ RFStatus RFContextCL::buildCLProgram(const std::string& strKernelFileName, const
         fseek(fp, 0L, SEEK_END);
         size_t size = ftell(fp);
         fseek(fp, 0L, SEEK_SET);
-        DWORD fileVersion[] = { -1, -1, -1, -1 };
+        DWORD fileVersion[] = { UINT_MAX, UINT_MAX, UINT_MAX, UINT_MAX };
         if (size > sizeof(DWORD) * 4)
         {
             fread(fileVersion, sizeof(DWORD), 4, fp);
@@ -1448,7 +1448,7 @@ RFStatus RFContextCL::buildCLProgram(const std::string& strKernelFileName, const
         if (   0 == m_dwVersion[0] && 0 == m_dwVersion[1]
             && 0 == m_dwVersion[2] && 0 == m_dwVersion[3])
         {
-            DWORD fileVersion[] = { -1, -1, -1, -1 };
+            DWORD fileVersion[] = { UINT_MAX, UINT_MAX, UINT_MAX, UINT_MAX };
             f.write(reinterpret_cast<const char*>(fileVersion), sizeof(DWORD) * 4);
         }
         else

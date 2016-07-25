@@ -73,8 +73,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     unsigned int uiStreamWidth  = GetSystemMetrics(SM_CXSCREEN);
     unsigned int uiStreamHeight = GetSystemMetrics(SM_CYSCREEN);
 
-    unsigned int BlockX = 128;
-    unsigned int BlockY = 128;
+    int BlockX = 128;
+    int BlockY = 128;
 
     RFProperties  encoderProps[] = { RF_ENCODER_FORMAT,       RF_RGBA8, 
                                      RF_DIFF_ENCODER_BLOCK_S, BlockX,

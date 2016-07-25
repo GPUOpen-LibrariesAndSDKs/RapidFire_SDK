@@ -105,7 +105,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration)/;$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32sd.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
@@ -129,7 +129,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration)/;$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32sd.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
@@ -157,7 +157,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration)/;$(AMDAPPSDKROOT)/lib/x86</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32s.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
@@ -187,7 +187,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration);$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../external/GLEW/lib/$(Configuration)/$(PlatformName);../external/DoppDriverInterface/lib/VS2015/$(PlatformName)/$(Configuration)/;$(AMDAPPSDKROOT)/lib/x86_64</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32s.lib;DoppDrvInterface.lib;OpenGL32.lib;OpenCL.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>lib/VS2015/$(PlatformName)/$(Configuration)/$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/DEF:src\RapidFire.def %(AdditionalOptions)</AdditionalOptions>
