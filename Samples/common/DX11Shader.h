@@ -22,43 +22,57 @@
 
 #pragma once
 
-#include <GL/glew.h>
+#include <d3d11.h>
 
-class GLRenderTarget
+class DX11Shader
 {
 public:
-    GLRenderTarget();
-    ~GLRenderTarget();
 
-    // Create FBO with specified dimension and format
-    bool    createBuffer(unsigned int nWidth, unsigned int nHeight, int nBufferFormat, int nExtFormat, int nType);
-    // Delete FBO and storage
-    void    deleteBuffer();
+    DX11Shader();
+    ~DX11Shader();
 
-    // Bind FBO
-    void    bind(GLenum nTarget = GL_FRAMEBUFFER) const;
+    bool create(ID3D11Device* pd3dDevice, const char* vertexShader, const char* pixelShader);
+    void release();
+    void set(ID3D11DeviceContext* pd3dImmediateContext) const;
 
-    // Release FBO
-    void    unbind() const;
+    operator bool() const
+    {
+        return m_pixelShader != nullptr;
+    }
 
-    // Draws color attachment as texture into a screen aligned quad
-    void    draw() const;
+protected:
 
-    int             getBufferFormat() const;
-    unsigned int    getBufferWidth() const;
-    unsigned int    getBufferHeight() const;
-    unsigned int    getColorTex() const { return m_uiColorTex; }
+    ID3D11VertexShader*	m_vertexShader;
+    ID3D11PixelShader* m_pixelShader;
 
-private:
+    DX11Shader(DX11Shader const& w);
 
-    GLuint          m_uiBufferId;
-    GLuint          m_uiColorTex;
-    GLuint          m_uiDepthBuffer;
-    unsigned int    m_uiBufferWidth;
-    unsigned int    m_uiBufferHeight;
-    unsigned int    m_uiQuad;
+    DX11Shader operator=(DX11Shader const rhs);
+};
 
-    int             m_nBufferFormat;
-    int             m_nExtFormat;
-    int             m_nType;
+class DX11ConstantBuffer
+{
+public:
+
+    DX11ConstantBuffer();
+    ~DX11ConstantBuffer();
+
+    bool create(ID3D11Device* pd3dDevice, UINT size);
+    void release();
+    void* map(ID3D11DeviceContext* pd3dImmediateContext, bool discardBufferContent) const;
+    void unmap(ID3D11DeviceContext* pd3dImmediateContext) const;
+    void set(ID3D11DeviceContext* pd3dImmediateContext, UINT slot) const;
+
+    operator bool() const
+    {
+        return m_buffer != nullptr;
+    }
+
+protected:
+
+    ID3D11Buffer* m_buffer;
+
+    DX11ConstantBuffer(DX11ConstantBuffer const& w);
+
+    DX11ConstantBuffer operator=(DX11ConstantBuffer const rhs);
 };

@@ -25,22 +25,25 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
+#include "..\common\DX11Shader.h"
+
 class Cube
 {
 public:
 
     Cube();
 
-    bool OnCreateDevice(ID3D11Device* pd3dDevice);
-    void OnDestroyDevice();
-    void Update(ID3D11DeviceContext* pd3dImmediateContext, const DirectX::XMMATRIX& viewProjMatrix);
-    void Draw(ID3D11DeviceContext* pd3dImmediateContext) const;
+    bool create(ID3D11Device* pd3dDevice, uint32_t screenWidth, uint32_t screenHeight);
+    void release();
+    void update(ID3D11DeviceContext* pd3dImmediateContext, float time);
+    void draw(ID3D11DeviceContext* pd3dImmediateContext) const;
 
 private:
 
-    ID3D11VertexShader*	m_vertexShader;
-    ID3D11PixelShader* m_pixelShader;
-    ID3D11Buffer* m_constantBuffer;
+    DX11Shader          m_shader;
+    DX11ConstantBuffer  m_constantBuffer;
 
-    float m_angle;
+    DirectX::XMFLOAT4X4	m_viewMatrix;
+    DirectX::XMFLOAT4X4 m_projMatrix;
+    float               m_angle;
 };

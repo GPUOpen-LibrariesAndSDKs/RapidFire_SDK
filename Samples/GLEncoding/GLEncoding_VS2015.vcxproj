@@ -179,6 +179,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
   <ItemGroup>
     <ClCompile Include="..\common\GLRenderTarget.cpp" />
     <ClCompile Include="..\common\GLShader.cpp" />
+    <ClCompile Include="..\common\GLWindow.cpp" />
     <ClCompile Include="..\common\rgbimage.cpp" />
     <ClCompile Include="FireCube.cpp" />
     <ClCompile Include="main.cpp" />
@@ -186,6 +187,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
   <ItemGroup>
     <ClInclude Include="..\common\GLRenderTarget.h" />
     <ClInclude Include="..\common\GLShader.h" />
+    <ClInclude Include="..\common\GLWindow.h" />
     <ClInclude Include="FireCube.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

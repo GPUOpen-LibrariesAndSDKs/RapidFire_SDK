@@ -20,45 +20,32 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+#include "Timer.h"
 
-#include <GL/glew.h>
+float Timer::s_clockTime = 0.0;
 
-class GLRenderTarget
+Timer::Timer()
 {
-public:
-    GLRenderTarget();
-    ~GLRenderTarget();
+    if (s_clockTime == 0.0)
+    {
+        LARGE_INTEGER freq;
+        QueryPerformanceFrequency(&freq);
 
-    // Create FBO with specified dimension and format
-    bool    createBuffer(unsigned int nWidth, unsigned int nHeight, int nBufferFormat, int nExtFormat, int nType);
-    // Delete FBO and storage
-    void    deleteBuffer();
+        s_clockTime = 1.0f / freq.QuadPart;
+    }
 
-    // Bind FBO
-    void    bind(GLenum nTarget = GL_FRAMEBUFFER) const;
+    reset();
+}
 
-    // Release FBO
-    void    unbind() const;
+void Timer::reset()
+{
+    QueryPerformanceCounter(&m_startTime);
+}
 
-    // Draws color attachment as texture into a screen aligned quad
-    void    draw() const;
+float Timer::getTime()
+{
+    LARGE_INTEGER time;
+    QueryPerformanceCounter(&time);
 
-    int             getBufferFormat() const;
-    unsigned int    getBufferWidth() const;
-    unsigned int    getBufferHeight() const;
-    unsigned int    getColorTex() const { return m_uiColorTex; }
-
-private:
-
-    GLuint          m_uiBufferId;
-    GLuint          m_uiColorTex;
-    GLuint          m_uiDepthBuffer;
-    unsigned int    m_uiBufferWidth;
-    unsigned int    m_uiBufferHeight;
-    unsigned int    m_uiQuad;
-
-    int             m_nBufferFormat;
-    int             m_nExtFormat;
-    int             m_nType;
-};
+    return s_clockTime * (time.QuadPart - m_startTime.QuadPart);
+}

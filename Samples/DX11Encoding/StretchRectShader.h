@@ -22,43 +22,27 @@
 
 #pragma once
 
-#include <GL/glew.h>
+#include <d3d11.h>
 
-class GLRenderTarget
+#include "..\common\DX11Shader.h"
+
+class StretchRectShader
 {
 public:
-    GLRenderTarget();
-    ~GLRenderTarget();
 
-    // Create FBO with specified dimension and format
-    bool    createBuffer(unsigned int nWidth, unsigned int nHeight, int nBufferFormat, int nExtFormat, int nType);
-    // Delete FBO and storage
-    void    deleteBuffer();
+    StretchRectShader();
+    ~StretchRectShader();
 
-    // Bind FBO
-    void    bind(GLenum nTarget = GL_FRAMEBUFFER) const;
+    bool create(ID3D11Device* device);
+    void release();
 
-    // Release FBO
-    void    unbind() const;
+    // Copies the src shader resource view into the dest render target.
+    // nullptr for rect parameters causes the entire source or dest to be used
+    void stretchRect(ID3D11DeviceContext* context, ID3D11ShaderResourceView* src, const RECT* sourceRect, ID3D11RenderTargetView* dest, const RECT* destRect) const;
 
-    // Draws color attachment as texture into a screen aligned quad
-    void    draw() const;
+protected:
 
-    int             getBufferFormat() const;
-    unsigned int    getBufferWidth() const;
-    unsigned int    getBufferHeight() const;
-    unsigned int    getColorTex() const { return m_uiColorTex; }
-
-private:
-
-    GLuint          m_uiBufferId;
-    GLuint          m_uiColorTex;
-    GLuint          m_uiDepthBuffer;
-    unsigned int    m_uiBufferWidth;
-    unsigned int    m_uiBufferHeight;
-    unsigned int    m_uiQuad;
-
-    int             m_nBufferFormat;
-    int             m_nExtFormat;
-    int             m_nType;
+    DX11Shader          m_Shader;
+    DX11ConstantBuffer  m_ConstantBuffer;
+    ID3D11SamplerState* m_pD3DSamplerState;
 };

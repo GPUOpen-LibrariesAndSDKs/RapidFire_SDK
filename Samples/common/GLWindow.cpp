@@ -44,14 +44,30 @@ GLWindow::GLWindow(const std::string& strWindowName, unsigned int uiWidth, unsig
     , m_uiPosX(uiPosX)
     , m_uiPosY(uiPosY)
     , m_bFullScreen(bFullScreen)
-    , m_bWindowCreated(false)
     , m_bMinimized(false)
     , m_hDC(NULL)
     , m_hWND(NULL)
     , m_hGLRC(NULL)
 {
-    m_bWindowCreated = create();
+    create(WGL_CONTEXT_CORE_PROFILE_BIT_ARB);
 }
+
+
+GLWindow::GLWindow(const std::string& strWindowName, unsigned int uiWidth, unsigned int uiHeight, unsigned int uiPosX, unsigned int uiPosY, bool bFullScreen, int32_t glContextProfileMaskARB)
+    : m_strWindowName(strWindowName)
+    , m_uiWidth(uiWidth)
+    , m_uiHeight(uiHeight)
+    , m_uiPosX(uiPosX)
+    , m_uiPosY(uiPosY)
+    , m_bFullScreen(bFullScreen)
+    , m_bMinimized(false)
+    , m_hDC(NULL)
+    , m_hWND(NULL)
+    , m_hGLRC(NULL)
+{
+    create(glContextProfileMaskARB);
+}
+
 
 
 GLWindow::GLWindow(GLWindow&& other)
@@ -61,7 +77,6 @@ GLWindow::GLWindow(GLWindow&& other)
     , m_uiPosX(other.m_uiPosX)
     , m_uiPosY(other.m_uiPosY)
     , m_bFullScreen(other.m_bFullScreen)
-    , m_bWindowCreated(other.m_bWindowCreated)
     , m_bMinimized(other.m_bMinimized)
     , m_hWND(other.m_hWND)
     , m_hDC(other.m_hDC)
@@ -91,7 +106,7 @@ GLWindow::~GLWindow(void)
 }
 
 
-bool GLWindow::create()
+bool GLWindow::create(int32_t glContextProfileMaskARB)
 {
     WNDCLASSEX wndClass = {};
     if (!GetClassInfoEx(static_cast<HINSTANCE>(GetModuleHandle(NULL)), GLWINDOW_CLASSNAME, &wndClass))
@@ -182,9 +197,9 @@ bool GLWindow::create()
         wglMakeCurrent(m_hDC, NULL);
         wglDeleteContext(m_hGLRC);
 
-        int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        int32_t attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
                           WGL_CONTEXT_MINOR_VERSION_ARB, 2,
-                          WGL_CONTEXT_PROFILE_MASK_ARB , WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                          WGL_CONTEXT_PROFILE_MASK_ARB , glContextProfileMaskARB,
 #ifdef _DEBUG             
                           WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
 #endif                    
@@ -218,7 +233,7 @@ bool GLWindow::create()
 
 void GLWindow::open() const
 {
-    if (m_bWindowCreated)
+    if (m_hWND)
     {
         ShowWindow(m_hWND, SW_SHOWDEFAULT);
 
@@ -238,7 +253,7 @@ void GLWindow::resize(unsigned int w, unsigned int h)
 
 void GLWindow::makeCurrent() const
 {
-    if (m_bWindowCreated)
+    if (m_hWND)
     {
         wglMakeCurrent(m_hDC, m_hGLRC);
     }
@@ -247,7 +262,7 @@ void GLWindow::makeCurrent() const
 
 void GLWindow::releaseContext() const
 {
-    if (m_bWindowCreated)
+    if (m_hDC)
     {
         wglMakeCurrent(m_hDC, NULL);
     }
@@ -256,7 +271,7 @@ void GLWindow::releaseContext() const
 
 void GLWindow::close() const
 {
-    if (m_bWindowCreated)
+    if (m_hWND)
     {
         ShowWindow(m_hWND, SW_HIDE);
 

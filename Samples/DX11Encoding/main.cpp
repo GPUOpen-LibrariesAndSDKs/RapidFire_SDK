@@ -26,8 +26,8 @@
 // DX11 texture.
 // First a RF session is created passing the DirectX 11 device. The session is configured 
 // to use the AMF encoder (HW encoding). The rendertargets that are used by the application are
-// registered, now the application can render to those rendertargets and encodeFrame will use
-// them as input for the encoder and return a H264 frame that is dumped to a file.
+// registered, the application then renders into an offscreen render target and 
+// uses that to composite the render target used for encoding.
 // 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,14 +35,14 @@
 #include <string>
 #include <thread>
 
-#include <d3d11.h>
-#include <DirectXMath.h>
 #include <windows.h>
 
+#include "..\common\DX11Window.h"
+#include "..\common\DX11RenderTarget.h"
+#include "..\common\Timer.h"
+#include "StretchRectShader.h"
 #include "Cube.h"
 #include "RapidFireServer.h"
-
-using namespace DirectX;
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(x) \
@@ -53,31 +53,19 @@ using namespace DirectX;
    }
 #endif
 
-HWND					g_hWnd = NULL;
-ID3D11Device*			g_pD3DDevice = nullptr;
-ID3D11DeviceContext*	g_pImmediateContext = nullptr;
-IDXGISwapChain*			g_pSwapChain = nullptr;
-ID3D11RenderTargetView* g_pRtv = nullptr;
-ID3D11DepthStencilView* g_pDsv = nullptr;
-D3D11_VIEWPORT          g_viewPort = {};
-ID3D11Texture2D*		g_pRTTextures[2] = { nullptr, nullptr };
-ID3D11RenderTargetView*	g_pRTEncoding[2] = { nullptr, nullptr };
-XMFLOAT4X4				g_viewMatrix;
-XMFLOAT4X4				g_projMatrix;
+DX11RenderTarget		g_RTSource;
+DX11RenderTarget		g_RTEncoding[2];
+StretchRectShader       g_stretchRectShader;
 Cube					g_cube;
-double					g_secondsPerCount;
-LARGE_INTEGER			g_startTime;
+Timer                   g_timer;
 
 bool                    g_running = true;
 unsigned int            g_stream_width = 1280;
 unsigned int            g_stream_height = 720;
+DX11Window              g_win;
 
-bool OpenWindow(LPCSTR cClassName, LPCSTR cWindowName);
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-bool CreateDeviceAndSwapChain();
-void DestroyDevice();
-bool Resize();
+bool CreateDX11Resources();
+void DestroyDX11Resources();
 void Update();
 void Draw(unsigned int rtIdx);
 
@@ -118,23 +106,23 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 {
     RFStatus             rfStatus = RF_STATUS_OK;
     RFEncodeSession      rfSession = nullptr;
-    LPCSTR cClassName  = "DX11WindowClass";
-    LPCSTR cWindowName = "DX11 Encoding";
 
-    if (!OpenWindow(cClassName, cWindowName))
+    if (!g_win.create("DirectX 11 Encoding", g_stream_width, g_stream_height, CW_USEDEFAULT, CW_USEDEFAULT))
     {
-        MessageBox(NULL, "Failed to create window!", "RF Error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, "Failed to create output window!", "RF Error", MB_ICONERROR | MB_OK);
         return -1;
     }
 
-    if (!CreateDeviceAndSwapChain())
+    g_win.open();
+
+    if (!CreateDX11Resources())
     {
-        MessageBox(NULL, "Failed to create D3D11Device!", "RF Error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, "Failed to create DirectX 11 Resources!", "RF Error", MB_ICONERROR | MB_OK);
         return -1;
     }
 
     RFProperties props[] = { RF_ENCODER,      static_cast<RFProperties>(RF_AMF),       // Use HW H.264 encoder
-                             RF_D3D11_DEVICE, reinterpret_cast<RFProperties>(g_pD3DDevice), // pass device to RF
+                             RF_D3D11_DEVICE, reinterpret_cast<RFProperties>(g_win.getDevice()), // pass device to RF
                              0 };
 
     // Create encoding session
@@ -173,8 +161,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     unsigned int rf_fbo_idx[2];
 
     // Register rendertargets to the RapidFire session
-    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRTTextures[0]), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
-    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRTTextures[1]), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
+    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_RTEncoding[0].getRenderTargetTexture()), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_RTEncoding[1].getRenderTargetTexture()), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
     if (!success)
     {
@@ -186,13 +174,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     // create thread that dumps encoded frames to file.
     std::thread reader(ReaderThread, rfSession, "DX11Stream.h264");
 
-    LARGE_INTEGER freq;
-    QueryPerformanceFrequency(&freq);
-    g_secondsPerCount = 1.0 / freq.QuadPart;
-    QueryPerformanceCounter(&g_startTime);
-
     unsigned int uiIndex = 0;
-
     MSG msg = {};
 
     for (;;)
@@ -233,119 +215,33 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
     rfDeleteEncodeSession(&rfSession);
 
-    DestroyDevice();
-
-    UnregisterClass(cClassName, hInst);
+    DestroyDX11Resources();
 
     return static_cast<int>(msg.wParam);
 }
 
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+bool CreateDX11Resources()
 {
-    switch (uMsg)
-    {
-        case WM_CHAR:
-            if (wParam == VK_ESCAPE)
-            {
-                PostQuitMessage(0);
-            }
-            return 0;
-
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            return 0;
-    }
-
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
-
-bool OpenWindow(LPCSTR cClassName_, LPCSTR cWindowName_)
-{
-    WNDCLASSEX		    wndclass    = {};
-    const LPCSTR        cClassName  = cClassName_;
-    const LPCSTR	    cWindowName = cWindowName_;
-
-    // Register WindowClass
-    wndclass.cbSize        = sizeof(WNDCLASSEX);
-    wndclass.style         = CS_HREDRAW | CS_VREDRAW;
-    wndclass.lpfnWndProc   = WndProc;
-    wndclass.hInstance     = static_cast<HINSTANCE>(GetModuleHandle(NULL));
-    wndclass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wndclass.hbrBackground = static_cast<HBRUSH>(GetStockObject(NULL_BRUSH));
-    wndclass.lpszClassName = cClassName;
-    wndclass.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wndclass))
+    if (!g_stretchRectShader.create(g_win.getDevice()))
     {
         return false;
     }
 
-    RECT wndRect = { 0, 0, static_cast<LONG>(g_stream_width), static_cast<LONG>(g_stream_height) };
-    AdjustWindowRect(&wndRect, WS_OVERLAPPEDWINDOW, false);
-
-    g_hWnd = CreateWindow(cClassName,
-                          cWindowName,
-                          WS_OVERLAPPEDWINDOW,
-                          CW_USEDEFAULT,
-                          CW_USEDEFAULT,
-                          wndRect.right - wndRect.left,
-                          wndRect.bottom - wndRect.top,
-                          NULL,
-                          NULL,
-                          static_cast<HINSTANCE>(GetModuleHandle(NULL)),
-                          nullptr);
-
-    if (!g_hWnd)
+    if (!g_RTSource.create(g_win.getDevice(), g_stream_width, g_stream_height, DXGI_FORMAT_B8G8R8A8_UNORM))
     {
         return false;
     }
 
-    ShowWindow(g_hWnd, SW_SHOWDEFAULT);
-    UpdateWindow(g_hWnd);
-
-    return true;
-}
-
-
-bool CreateDeviceAndSwapChain()
-{
-    HRESULT hr = S_OK;
-
-    D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
-    DXGI_SWAP_CHAIN_DESC swapchainDesc = {};
-    swapchainDesc.BufferCount = 1;
-    swapchainDesc.BufferDesc.Width = g_stream_width;
-    swapchainDesc.BufferDesc.Height = g_stream_height;
-    swapchainDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    swapchainDesc.BufferDesc.RefreshRate.Numerator = 60;
-    swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapchainDesc.OutputWindow = g_hWnd;
-    swapchainDesc.SampleDesc.Count = 1;
-    swapchainDesc.SampleDesc.Quality = 0;
-    swapchainDesc.Windowed = TRUE;
-
-#ifdef _DEBUG
-    DWORD deviceFlags = D3D11_CREATE_DEVICE_DEBUG;
-#else
-    DWORD deviceFlags = NULL;
-#endif
-
-    hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, &featureLevel, 1, D3D11_SDK_VERSION, &swapchainDesc, &g_pSwapChain, &g_pD3DDevice, nullptr, &g_pImmediateContext);
-    if (hr != S_OK)
+    for (int i = 0; i < 2; ++i)
     {
-        return false;
+        if (!g_RTEncoding[i].create(g_win.getDevice(), g_stream_width, g_stream_height, DXGI_FORMAT_B8G8R8A8_UNORM))
+        {
+            return false;
+        }
     }
 
-    if (!Resize())
-    {
-        return false;
-    }
-
-    if (!g_cube.OnCreateDevice(g_pD3DDevice))
+    if (!g_cube.create(g_win.getDevice(), g_stream_width, g_stream_height))
     {
         return false;
     }
@@ -354,137 +250,56 @@ bool CreateDeviceAndSwapChain()
 }
 
 
-bool Resize()
+void DestroyDX11Resources()
 {
-    if (!g_pD3DDevice || !g_pImmediateContext || !g_pSwapChain)
-    {
-        return false;
-    }
-
-    if (g_pSwapChain->ResizeBuffers(1, g_stream_width, g_stream_height, DXGI_FORMAT_B8G8R8A8_UNORM, 0))
-    {
-        return false;
-    }
-
-    ID3D11Texture2D* backBuffer;
-    if (g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)) != S_OK)
-    {
-        return false;
-    }
-
-    if (g_pD3DDevice->CreateRenderTargetView(backBuffer, nullptr, &g_pRtv) != S_OK)
-    {
-        SAFE_RELEASE(backBuffer);
-        return false;
-    }
-    SAFE_RELEASE(backBuffer);
-
-    D3D11_TEXTURE2D_DESC textureDesc = {};
-    textureDesc.Width              = g_stream_width;
-    textureDesc.Height             = g_stream_height;
-    textureDesc.MipLevels          = 1;
-    textureDesc.ArraySize          = 1;
-    textureDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    textureDesc.SampleDesc.Count   = 1;
-    textureDesc.SampleDesc.Quality = 0;
-    textureDesc.Usage              = D3D11_USAGE_DEFAULT;
-    textureDesc.BindFlags          = D3D11_BIND_DEPTH_STENCIL;
-
-    ID3D11Texture2D* depthStencil;
-    if (g_pD3DDevice->CreateTexture2D(&textureDesc, nullptr, &depthStencil) != S_OK)
-    {
-        return false;
-    }
-
-    if (g_pD3DDevice->CreateDepthStencilView(depthStencil, nullptr, &g_pDsv) != S_OK)
-    {
-        SAFE_RELEASE(depthStencil);
-        return false;
-    }
-
-    SAFE_RELEASE(depthStencil);
-
-    g_viewPort.TopLeftX = 0;
-    g_viewPort.TopLeftY = 0;
-    g_viewPort.Width    = static_cast<float>(g_stream_width);
-    g_viewPort.Height   = static_cast<float>(g_stream_height);
-    g_viewPort.MinDepth = 0.0f;
-    g_viewPort.MaxDepth = 1.0f;
-
-    textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
-    if (g_pD3DDevice->CreateTexture2D(&textureDesc, nullptr, &g_pRTTextures[0]) != S_OK)
-    {
-        return false;
-    }
-
-    if (g_pD3DDevice->CreateRenderTargetView(g_pRTTextures[0], nullptr, &g_pRTEncoding[0]))
-    {
-        return false;
-    }
-
-    if (g_pD3DDevice->CreateTexture2D(&textureDesc, nullptr, &g_pRTTextures[1]) != S_OK)
-    {
-        return false;
-    }
-
-    if (g_pD3DDevice->CreateRenderTargetView(g_pRTTextures[1], nullptr, &g_pRTEncoding[1]))
-    {
-        return false;
-    }
-
-    XMMATRIX proj = XMMatrixPerspectiveFovLH(0.25f * XM_PI, static_cast<float>(g_stream_width) / g_stream_height, 0.1f, 100.0f);
-    XMStoreFloat4x4(&g_projMatrix, proj);
-
-    return true;
-}
-
-
-void DestroyDevice()
-{
-    g_cube.OnDestroyDevice();
-    SAFE_RELEASE(g_pRTEncoding[0]);
-    SAFE_RELEASE(g_pRTEncoding[1]);
-    SAFE_RELEASE(g_pRTTextures[0]);
-    SAFE_RELEASE(g_pRTTextures[1]);
-    SAFE_RELEASE(g_pRtv);
-    SAFE_RELEASE(g_pDsv);
-    SAFE_RELEASE(g_pSwapChain);
-    SAFE_RELEASE(g_pImmediateContext);
-    SAFE_RELEASE(g_pD3DDevice);
+    g_cube.release();
+    g_RTSource.release();
+    g_RTEncoding[0].release();
+    g_RTEncoding[1].release();
+    g_stretchRectShader.release();
 }
 
 
 void Update()
 {
-    LARGE_INTEGER time;
-    QueryPerformanceCounter(&time);
-    time.QuadPart -= g_startTime.QuadPart;
-    double fTime = static_cast<float>(g_secondsPerCount) * time.QuadPart;
-
-    float x = static_cast<float>(1.5 * cos(fTime));
-    float y = static_cast<float>(0.75 * sin(fTime));
-
-    XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0, 0, -3, 1), XMVectorSet(x, y, 0, 1), XMVectorSet(0, 1, 0, 0));
-    XMStoreFloat4x4(&g_viewMatrix, view);
-
-    g_cube.Update(g_pImmediateContext, view * XMLoadFloat4x4(&g_projMatrix));
+    g_cube.update(g_win.getContext(), g_timer.getTime());
 }
 
 
 void Draw(unsigned int rtIdx)
 {
-    FLOAT clearColor[4] = { 76.0f / 255.0f, 76.0f / 255.0f, 127.0f / 255.0f, 1.0f };
+    FLOAT clearColorSource[4] = { 76.0f / 255.0f, 76.0f / 255.0f, 127.0f / 255.0f, 1.0f };
+    auto context = g_win.getContext();
 
-    // draw into rendertarget with id rtIdx
-    g_pImmediateContext->RSSetViewports(1, &g_viewPort);
-    g_pImmediateContext->OMSetRenderTargets(1, &g_pRTEncoding[rtIdx], g_pDsv);
-    g_pImmediateContext->ClearRenderTargetView(g_pRTEncoding[rtIdx], clearColor);
-    g_pImmediateContext->ClearDepthStencilView(g_pDsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    // draw into source rendertarget with id rtIdx
+    context->RSSetViewports(1, &g_win.getViewPort());
+    g_RTSource.set(context);
+    g_RTSource.clear(context, clearColorSource, 1.0f);
 
-    g_cube.Draw(g_pImmediateContext);
+    g_cube.draw(context);
 
-    // copy rendertarget into backbuffer (not required for streaming)
+    // composite the render target for encoding
+    FLOAT clearColorEncoding[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    g_RTEncoding[rtIdx].set(context);
+    g_RTEncoding[rtIdx].clear(context, clearColorEncoding, 1.0f);
+
+    float fTime = g_timer.getTime();
+    RECT destRect;
+    destRect.bottom = (g_stream_height * 7) / 8 + static_cast<LONG>(cos(fTime) * (g_stream_height / 8));
+    destRect.left = g_stream_width / 8 + static_cast<LONG>(sin(fTime) * (g_stream_width / 8));
+    destRect.right = (g_stream_width * 7) / 8 - static_cast<LONG>(sin(fTime) * (g_stream_width / 8));
+    destRect.top = g_stream_height / 8 - static_cast<LONG>(cos(fTime) * g_stream_height / 8);
+
+    RECT srcRect;
+    srcRect.bottom = g_stream_height;
+    srcRect.left = 0;
+    srcRect.right = g_stream_width;
+    srcRect.top = 0;
+
+    g_stretchRectShader.stretchRect(context, g_RTSource.getShaderResource(), &srcRect, g_RTEncoding[rtIdx].getRenderTarget(), &destRect);
+
+    // copy rendertarget into backbuffer of the swapchain (this part is not required for streaming)
     D3D11_BOX resourceSize;
     resourceSize.left = 0;
     resourceSize.right = g_stream_width;
@@ -494,11 +309,11 @@ void Draw(unsigned int rtIdx)
     resourceSize.back = 1;
 
     ID3D11Resource* dst;
-    g_pRtv->GetResource(&dst);
+    g_win.getRenderTarget()->GetResource(&dst);
 
-    g_pImmediateContext->CopySubresourceRegion(dst, 0, 0, 0, 0, g_pRTTextures[rtIdx], 0, &resourceSize);
+    g_win.getContext()->CopySubresourceRegion(dst, 0, 0, 0, 0, g_RTEncoding[rtIdx].getRenderTargetTexture(), 0, &resourceSize);
 
     SAFE_RELEASE(dst);
 
-    g_pSwapChain->Present(1, 0);
+    g_win.getSwapChain()->Present(1, 0);
 }

@@ -37,6 +37,8 @@ using namespace DirectX;
    }
 #endif
 
+namespace {
+
 std::string vertexShader = "																													  \
     cbuffer global																																\n\
     {																																			\n\
@@ -80,88 +82,61 @@ std::string pixelShader = "								  \
         return pin.Color;								\n\
     }													\n";
 
+}
+
 Cube::Cube()
-    : m_vertexShader(nullptr)
-    , m_pixelShader(nullptr)
-    , m_constantBuffer(nullptr)
-    , m_angle(0.0f)
+    : m_angle(0.0f)
 {}
 
-bool Cube::OnCreateDevice(ID3D11Device* pd3dDevice)
+bool Cube::create(ID3D11Device* pd3dDevice, uint32_t screenWidth, uint32_t screenHeight)
 {
-    ID3DBlob* shaderBlob = nullptr;
-    ID3DBlob* errorBlob = nullptr;
-    if (D3DCompile2(vertexShader.c_str(), vertexShader.length(), NULL, nullptr, nullptr, "VS", "vs_5_0", D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, 0, NULL, 0, &shaderBlob, &errorBlob) != S_OK)
-    {
-        std::string err(static_cast<char*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize());
-        MessageBox(NULL, err.c_str(), "Failed to compile cube vertex shader!", MB_ICONERROR | MB_OK);
-        return false;
-    }
-
-    if (pd3dDevice->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &m_vertexShader) != S_OK)
+    if (!m_shader.create(pd3dDevice, vertexShader.c_str(), pixelShader.c_str()))
     {
         return false;
     }
 
-    SAFE_RELEASE(shaderBlob);
-    SAFE_RELEASE(errorBlob);
-
-    if (D3DCompile2(pixelShader.c_str(), pixelShader.length(), NULL, nullptr, nullptr, "PS", "ps_5_0", D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, 0, NULL, 0, &shaderBlob, &errorBlob) != S_OK)
-    {
-        std::string err(static_cast<char*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize());
-        MessageBox(NULL, err.c_str(), "Compile Error", MB_ICONERROR | MB_OK);
-        return false;
-    }
-
-    if (pd3dDevice->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &m_pixelShader) != S_OK)
+    if (!m_constantBuffer.create(pd3dDevice, sizeof(XMMATRIX)))
     {
         return false;
     }
 
-    SAFE_RELEASE(shaderBlob);
-    SAFE_RELEASE(errorBlob);
-
-    D3D11_BUFFER_DESC shaderBufferDesc = {};
-    shaderBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    shaderBufferDesc.ByteWidth = 4 * 4 * sizeof(float);
-    shaderBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    shaderBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    if (pd3dDevice->CreateBuffer(&shaderBufferDesc, nullptr, &m_constantBuffer))
-    {
-        return false;
-    }
+    XMMATRIX proj = XMMatrixPerspectiveFovLH(0.25f * XM_PI, static_cast<float>(screenWidth) / screenHeight, 0.1f, 100.0f);
+    XMStoreFloat4x4(&m_projMatrix, proj);
 
     return true;
 }
 
-void Cube::OnDestroyDevice()
+void Cube::release()
 {
-    SAFE_RELEASE(m_constantBuffer);
-    SAFE_RELEASE(m_vertexShader);
-    SAFE_RELEASE(m_pixelShader);
+    m_constantBuffer.release();
+    m_shader.release();
 }
 
-void Cube::Update(ID3D11DeviceContext* pd3dImmediateContext, const XMMATRIX& viewProjMatrix)
+void Cube::update(ID3D11DeviceContext* pd3dImmediateContext, float time)
 {
+    float x = static_cast<float>(1.5 * cos(time));
+    float y = static_cast<float>(0.75 * sin(time));
+
+    XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0, 0, -3, 1), XMVectorSet(x, y, 0, 1), XMVectorSet(0, 1, 0, 0));
+    XMStoreFloat4x4(&m_viewMatrix, view);
+
     m_angle -= 0.02f;
     XMMATRIX world = XMMatrixRotationAxis(XMVectorSet(1, 1, 0, 0), m_angle);
-    XMMATRIX worldViewProj = world * viewProjMatrix;
+    XMMATRIX worldViewProj = world * view * XMLoadFloat4x4(&m_projMatrix);
     worldViewProj = XMMatrixTranspose(worldViewProj);
 
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    if (pd3dImmediateContext->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource) != S_OK)
+    void* constantBufferPtr = m_constantBuffer.map(pd3dImmediateContext, true);
+    if (constantBufferPtr == nullptr)
     {
         return;
     }
 
-    *static_cast<XMMATRIX*>(mappedResource.pData) = worldViewProj;
+    *static_cast<XMMATRIX*>(constantBufferPtr) = worldViewProj;
 
-    pd3dImmediateContext->Unmap(m_constantBuffer, 0);
-
-    pd3dImmediateContext->VSSetConstantBuffers(0, 1, &m_constantBuffer);
+    m_constantBuffer.unmap(pd3dImmediateContext);
 }
 
-void Cube::Draw(ID3D11DeviceContext* pd3dImmediateContext) const
+void Cube::draw(ID3D11DeviceContext* pd3dImmediateContext) const
 {
     pd3dImmediateContext->IASetInputLayout(nullptr);
     pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -169,8 +144,9 @@ void Cube::Draw(ID3D11DeviceContext* pd3dImmediateContext) const
     UINT offset = 0;
     pd3dImmediateContext->IASetVertexBuffers(0, 0, nullptr, &stride, &offset);
 
-    pd3dImmediateContext->VSSetShader(m_vertexShader, nullptr, 0);
-    pd3dImmediateContext->PSSetShader(m_pixelShader, nullptr, 0);
+    m_constantBuffer.set(pd3dImmediateContext, 0);
+
+    m_shader.set(pd3dImmediateContext);
 
     pd3dImmediateContext->Draw(36, 0);
 }

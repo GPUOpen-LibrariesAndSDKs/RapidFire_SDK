@@ -177,11 +177,21 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.1\Redist\D3D\x64\d3dcompiler_47.dll"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\DX11RenderTarget.cpp" />
+    <ClCompile Include="..\common\DX11Shader.cpp" />
+    <ClCompile Include="..\common\DX11Window.cpp" />
+    <ClCompile Include="..\common\Timer.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="StretchRectShader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\DX11RenderTarget.h" />
+    <ClInclude Include="..\common\DX11Shader.h" />
+    <ClInclude Include="..\common\DX11Window.h" />
+    <ClInclude Include="..\common\Timer.h" />
     <ClInclude Include="Cube.h" />
+    <ClInclude Include="StretchRectShader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

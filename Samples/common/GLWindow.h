@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <stdint.h>
 #include <string>
 
 #include <GL/glew.h>
@@ -32,6 +33,7 @@ class GLWindow
 public:
 
     GLWindow(const std::string& strWindowName, unsigned int uiWidth, unsigned int uiHeight, unsigned int uiPosX, unsigned int uiPosY, bool bFullScreen);
+    GLWindow(const std::string& strWindowName, unsigned int uiWidth, unsigned int uiHeight, unsigned int uiPosX, unsigned int uiPosY, bool bFullScreen, int32_t glContextProfileMaskARB);
 
     GLWindow(GLWindow&& other);
 
@@ -47,7 +49,7 @@ public:
     void    minimized()                  { m_bMinimized = true; }
     void    restored()                   { m_bMinimized = false; }
 
-    operator bool()     const            { return m_bWindowCreated; }
+    operator bool()     const            { return m_hWND != NULL; }
 
     HDC     getDC()     const            { return m_hDC;   }
     HWND    getWindow() const            { return m_hWND;  }
@@ -59,7 +61,7 @@ public:
 
 private:
 
-    bool         create();
+    bool         create(int32_t glContextProfileMaskARB);
 
     HDC                     m_hDC;
     HWND                    m_hWND;
@@ -67,7 +69,6 @@ private:
 
     std::string const       m_strWindowName;
 
-    bool                    m_bWindowCreated;
     bool                    m_bFullScreen;
     bool                    m_bMinimized;
     unsigned int            m_uiWidth;

@@ -22,43 +22,19 @@
 
 #pragma once
 
-#include <GL/glew.h>
+#include <Windows.h>
 
-class GLRenderTarget
+class Timer
 {
 public:
-    GLRenderTarget();
-    ~GLRenderTarget();
 
-    // Create FBO with specified dimension and format
-    bool    createBuffer(unsigned int nWidth, unsigned int nHeight, int nBufferFormat, int nExtFormat, int nType);
-    // Delete FBO and storage
-    void    deleteBuffer();
+    Timer();
 
-    // Bind FBO
-    void    bind(GLenum nTarget = GL_FRAMEBUFFER) const;
+    void reset();
+    float getTime();
 
-    // Release FBO
-    void    unbind() const;
+protected:
 
-    // Draws color attachment as texture into a screen aligned quad
-    void    draw() const;
-
-    int             getBufferFormat() const;
-    unsigned int    getBufferWidth() const;
-    unsigned int    getBufferHeight() const;
-    unsigned int    getColorTex() const { return m_uiColorTex; }
-
-private:
-
-    GLuint          m_uiBufferId;
-    GLuint          m_uiColorTex;
-    GLuint          m_uiDepthBuffer;
-    unsigned int    m_uiBufferWidth;
-    unsigned int    m_uiBufferHeight;
-    unsigned int    m_uiQuad;
-
-    int             m_nBufferFormat;
-    int             m_nExtFormat;
-    int             m_nType;
+    static float s_clockTime;
+    LARGE_INTEGER m_startTime;
 };

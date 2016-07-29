@@ -27,6 +27,8 @@
 
 #define MULTI_STRING(a) #a
 
+extern char* readRGBimage(int &xsize, int &ysize, int &channels, const char* fname);
+
 namespace
 {
 struct VERTEX_ELEMENT
@@ -44,9 +46,8 @@ struct LIGHT_DATA
     float   AmbientColor[4];
     float   SpecularColor[4];
 };
-};
+}
 
-extern char* readRGBimage(int &xsize, int &ysize, int &channels, const char* fname);
 
 
 FireCube::FireCube()
