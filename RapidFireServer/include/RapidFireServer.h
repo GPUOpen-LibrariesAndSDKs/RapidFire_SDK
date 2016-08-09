@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.9          July 8th 2016
+* * File Version 1.1.0.10         August 9th 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -480,6 +480,26 @@ RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession session, unsigned int uiW
 *******************************************************************************
 */
 RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession session, unsigned int idx);
+
+/**
+*******************************************************************************
+* @fn rfAcquireNextFrame
+* @brief This function is called instead of rfEncodeFrame and returns the 
+*        captured desktop texture directly as an OpenGL texture.
+*        In order to be able to call this function, the RapidFire session must have
+*        been created with the IDENTITY encoder and a valid DC and OpenGL context
+*        must be provided.
+*        The returned texture is valid until any other RapidFire function is called
+*        with the same index.
+*
+* @param[in] session: The encoding session.
+* @param[in] idx:     The index of the render target which will be encoded.
+* @param[out] oglDesktopTexture: The returned texture containing the captured desktop.
+*
+* @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
+*******************************************************************************
+*/
+RFStatus RAPIDFIRE_API rfAcquireNextFrame(RFEncodeSession session, unsigned int idx, unsigned int* oglDesktopTexture);
 
 /**
 *******************************************************************************

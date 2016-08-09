@@ -26,7 +26,7 @@
 
 static void MyDebugFunc(GLuint id, GLenum category, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
 {
-#ifdef DEBUG
+#ifdef _DEBUG
     __debugbreak();
 #endif
     MessageBox(NULL, message, "GL Debug Message", MB_ICONWARNING | MB_OK);

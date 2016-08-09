@@ -34,13 +34,11 @@
 #include "RFGLDOPPCapture.h"
 
 
-// The DOPP session will crteate its own OpenGL context. Currently it is not supported to use a context that
-// is passed by the application since glew_init (used by GLDOPPCapture) fails if a core context is used.
-// The RFSessionFactory prevents creating a DOPPSession if an OpenGL context is in the attribute list.
-RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder)
+RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder, HDC hDC, HGLRC hGlrc)
     : RFSession(rfEncoder)
     , m_hDC(NULL)
     , m_hGlrc(NULL)
+    , m_bDeleteContexts(true)
     , m_bMouseShapeData(false)
     , m_bBlockUntilChange(false)
     , m_bUpdateOnlyOnChange(false)
@@ -49,6 +47,13 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder)
     , m_pDrvInterface(nullptr)
     , m_pMouseGrab(nullptr)
 {
+    if (hDC != NULL && hGlrc != NULL)
+    {
+        m_hDC = hDC;
+        m_hGlrc = hGlrc;
+        m_bDeleteContexts = false;
+    }
+
     try
     {
         // Add all know parameters to the map.
@@ -58,6 +63,12 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder)
         m_ParameterMap.addParameter(RF_DESKTOP_BLOCK_UNTIL_CHANGE, RFParameterAttr("RF_DESKTOP_BLOCK_UNTIL_CHANGE", RF_PARAMETER_BOOL, 0));
         m_ParameterMap.addParameter(RF_DESKTOP_UPDATE_ON_CHANGE, RFParameterAttr("RF_DESKTOP_UPDATE_ON_CHANGE", RF_PARAMETER_BOOL, 0));
         m_ParameterMap.addParameter(RF_MOUSE_DATA, RFParameterAttr("RF_MOUSE_DATA", RF_PARAMETER_BOOL, 0));
+        
+        if (!m_bDeleteContexts)
+        {
+            m_ParameterMap.addParameter(RF_GL_GRAPHICS_CTX, RFParameterAttr("RF_GL_GRAPHICS_CTX", RF_PARAMETER_PTR, 0));
+            m_ParameterMap.addParameter(RF_GL_DEVICE_CTX, RFParameterAttr("RF_GL_DEVICE_CTX", RF_PARAMETER_PTR, 0));
+        }
     }
     catch (...)
     {
@@ -68,12 +79,18 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder)
 }
 
 
+
 RFDOPPSession::~RFDOPPSession()
 {
     RFGLContextGuard glGuard(m_hDC, m_hGlrc);
 
     // Delete GLDOPPCapture class while we have a valid Ctx.
     m_pDeskotpCapture.reset(nullptr);
+
+    if (!m_bDeleteContexts)
+    {
+        return;
+    }
 
     wglMakeCurrent(NULL, NULL);
 
@@ -247,8 +264,8 @@ RFStatus RFDOPPSession::finalizeContext()
 
     m_ParameterMap.getParameterValue(RF_DESKTOP_BLOCK_UNTIL_CHANGE, m_bBlockUntilChange);
     m_ParameterMap.getParameterValue(RF_DESKTOP_UPDATE_ON_CHANGE, m_bUpdateOnlyOnChange);
-
-    RFStatus rfStatus = m_pDeskotpCapture->initDOPP(m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight(), 0.0f, m_bUpdateOnlyOnChange, m_bBlockUntilChange);
+    
+    RFStatus rfStatus = m_pDeskotpCapture->initDOPP(m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight(), m_pEncoderSettings->getInputFormat(), m_bUpdateOnlyOnChange, m_bBlockUntilChange);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -377,12 +394,17 @@ RFStatus RFDOPPSession::releaseSessionEvents(const RFNotification rfEvent)
     return RF_STATUS_FAIL;
 }
 
-RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx)
+RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx, unsigned int* oglDesktopTexture)
 {
     RFGLContextGuard glGuard(m_hDC, m_hGlrc);
 
+    if (oglDesktopTexture && m_bDeleteContexts)
+    {
+        return RF_STATUS_INVALID_OPENGL_CONTEXT;
+    }
+
     // Render desktop to image.
-    if (!m_pDeskotpCapture->processDesktop(idx))
+    if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, idx, oglDesktopTexture))
     {
         return RF_STATUS_DOPP_NO_UPDATE;
     }
@@ -404,117 +426,127 @@ void MyDebugFunc(GLuint id, GLenum category, GLenum severity, GLsizei length, co
 // Creates a DC and an OpenGL context that is used for DOPP.
 bool RFDOPPSession::createGLContext()
 {
-    if (m_hGlrc != NULL || m_hDC != NULL || m_strDisplayName.size() == 0)
+    if (m_bDeleteContexts && (m_hGlrc != NULL || m_hDC != NULL || m_strDisplayName.size() == 0))
     {
         return false;
     }
 
-    // Register WindowClass
-    WNDCLASSEX wndclass = {};
-    wndclass.cbSize        = sizeof(WNDCLASSEX);
-    wndclass.style         = CS_OWNDC;
-    wndclass.lpfnWndProc   = DefWindowProc;
-    wndclass.hInstance     = static_cast<HINSTANCE>(GetModuleHandle(NULL));
-    wndclass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wndclass.lpszClassName = m_strClassName.c_str();
-    wndclass.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wndclass))
+    if (m_bDeleteContexts)
     {
-        // Clear class name to avoid that destructor unregisters.
-        m_strClassName.clear();
 
-        return false;
+        // Register WindowClass
+        WNDCLASSEX wndclass = {};
+        wndclass.cbSize        = sizeof(WNDCLASSEX);
+        wndclass.style         = CS_OWNDC;
+        wndclass.lpfnWndProc   = DefWindowProc;
+        wndclass.hInstance     = static_cast<HINSTANCE>(GetModuleHandle(NULL));
+        wndclass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+        wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
+        wndclass.lpszClassName = m_strClassName.c_str();
+        wndclass.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+
+        if (!RegisterClassEx(&wndclass))
+        {
+            // Clear class name to avoid that destructor unregisters.
+            m_strClassName.clear();
+
+            return false;
+        }
+
+        // Create a dummy window in order to create a context.
+        int mPixelFormat;
+
+        static PIXELFORMATDESCRIPTOR pfd = {};
+
+        pfd.nSize        = sizeof(PIXELFORMATDESCRIPTOR);
+        pfd.nVersion     = 1;
+        pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+        pfd.iPixelType   = PFD_TYPE_RGBA;
+        pfd.cColorBits   = 24;
+        pfd.cRedBits     = 8;
+        pfd.cGreenBits   = 8;
+        pfd.cBlueBits    = 8;
+        pfd.cAlphaBits   = 8;
+        pfd.cDepthBits   = 24;
+        pfd.cStencilBits = 8;
+        pfd.iLayerType   = PFD_MAIN_PLANE;
+
+        // For now only one GPU inside a VM is supported so it is safe to open the ctx on the primary GPU.
+        // Opening the ctx on the actual display (m_strDisplayName) works as well but currently some 
+        // application will unmap a display while a session is still running. This causess problems since
+        // the OpenGL ctx gets invalid. To avoid this we remain on the primary GPU until applications will
+        // synchronize to unmap only once the session is deleted.
+        m_hDC = CreateDC(NULL, m_strPrimaryDisplayName.c_str(), NULL, nullptr);
+
+        if (!m_hDC)
+        {
+            return false;
+        }
+
+        mPixelFormat = ChoosePixelFormat(m_hDC, &pfd);
+
+        if (!mPixelFormat)
+        {
+            return false;
+        }
+
+        if (!SetPixelFormat(m_hDC, mPixelFormat, &pfd))
+        {
+            return false;
+        }
+
+        m_hGlrc = wglCreateContext(m_hDC);
     }
-
-    // Create a dummy window in order to create a context.
-    int mPixelFormat;
-
-    static PIXELFORMATDESCRIPTOR pfd = {};
-
-    pfd.nSize        = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion     = 1;
-    pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType   = PFD_TYPE_RGBA;
-    pfd.cColorBits   = 24;
-    pfd.cRedBits     = 8;
-    pfd.cGreenBits   = 8;
-    pfd.cBlueBits    = 8;
-    pfd.cAlphaBits   = 8;
-    pfd.cDepthBits   = 24;
-    pfd.cStencilBits = 8;
-    pfd.iLayerType   = PFD_MAIN_PLANE;
-
-    // For now only one GPU inside a VM is supported so it is safe to open the ctx on the primary GPU.
-    // Opening the ctx on the actual display (m_strDisplayName) works as well but currently some 
-    // application will unmap a display while a session is still running. This causess problems since
-    // the OpenGL ctx gets invalid. To avoid this we remain on the primary GPU until applications will
-    // synchronize to unmap only once the session is deleted.
-    m_hDC = CreateDC(NULL, m_strPrimaryDisplayName.c_str(), NULL, nullptr);
-
-    if (!m_hDC)
-    {
-        return false;
-    }
-
-    mPixelFormat = ChoosePixelFormat(m_hDC, &pfd);
-
-    if (!mPixelFormat)
-    {
-        return false;
-    }
-
-    if (!SetPixelFormat(m_hDC, mPixelFormat, &pfd))
-    {
-        return false;
-    }
-
-    m_hGlrc = wglCreateContext(m_hDC);
 
     if (!wglMakeCurrent(m_hDC, m_hGlrc))
     {
         return false;
     }
+
+    glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK)
     {
         return false;
     }
 
-    if (WGLEW_ARB_create_context)
+    if (m_bDeleteContexts)
     {
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(m_hGlrc);
 
-        int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-                          WGL_CONTEXT_MINOR_VERSION_ARB, 2,
-                          WGL_CONTEXT_PROFILE_MASK_ARB , WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-#ifdef _DEBUG             
-                          WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
-#endif                    
-                          0 };
-
-        m_hGlrc = wglCreateContextAttribsARB(m_hDC, NULL, attribs);
-
-        if (m_hGlrc)
+        if (WGLEW_ARB_create_context)
         {
-            wglMakeCurrent(m_hDC, m_hGlrc);
+            wglMakeCurrent(NULL, NULL);
+            wglDeleteContext(m_hGlrc);
+
+            int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+                              WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+                              WGL_CONTEXT_PROFILE_MASK_ARB , WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+#ifdef _DEBUG             
+                              WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
+#endif                    
+                              0 };
+
+            m_hGlrc = wglCreateContextAttribsARB(m_hDC, NULL, attribs);
+
+            if (m_hGlrc)
+            {
+                wglMakeCurrent(m_hDC, m_hGlrc);
+            }
+            else
+            {
+                return false;
+            }
         }
-        else
+
+        if (!wglMakeCurrent(m_hDC, m_hGlrc))
         {
             return false;
         }
-    }
 
-    if (!wglMakeCurrent(m_hDC, m_hGlrc))
-    {
-        return false;
-    }
-
-    if (GLEW_AMD_debug_output)
-    {
-        glDebugMessageCallbackAMD(reinterpret_cast<GLDEBUGPROCAMD>(&MyDebugFunc), nullptr);
+        if (GLEW_AMD_debug_output)
+        {
+            glDebugMessageCallbackAMD(reinterpret_cast<GLDEBUGPROCAMD>(&MyDebugFunc), nullptr);
+        }
     }
 
     return true;

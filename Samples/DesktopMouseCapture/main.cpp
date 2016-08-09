@@ -43,8 +43,19 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     RFStatus        rfStatus = RF_STATUS_OK;
     RFEncodeSession rfSession = nullptr;
 
+    GLWindow win("Desktop and Mouse Capture", 800, 600, CW_USEDEFAULT, CW_USEDEFAULT, false);
+
+    if (!win)
+    {
+        MessageBox(NULL, "Failed to create output window!", "RF Error", MB_ICONERROR | MB_OK);
+        rfDeleteEncodeSession(&rfSession);
+        return -1;
+    }
+
     RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_IDENTITY),
                              RF_DESKTOP,                  static_cast<RFProperties>(1),
+                             RF_GL_DEVICE_CTX,            reinterpret_cast<RFProperties>(win.getDC()),
+                             RF_GL_GRAPHICS_CTX,          reinterpret_cast<RFProperties>(win.getGLRC()),
                              RF_DESKTOP_UPDATE_ON_CHANGE, static_cast<RFProperties>(1),
                              RF_MOUSE_DATA,               static_cast<RFProperties>(1),
                              0 };
@@ -72,15 +83,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         return -1;
     }
 
-    GLWindow win("Desktop and Mouse Capture", 800, 600, CW_USEDEFAULT, CW_USEDEFAULT, false);
-
-    if (!win)
-    {
-        MessageBox(NULL, "Failed to create output window!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
-        return -1;
-    }
-
     win.open();
 
     GLDesktopRenderer renderer(uiStreamWidth, uiStreamHeight, 32, 32);
@@ -96,9 +98,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     void*           pDesktop   = nullptr;
     unsigned int    uiSize     = 0;
     unsigned int    uiIndex    = 0;
-
-    rfEncodeFrame(rfSession, uiIndex);
-    uiIndex = 1 - uiIndex;
 
     MSG msg = {};
 
@@ -128,16 +127,17 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             renderer.updateMouseTexture(static_cast<const unsigned char*>(md.color.pPixels), md.color.uiWidth, md.color.uiHeight, static_cast<const unsigned char*>(md.mask.pPixels), md.mask.uiWidth, md.mask.uiHeight);
         }
 
-        rfEncodeFrame(rfSession, uiIndex);
-
-        rfStatus = rfGetEncodedFrame(rfSession, &uiSize, &pDesktop);
-
-        if (rfStatus == RF_STATUS_OK)
+        GLuint uiCapturedDesktop;
+        // Acquire the captured desktop texture directly on GPU as OpenGL texture
+        rfStatus = rfAcquireNextFrame(rfSession, uiIndex, &uiCapturedDesktop);
+        if (rfStatus != RF_STATUS_OK && rfStatus != RF_STATUS_DOPP_NO_UPDATE)
         {
-            renderer.updateDesktopTexture(static_cast<char*>(pDesktop));
+            MessageBox(NULL, "Failed to capture desktop texture!", "RF Error", MB_ICONERROR | MB_OK);
+            rfDeleteEncodeSession(&rfSession);
+            return -1;
         }
 
-        renderer.draw();
+        renderer.draw(uiCapturedDesktop);
         SwapBuffers(win.getDC());
 
         uiIndex = 1 - uiIndex;

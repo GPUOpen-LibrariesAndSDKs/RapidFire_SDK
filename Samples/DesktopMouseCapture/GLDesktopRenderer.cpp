@@ -108,7 +108,7 @@ GLDesktopRenderer::~GLDesktopRenderer()
 }
 
 
-void GLDesktopRenderer::draw() const
+void GLDesktopRenderer::draw(GLuint texture) const
 {
     int nViewport[4];
     glGetIntegerv(GL_VIEWPORT, nViewport);
@@ -116,7 +116,15 @@ void GLDesktopRenderer::draw() const
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_uiDesktopTex);
+
+    if (texture != UINT32_MAX)
+    {
+        glBindTexture(GL_TEXTURE_2D, texture);
+    }
+    else
+    {
+        glBindTexture(GL_TEXTURE_2D, m_uiDesktopTex);
+    }
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, m_uiMouseTex);

@@ -1254,18 +1254,27 @@ RFStatus RFContextCL::processBuffer(bool bInvert, unsigned int uiSrcIdx, unsigne
         return rfStatus;
     }
 
-    // RGBA input buffer (src)
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 0, sizeof(cl_mem), static_cast<void*>(&(m_clInputImage[uiSrcIdx]))));
+    if (m_uiCSCKernelIdx != RF_KERNEL_RGBA_COPY)
+    {
+        // RGBA input buffer (src)
+        SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 0, sizeof(cl_mem), static_cast<void*>(&(m_clInputImage[uiSrcIdx]))));
 
-    // output buffer (dst)
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 1, sizeof(cl_mem), static_cast<void*>(&(m_clResultBuffer[uiDestIdx]))));
+        // output buffer (dst)
+        SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 1, sizeof(cl_mem), static_cast<void*>(&(m_clResultBuffer[uiDestIdx]))));
 
-    int nInvert = bInvert ? 1 : 0;
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
+        int nInvert = 0;
+        SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
 
-    SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
-                 m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
-                 nullptr, &(m_clCSCFinished[uiDestIdx])));
+        SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
+                     m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
+                     nullptr, &m_clCSCFinished[uiDestIdx]));
+    }
+    else
+    {
+        const size_t src_origin[3] = { 0, 0, 0 };
+        const size_t region[3] = { m_uiOutputWidth, m_uiOutputHeight, 1 };
+        SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clCmdQueue, m_clInputImage[uiSrcIdx], m_clResultBuffer[uiDestIdx], src_origin, region, 0, 0, nullptr, &m_clCSCFinished[uiDestIdx]));
+    }
 
     clFlush(m_clCmdQueue);
 

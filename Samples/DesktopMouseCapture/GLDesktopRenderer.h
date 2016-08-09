@@ -23,6 +23,7 @@
 #pragma once
 
 #include <vector>
+#include <stdint.h>
 
 #include <GL/glew.h>
 
@@ -41,7 +42,7 @@ public:
     void    updateDesktopTexture(const char* pPixels);
     void    updateMouseTexture(const unsigned char* pPixels, unsigned int pixelsWidth, unsigned int pixelsHeight, const unsigned char* pMask, unsigned int maskWidth, unsigned int maskHeight);
 
-    void    draw() const;
+    void    draw(GLuint texture = UINT32_MAX) const;
 
 private:
 

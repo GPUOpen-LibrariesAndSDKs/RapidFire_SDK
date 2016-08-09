@@ -39,7 +39,7 @@ public:
     GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv);
     virtual ~GLDOPPCapture();
 
-    RFStatus            initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, float fRotation, bool bTrackDesktopChanges, bool bBlocking);
+    RFStatus            initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, RFFormat outputFormat, bool bTrackDesktopChanges, bool bBlocking);
 
     RFStatus            resizeDesktopTexture();
     RFStatus            resizePresentTexture(unsigned int uiPresentWidth, unsigned int uiPresentHeight);
@@ -47,7 +47,7 @@ public:
     bool                releaseEvent();
 
     // Render desktop to rendertarget with id idx.
-    bool                processDesktop(unsigned int idx);
+    bool                processDesktop(bool bInvert, unsigned int idx, unsigned int* oglDesktopTexture);
 
     // Returns the texture name of the texture that is used with render targt idx.
     unsigned int        getFramebufferTex(unsigned int idx) const;
@@ -82,8 +82,11 @@ private:
     unsigned int                m_uiDesktopHeight;
     unsigned int                m_uiPresentWidth;
     unsigned int                m_uiPresentHeight;
+    GLint                       m_iSamplerSwizzle[4];
+    GLint                       m_iResetSwizzle[4];
     
     GLShader*                   m_pShader;
+    GLShader*                   m_pShaderInvert;
     GLuint                      m_uiBaseMap;
 
     GLuint                      m_uiVertexArray;

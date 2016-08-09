@@ -56,7 +56,7 @@ public:
     RFStatus              removeRenderTarget(unsigned int idx);
 
     // Encodes the OpenCL input buffer.
-    RFStatus              encodeFrame(unsigned int idx);
+    RFStatus              encodeFrame(unsigned int idx, unsigned int* oglDesktopTexture = nullptr);
 
     // Returns the encoded frame.
     RFStatus              getEncodedFrame(unsigned int& uiSize, void* &pBitStream);
@@ -116,7 +116,7 @@ private:
 
     // This function might be implemented by a derived class to do some preprocessing prior to the actual
     // processing (CSC and Encoding) of the frame.
-    virtual RFStatus            preprocessFrame(unsigned int& idx);
+    virtual RFStatus            preprocessFrame(unsigned int& idx, unsigned int* oglDesktopTexture);
 
     virtual RFStatus            finalizeContext();
 

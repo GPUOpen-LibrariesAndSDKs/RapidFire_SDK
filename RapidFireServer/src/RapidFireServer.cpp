@@ -186,6 +186,19 @@ RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession s, unsigned int idx)
 }
 
 
+RFStatus RAPIDFIRE_API rfAcquireNextFrame(RFEncodeSession s, unsigned int idx, unsigned int* oglDesktopTexture)
+{
+    RFSession* pEncodeSession = reinterpret_cast<RFSession*>(s);
+
+    if (!pEncodeSession)
+    {
+        return RF_STATUS_INVALID_SESSION;
+    }
+
+    return pEncodeSession->encodeFrame(idx, oglDesktopTexture);
+}
+
+
 RFStatus RAPIDFIRE_API rfGetEncodedFrame(RFEncodeSession session, unsigned int* uiSize, void** pBitStream)
 {
     RFSession* pEncodeSession = reinterpret_cast<RFSession*>(session);

@@ -36,7 +36,7 @@ class RFDOPPSession : public RFSession
 {
 public:
 
-    explicit RFDOPPSession(RFEncoderID rfEncoder);
+    explicit RFDOPPSession(RFEncoderID rfEncoder, HDC hDC = NULL, HGLRC hGlrc = NULL);
     ~RFDOPPSession();
 
 private:
@@ -49,7 +49,7 @@ private:
 
     virtual RFStatus    registerTexture(RFTexture rt, unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx)    override;
 
-    virtual RFStatus    preprocessFrame(unsigned int& idx)                      override;
+    virtual RFStatus    preprocessFrame(unsigned int& idx, unsigned int* oglDesktopTexture)                      override;
 
     virtual RFStatus    releaseSessionEvents(RFNotification const rfEvent)      override;
 
@@ -61,6 +61,7 @@ private:
 
     HDC                                     m_hDC;
     HGLRC                                   m_hGlrc;
+    bool                                    m_bDeleteContexts;
 
     bool                                    m_bMouseShapeData;
     bool                                    m_bBlockUntilChange;

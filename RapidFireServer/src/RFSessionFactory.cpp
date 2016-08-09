@@ -154,20 +154,20 @@ RFStatus createRFSession(RFSession** pSession, const RFProperties* properties)
             // DX11 Session
             *pSession = new RFDX11Session(pDX11, rfEncoder);
         }
-        else if (uiDesktop > 0 && uiDisplay == 0  && uiInternalDisplayId == UINT_MAX && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
+        else if (uiDesktop > 0 && uiDisplay == 0  && uiInternalDisplayId == UINT_MAX && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
         {
             // Desktop session based on Desktop ID
-            *pSession = new RFDOPPSession(rfEncoder);
+            *pSession = new RFDOPPSession(rfEncoder, hDC, hGLRC);
         }
-        else if (uiDisplay > 0 && uiDesktop == 0  && uiInternalDisplayId == UINT_MAX && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
+        else if (uiDisplay > 0 && uiDesktop == 0  && uiInternalDisplayId == UINT_MAX && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
         {
             // Desktop session based on windows Display ID
-            *pSession = new RFDOPPSession(rfEncoder);
+            *pSession = new RFDOPPSession(rfEncoder, hDC, hGLRC);
         }
-        else if (uiInternalDisplayId < UINT_MAX && uiDisplay == 0 && uiDesktop == 0 && hDC == NULL && hGLRC == NULL && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
+        else if (uiInternalDisplayId < UINT_MAX && uiDisplay == 0 && uiDesktop == 0 && pDX9 == nullptr && pDX9Ex == nullptr && pDX11 == nullptr)
         {
             // Desktop session based on internal Display ID
-            *pSession = new RFDOPPSession(rfEncoder);
+            *pSession = new RFDOPPSession(rfEncoder, hDC, hGLRC);
         }
     }
     catch (...)

@@ -68,6 +68,7 @@ GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv)
     , m_uiPresentWidth(0)
     , m_uiPresentHeight(0)
     , m_pShader(nullptr)
+    , m_pShaderInvert(nullptr)
     , m_uiBaseMap(0)
     , m_uiVertexArray(0)
     , m_pFBO(nullptr)
@@ -98,6 +99,9 @@ GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv)
     m_hDesktopEvent[1] = NULL;
 
     m_bDesktopChanged = false;
+
+    m_iSamplerSwizzle[0] = GL_RED; m_iSamplerSwizzle[1] = GL_GREEN; m_iSamplerSwizzle[2] = GL_BLUE; m_iSamplerSwizzle[3] = GL_ALPHA;
+    m_iResetSwizzle[0] = GL_RED; m_iResetSwizzle[1] = GL_GREEN; m_iResetSwizzle[2] = GL_BLUE; m_iResetSwizzle[3] = GL_ALPHA;
 }
 
 
@@ -112,6 +116,11 @@ GLDOPPCapture::~GLDOPPCapture()
         if (m_pShader)
         {
             delete m_pShader;
+        }
+
+        if (m_pShaderInvert)
+        {
+            delete m_pShaderInvert;
         }
 
         if (m_uiDesktopTexture)
@@ -183,7 +192,7 @@ GLDOPPCapture::~GLDOPPCapture()
 }
 
 
-RFStatus GLDOPPCapture::initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, float fRotation, bool bTrackDesktopChanges, bool bBlocking)
+RFStatus GLDOPPCapture::initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, RFFormat outputFormat, bool bTrackDesktopChanges, bool bBlocking)
 {
     RFReadWriteAccess doppLock(&g_GlobalDOPPLock);
 
@@ -237,6 +246,21 @@ RFStatus GLDOPPCapture::initDOPP(unsigned int uiPresentWidth, unsigned int uiPre
     }
 
     glGenVertexArrays(1, &m_uiVertexArray);
+
+    m_iResetSwizzle[0] = GL_RED; m_iResetSwizzle[1] = GL_GREEN; m_iResetSwizzle[2] = GL_BLUE; m_iResetSwizzle[3] = GL_ALPHA;
+
+    if (outputFormat == RF_ARGB8)
+    {
+        m_iSamplerSwizzle[0] = GL_ALPHA; m_iSamplerSwizzle[1] = GL_RED; m_iSamplerSwizzle[2] = GL_GREEN; m_iSamplerSwizzle[3] = GL_BLUE;
+    }
+    else if (outputFormat == RF_BGRA8)
+    {
+        m_iSamplerSwizzle[0] = GL_BLUE; m_iSamplerSwizzle[1] = GL_GREEN; m_iSamplerSwizzle[2] = GL_RED; m_iSamplerSwizzle[3] = GL_ALPHA;
+    }
+    else if (outputFormat == RF_RGBA8)
+    {
+        m_iSamplerSwizzle[0] = GL_RED; m_iSamplerSwizzle[1] = GL_GREEN; m_iSamplerSwizzle[2] = GL_BLUE; m_iSamplerSwizzle[3] = GL_ALPHA;
+    }
 
     m_bTrackDesktopChanges = bTrackDesktopChanges;
     m_bBlocking = bBlocking;
@@ -415,6 +439,11 @@ bool GLDOPPCapture::initEffect()
         delete m_pShader;
     }
 
+    if (m_pShaderInvert)
+    {
+        delete m_pShaderInvert;
+    }
+
     const char* strVertexShader =
     {
         "#version 420                                                                     \n"
@@ -428,6 +457,23 @@ bool GLDOPPCapture::initEffect()
         "      case 0: gl_Position = vec4(-1, -1, 0, 1); Texcoord = vec2(0, 0); break;    \n"
         "      case 1: gl_Position = vec4(-1, 3, 0, 1); Texcoord = vec2(0, 2); break;     \n"
         "      case 2: gl_Position = vec4(3, -1, 0, 1); Texcoord = vec2(2, 0); break;     \n"
+        "   }                                                                             \n"
+        "}                                                                                \n"
+    };
+
+    const char* strVertexShaderInvert =
+    {
+        "#version 420                                                                     \n"
+        "                                                                                 \n"
+        "out vec2 Texcoord;                                                               \n"
+        "                                                                                 \n"
+        "void main( void )                                                                \n"
+        "{                                                                                \n"
+        "   switch(gl_VertexID)                                                           \n"
+        "   {                                                                             \n"
+        "      case 0: gl_Position = vec4(-1, -1, 0, 1); Texcoord = vec2(0, 1); break;    \n"
+        "      case 1: gl_Position = vec4(-1, 3, 0, 1); Texcoord = vec2(0, -1); break;     \n"
+        "      case 2: gl_Position = vec4(3, -1, 0, 1); Texcoord = vec2(2, 1); break;     \n"
         "   }                                                                             \n"
         "}                                                                                \n"
     };
@@ -476,11 +522,40 @@ bool GLDOPPCapture::initEffect()
 
     m_pShader->unbind();
 
+    m_pShaderInvert = new (std::nothrow)GLShader;
+
+    if (!m_pShaderInvert)
+    {
+        return false;
+    }
+
+    if (!m_pShaderInvert->createShaderFromString(strVertexShaderInvert, GL_VERTEX_SHADER))
+    {
+        return false;
+    }
+
+    if (!m_pShaderInvert->createShaderFromString(strFragmentShader, GL_FRAGMENT_SHADER))
+    {
+        return false;
+    }
+
+    if (!m_pShaderInvert->buildProgram())
+    {
+        return false;
+    }
+
+    m_pShaderInvert->bind();
+
+    m_uiBaseMap = glGetUniformLocation(m_pShaderInvert->getProgram(), "baseMap");
+
+    m_pShaderInvert->unbind();
+
+
     return true;
 }
 
 
-bool GLDOPPCapture::processDesktop(unsigned int idx)
+bool GLDOPPCapture::processDesktop(bool bInvert, unsigned int idx, unsigned int* oglDesktopTexture)
 {
     if (idx >= m_uiNumTargets)
     {
@@ -522,10 +597,19 @@ bool GLDOPPCapture::processDesktop(unsigned int idx)
 
         wglDesktopTargetAMD(m_uiDesktopId);
 
-        m_pShader->bind();
+        if (bInvert)
+        {
+            m_pShaderInvert->bind();
+        }
+        else
+        {
+            m_pShader->bind();
+        }
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, m_uiDesktopTexture);
+
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, m_iSamplerSwizzle);
 
         glUniform1i(m_uiBaseMap, 1);
 
@@ -533,7 +617,16 @@ bool GLDOPPCapture::processDesktop(unsigned int idx)
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
-        m_pShader->unbind();
+        if (bInvert)
+        {
+            m_pShaderInvert->unbind();
+        }
+        else
+        {
+            m_pShader->unbind();
+        }
+
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, m_iResetSwizzle);
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -544,6 +637,12 @@ bool GLDOPPCapture::processDesktop(unsigned int idx)
         glViewport(pVP[0], pVP[1], pVP[2], pVP[3]);
 
         m_bDesktopChanged = false;
+
+        if (oglDesktopTexture)
+        {
+            *oglDesktopTexture = m_pTexture[idx];
+            return true;
+        }
 
         glFinish();
     }

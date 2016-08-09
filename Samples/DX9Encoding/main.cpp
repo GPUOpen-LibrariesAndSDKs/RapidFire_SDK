@@ -333,12 +333,12 @@ void Draw(unsigned int rtIdx)
 
     g_pD3DDevice->EndScene();
 
-    RECT test;
-    test.bottom = 100;
-    test.left = 0;
-    test.right = 100;
-    test.top = 0;
     // Copy surface to backbuffer and present it. (This part is not required for streaming)
+    RECT test;
+    test.bottom = g_stream_height;
+    test.left = 0;
+    test.right = g_stream_width;
+    test.top = 0;
     g_pD3DDevice->StretchRect(g_pRts[rtIdx], nullptr, g_pDeviceRts, &test, D3DTEXF_NONE);
 
     g_pD3DDevice->Present(nullptr, nullptr, NULL, nullptr);
