@@ -73,7 +73,6 @@ private:
 
     std::string                             m_strDisplayName;
     std::string                             m_strPrimaryDisplayName;
-    std::string                             m_strClassName;
 
     std::unique_ptr<GLDOPPCapture>          m_pDeskotpCapture;
     std::unique_ptr<DOPPDrvInterface>       m_pDrvInterface;

@@ -484,11 +484,11 @@ RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession session, unsigned int idx);
 /**
 *******************************************************************************
 * @fn rfAcquireNextFrame
-* @brief This function is called instead of rfEncodeFrame and returns the 
-*        captured desktop texture directly as an OpenGL texture.
+* @brief This function is called instead of rfEncodeFrame and rfGetEncodedFrame
+*        and returns the captured desktop texture directly as an OpenGL texture.
 *        In order to be able to call this function, the RapidFire session must have
-*        been created with the IDENTITY encoder and a valid DC and OpenGL context
-*        must be provided.
+*        been created with the IDENTITY encoder and a valid device context and
+*        OpenGL context must be provided.
 *        The returned texture is valid until any other RapidFire function is called
 *        with the same index.
 *

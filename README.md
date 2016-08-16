@@ -4,6 +4,7 @@ The RapidFire SDK provides an interface for cloud gaming and virtualization appl
 
 ### Prerequisites
 * AMD FirePro&trade; GCN-based GPU
+* AMD FirePro&trade; Driver Release 16.30 and later
 * Windows&reg; 7, Windows&reg; 8.1, or Windows&reg; 10
 * Building the SDK and samples requires Visual Studio&reg; 2012, Visual Studio&reg; 2013 or Visual Studio&reg; 2015
 * Building the SDK requires the AMD APP SDK

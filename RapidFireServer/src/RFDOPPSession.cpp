@@ -84,6 +84,8 @@ RFDOPPSession::~RFDOPPSession()
 {
     RFGLContextGuard glGuard(m_hDC, m_hGlrc);
 
+    m_pContextCL->deleteBuffers();
+
     // Delete GLDOPPCapture class while we have a valid Ctx.
     m_pDeskotpCapture.reset(nullptr);
 
@@ -104,18 +106,6 @@ RFDOPPSession::~RFDOPPSession()
     {
         DeleteDC(m_hDC);
         m_hDC = NULL;
-    }
-
-    if (m_strClassName.size() > 0)
-    {
-        if (UnregisterClass(m_strClassName.c_str(), NULL) == 0)
-        {
-            std::stringstream oss;
-
-            oss << "Failed to unregister class " << m_strClassName << " Error Code " << GetLastError();
-
-            m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, oss.str());
-        }
     }
 }
 
@@ -231,11 +221,6 @@ RFStatus RFDOPPSession::createContextFromGfx()
     {
         // Store a context that might have been bound by the application.
         RFGLContextGuard glCtxGuard;
-
-        std::stringstream oss;
-
-        oss << "RFClass" << GetCurrentThreadId() << m_uiDisplayId;
-        m_strClassName = oss.str();
 
         // Create the OpenGL context that is used for DOPP.
         if (!createGLContext())
@@ -433,26 +418,6 @@ bool RFDOPPSession::createGLContext()
 
     if (m_bDeleteContexts)
     {
-
-        // Register WindowClass
-        WNDCLASSEX wndclass = {};
-        wndclass.cbSize        = sizeof(WNDCLASSEX);
-        wndclass.style         = CS_OWNDC;
-        wndclass.lpfnWndProc   = DefWindowProc;
-        wndclass.hInstance     = static_cast<HINSTANCE>(GetModuleHandle(NULL));
-        wndclass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-        wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-        wndclass.lpszClassName = m_strClassName.c_str();
-        wndclass.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-
-        if (!RegisterClassEx(&wndclass))
-        {
-            // Clear class name to avoid that destructor unregisters.
-            m_strClassName.clear();
-
-            return false;
-        }
-
         // Create a dummy window in order to create a context.
         int mPixelFormat;
 
