@@ -143,7 +143,6 @@ typedef enum RFEncoderParams
     RF_ENCODER_RATE_CONTROL_METHOD          = 0x1123,
     RF_ENCODER_MIN_QP                       = 0x1124,
     RF_ENCODER_MAX_QP                       = 0x1125,
-    RF_ENCODER_GOP_SIZE                     = 0x1126,
     RF_ENCODER_VBV_BUFFER_SIZE              = 0x1127,
     RF_ENCODER_VBV_BUFFER_FULLNESS          = 0x1128,
     RF_ENCODER_ENFORCE_HRD                  = 0x1129,

@@ -1,4 +1,14 @@
-//
+// 
+// Notice Regarding Standards.  AMD does not provide a license or sublicense to
+// any Intellectual Property Rights relating to any standards, including but not
+// limited to any audio and/or video codec technologies such as MPEG-2, MPEG-4;
+// AVC/H.264; HEVC/H.265; AAC decode/FFMPEG; AAC encode/FFMPEG; VC-1; and MP3
+// (collectively, the “Media Technologies”). For clarity, you will pay any
+// royalties due for such third party technologies, which may include the Media
+// Technologies that are owed as a result of AMD providing the Software to you.
+// 
+// MIT license 
+// 
 // Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -57,7 +67,11 @@ namespace amf
         virtual amf_int32           AMF_STD_CALL GetVPitch() = 0;
         virtual bool                AMF_STD_CALL IsTiled() = 0;
     };
+    //----------------------------------------------------------------------------------------------
+    // smart pointer
+    //----------------------------------------------------------------------------------------------
     typedef AMFInterfacePtr_T<AMFPlane> AMFPlanePtr;
+    //----------------------------------------------------------------------------------------------
 } // namespace amf
 
 #endif //#ifndef __AMFPlane_h__

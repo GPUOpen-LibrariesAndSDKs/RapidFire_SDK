@@ -1,4 +1,14 @@
-//
+// 
+// Notice Regarding Standards.  AMD does not provide a license or sublicense to
+// any Intellectual Property Rights relating to any standards, including but not
+// limited to any audio and/or video codec technologies such as MPEG-2, MPEG-4;
+// AVC/H.264; HEVC/H.265; AAC decode/FFMPEG; AAC encode/FFMPEG; VC-1; and MP3
+// (collectively, the “Media Technologies”). For clarity, you will pay any
+// royalties due for such third party technologies, which may include the Media
+// Technologies that are owed as a result of AMD providing the Software to you.
+// 
+// MIT license 
+// 
 // Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -151,6 +161,7 @@ struct AMFRect
     {
          return left == other.left && top == other.top && right == other.right && bottom == other.bottom; 
     }
+    inline bool operator!=(const AMFRect& other) const { return !operator==(other); }
     amf_int32 Width() const { return right - left; }
     amf_int32 Height() const { return bottom - top; }
 };
@@ -169,6 +180,7 @@ struct AMFSize
     {
          return width == other.width && height == other.height; 
     }
+    inline bool operator!=(const AMFSize& other) const { return !operator==(other); }
 };
 
 inline AMFSize AMFConstructSize(amf_int32 width, amf_int32 height)
@@ -185,6 +197,7 @@ struct AMFPoint
     {
          return x == other.x && y == other.y; 
     }
+    inline bool operator!=(const AMFPoint& other) const { return !operator==(other); }
 };
 
 inline AMFPoint AMFConstructPoint(amf_int32 x, amf_int32 y)
@@ -201,9 +214,10 @@ struct AMFRate
     {
          return num == other.num && den == other.den; 
     }
+    inline bool operator!=(const AMFRate& other) const { return !operator==(other); }
 };
 
-inline AMFRate AMFConstructRate(amf_int32 num, amf_int32 den)
+inline AMFRate AMFConstructRate(amf_uint32 num, amf_uint32 den)
 {
     AMFRate object = {num, den};
     return object;
@@ -217,9 +231,10 @@ struct AMFRatio
     {
          return num == other.num && den == other.den; 
     }
+    inline bool operator!=(const AMFRatio& other) const { return !operator==(other); }
 };
 
-inline AMFRatio AMFConstructRatio(amf_int32 num, amf_int32 den)
+inline AMFRatio AMFConstructRatio(amf_uint32 num, amf_uint32 den)
 {
     AMFRatio object = {num, den};
     return object;
@@ -248,6 +263,7 @@ struct AMFColor
     {
          return r == other.r && g == other.g && b == other.b && a == other.a; 
     }
+    inline bool operator!=(const AMFColor& other) const { return !operator==(other); }
 };
 #pragma warning( pop )
 #pragma pack(pop)
@@ -328,22 +344,28 @@ namespace amf
         amf_uint8 data46;
         amf_uint8 data47;
         amf_uint8 data48;
+
+        bool operator==(const AMFGuid& other) const
+        {
+            return
+                data1 == other.data1 &&
+                data2 == other.data2 &&
+                data3 == other.data3 &&
+                data41 == other.data41 &&
+                data42 == other.data42 &&
+                data43 == other.data43 &&
+                data44 == other.data44 &&
+                data45 == other.data45 &&
+                data46 == other.data46 &&
+                data47 == other.data47 &&
+                data48 == other.data48;
+        }
+        inline bool operator!=(const AMFGuid& other) const { return !operator==(other); }
     };
 
     AMF_INLINE bool AMFCompareGUIDs(const AMFGuid& guid1, const AMFGuid& guid2)
     {
-        return
-            guid1.data1 == guid2.data1 &&
-            guid1.data2 == guid2.data2 &&
-            guid1.data3 == guid2.data3 &&
-            guid1.data41 == guid2.data41 &&
-            guid1.data42 == guid2.data42 &&
-            guid1.data43 == guid2.data43 &&
-            guid1.data44 == guid2.data44 &&
-            guid1.data45 == guid2.data45 &&
-            guid1.data46 == guid2.data46 &&
-            guid1.data47 == guid2.data47 &&
-            guid1.data48 == guid2.data48;
+        return guid1 == guid2;
     }
 }
 

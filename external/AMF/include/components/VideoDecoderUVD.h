@@ -1,4 +1,14 @@
-//
+// 
+// Notice Regarding Standards.  AMD does not provide a license or sublicense to
+// any Intellectual Property Rights relating to any standards, including but not
+// limited to any audio and/or video codec technologies such as MPEG-2, MPEG-4;
+// AVC/H.264; HEVC/H.265; AAC decode/FFMPEG; AAC encode/FFMPEG; VC-1; and MP3
+// (collectively, the “Media Technologies”). For clarity, you will pay any
+// royalties due for such third party technologies, which may include the Media
+// Technologies that are owed as a result of AMD providing the Software to you.
+// 
+// MIT license 
+// 
 // Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,10 +30,9 @@
 // THE SOFTWARE.
 //
 
-///-------------------------------------------------------------------------
-///  @file   VideoDecoderUVD.h
-///  @brief  VideoDecoderUVD.h interface
-///-------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+//  VideoDecoderUVD interface declaration
+//-------------------------------------------------------------------------------------------------
 #ifndef __VideoDecoderHW_UVD_h__
 #define __VideoDecoderHW_UVD_h__
 #pragma once
@@ -70,7 +79,6 @@ enum AMF_TIMESTAMP_MODE_ENUM
 #define AMF_VIDEO_DECODER_DPB_SIZE                     L"DPBSize"               // amf_int64; minimum number of surfaces for reordering
 
 #define AMF_VIDEO_DECODER_DEFAULT_SURFACES_FOR_TRANSIT  5                      // if AMF_VIDEO_DECODER_SURFACE_POOL_SIZE is 0 , AMF_VIDEO_DECODER_SURFACE_POOL_SIZE=AMF_VIDEO_DECODER_DEFAULT_SURFACES_FOR_TRANSIT+AMF_VIDEO_DECODER_DPB_SIZE
-
 
 // Decoder capabilities - exposed in AMFCaps interface
 #define AMF_VIDEO_DECODER_CAP_NUM_OF_STREAMS            L"NumOfStreams"               // amf_int64; maximum number of decode streams supported 

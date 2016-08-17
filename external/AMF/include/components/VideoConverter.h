@@ -1,4 +1,14 @@
-//
+// 
+// Notice Regarding Standards.  AMD does not provide a license or sublicense to
+// any Intellectual Property Rights relating to any standards, including but not
+// limited to any audio and/or video codec technologies such as MPEG-2, MPEG-4;
+// AVC/H.264; HEVC/H.265; AAC decode/FFMPEG; AAC encode/FFMPEG; VC-1; and MP3
+// (collectively, the “Media Technologies”). For clarity, you will pay any
+// royalties due for such third party technologies, which may include the Media
+// Technologies that are owed as a result of AMD providing the Software to you.
+// 
+// MIT license 
+// 
 // Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,12 +30,9 @@
 // THE SOFTWARE.
 //
 
-/**
- ***************************************************************************************************
- * @file  VideoConverter.h
- * @brief AMFFVideoConverter interface declaration
- ***************************************************************************************************
- */
+//-------------------------------------------------------------------------------------------------
+// AMFFVideoConverter interface declaration
+//-------------------------------------------------------------------------------------------------
 #ifndef __AMFVideoConverter_h__
 #define __AMFVideoConverter_h__
 #pragma once
@@ -33,6 +40,23 @@
 #include "Component.h"
 
 #define AMFVideoConverter L"AMFVideoConverter"
+
+enum AMF_VIDEO_CONVERTER_SCALE_ENUM
+{
+    AMF_VIDEO_CONVERTER_SCALE_INVALID          = -1,
+    AMF_VIDEO_CONVERTER_SCALE_BILINEAR          = 0,
+    AMF_VIDEO_CONVERTER_SCALE_BICUBIC           = 1
+};
+
+enum AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM
+{
+    AMF_VIDEO_CONVERTER_COLOR_PROFILE_UNKNOWN = -1,
+    AMF_VIDEO_CONVERTER_COLOR_PROFILE_601 = 0,
+    AMF_VIDEO_CONVERTER_COLOR_PROFILE_709 = 1,
+	AMF_VIDEO_CONVERTER_COLOR_PROFILE_2020 = 2,
+    AMF_VIDEO_CONVERTER_COLOR_PROFILE_COUNT
+};
+
 
 #define AMF_VIDEO_CONVERTER_OUTPUT_FORMAT       L"OutputFormat"             // Values : AMF_SURFACE_NV12 or AMF_SURFACE_BGRA or AMF_SURFACE_YUV420P
 #define AMF_VIDEO_CONVERTER_MEMORY_TYPE         L"MemoryType"               // Values : AMF_MEMORY_DX11 or AMF_MEMORY_DX9 or AMF_MEMORY_UNKNOWN (get from input type)
@@ -54,23 +78,7 @@
 
 #define AMF_VIDEO_CONVERTER_FORCE_OUTPUT_SURFACE_SIZE   L"ForceOutputSurfaceSize"   // bool (default=false) Force output size from output surface 
 
-enum AMF_VIDEO_CONVERTER_SCALE_ENUM
-{
-    AMF_VIDEO_CONVERTER_SCALE_INVALID          = -1,
-    AMF_VIDEO_CONVERTER_SCALE_BILINEAR          = 0,
-    AMF_VIDEO_CONVERTER_SCALE_BICUBIC           = 1
-};
 
 #define AMF_VIDEO_CONVERTER_COLOR_PROFILE       L"ColorProfile"
-
-enum AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM
-{
-    AMF_VIDEO_CONVERTER_COLOR_PROFILE_UNKNOWN = -1,
-    AMF_VIDEO_CONVERTER_COLOR_PROFILE_601 = 0,
-    AMF_VIDEO_CONVERTER_COLOR_PROFILE_709 = 1,
-	AMF_VIDEO_CONVERTER_COLOR_PROFILE_2020 = 2,
-    AMF_VIDEO_CONVERTER_COLOR_PROFILE_COUNT
-};
-
 
 #endif //#ifndef __AMFVideoConverter_h__

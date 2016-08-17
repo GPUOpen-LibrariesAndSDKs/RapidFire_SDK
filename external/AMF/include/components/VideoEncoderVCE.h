@@ -1,4 +1,14 @@
-//
+// 
+// Notice Regarding Standards.  AMD does not provide a license or sublicense to
+// any Intellectual Property Rights relating to any standards, including but not
+// limited to any audio and/or video codec technologies such as MPEG-2, MPEG-4;
+// AVC/H.264; HEVC/H.265; AAC decode/FFMPEG; AAC encode/FFMPEG; VC-1; and MP3
+// (collectively, the “Media Technologies”). For clarity, you will pay any
+// royalties due for such third party technologies, which may include the Media
+// Technologies that are owed as a result of AMD providing the Software to you.
+// 
+// MIT license 
+// 
 // Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,12 +30,10 @@
 // THE SOFTWARE.
 //
 
-/**
- ***************************************************************************************************
- * @file  VideoEncoderVCE.h
- * @brief AMFVideoEncoderHW_AVC interface declaration
- ***************************************************************************************************
- */
+//-------------------------------------------------------------------------------------------------
+// AMFVideoEncoderHW_AVC interface declaration
+//-------------------------------------------------------------------------------------------------
+
 #ifndef __AMFVideoEncoderHW_AVC_h__
 #define __AMFVideoEncoderHW_AVC_h__
 #pragma once
@@ -58,7 +66,7 @@ enum AMF_VIDEO_ENCODER_SCANTYPE_ENUM
 
 enum AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM
 {
-    AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CONSTRAINED_QP = 0,
+    AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CONSTANT_QP = 0,
     AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CBR,
     AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR,
     AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_LATENCY_CONSTRAINED_VBR
@@ -122,7 +130,6 @@ enum AMF_VIDEO_ENCODER_OUTPUT_DATA_TYPE_ENUM
 #define AMF_VIDEO_ENCODER_FILLER_DATA_ENABLE                    L"FillerDataEnable"         // bool; default = false; Filler Data Enable
 
 
-#define AMF_VIDEO_ENCODER_GOP_SIZE                              L"GOPSize"                  // amf_int64; default = 60; GOP Size, in frames
 #define AMF_VIDEO_ENCODER_VBV_BUFFER_SIZE                       L"VBVBufferSize"            // amf_int64; default = depends on USAGE; VBV Buffer Size in bits
 #define AMF_VIDEO_ENCODER_INITIAL_VBV_BUFFER_FULLNESS           L"InitialVBVBufferFullness" //amf_int64; default =  64; Initial VBV Buffer Fullness 0=0% 64=100%
 

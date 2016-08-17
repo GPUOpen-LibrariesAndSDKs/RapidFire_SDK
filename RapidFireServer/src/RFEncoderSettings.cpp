@@ -351,24 +351,7 @@ bool RFEncoderSettings::createParameterMap()
     Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 51;
 
     m_ParameterMap[RF_ENCODER_MAX_QP] = Entry;
-
  
-    
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Rate Control GOP Size
-    // 
-    // Type : uint
-    // possible values: 0 - 1000
-    ////////////////////////////////////////////////////////////////////////////////////
-    Entry.EntryType                               = RF_PARAMETER_UINT;
-    Entry.strParameterName                        = "Rate Control GOP Size";
-    Entry.Value.uiValue                           = 60;    
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     = 60;   
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 60; 
-    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 60;
-
-    m_ParameterMap[RF_ENCODER_GOP_SIZE] = Entry;
-
 
 
     ////////////////////////////////////////////////////////////////////////////////////
