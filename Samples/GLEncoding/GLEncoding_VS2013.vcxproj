@@ -103,7 +103,7 @@
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -123,7 +123,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -147,7 +147,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -171,7 +171,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

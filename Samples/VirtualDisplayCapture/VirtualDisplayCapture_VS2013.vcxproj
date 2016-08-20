@@ -103,7 +103,7 @@
       <AdditionalDependencies>glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -123,7 +123,7 @@ xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
       <AdditionalDependencies>glew32s.lib;RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -147,7 +147,7 @@ xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
       <AdditionalDependencies>glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -171,7 +171,7 @@ xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
       <AdditionalDependencies>glew32s.lib;RapidFireServer64.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D EDID_Emulation.bin $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

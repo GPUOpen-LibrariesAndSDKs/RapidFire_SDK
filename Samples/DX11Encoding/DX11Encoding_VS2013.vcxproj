@@ -103,8 +103,7 @@
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll" $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -123,8 +122,7 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll"
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x64\d3dcompiler_46.dll" $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -147,8 +145,7 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x64\d3dcompiler_46.dll"
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll" $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -171,8 +168,7 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll"
       <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2013/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
-xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x64\d3dcompiler_46.dll" $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2013\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
