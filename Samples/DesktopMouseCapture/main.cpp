@@ -95,10 +95,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
 
     RFMouseData     md         = {};
-    void*           pDesktop   = nullptr;
-    unsigned int    uiSize     = 0;
-    unsigned int    uiIndex    = 0;
-
     MSG msg = {};
 
     for (;;)
@@ -129,7 +125,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
         GLuint uiCapturedDesktop;
         // Acquire the captured desktop texture directly on GPU as OpenGL texture
-        rfStatus = rfAcquireNextFrame(rfSession, uiIndex, &uiCapturedDesktop);
+        rfStatus = rfAcquireNextFrame(rfSession, 0, &uiCapturedDesktop);
         if (rfStatus != RF_STATUS_OK && rfStatus != RF_STATUS_DOPP_NO_UPDATE)
         {
             MessageBox(NULL, "Failed to capture desktop texture!", "RF Error", MB_ICONERROR | MB_OK);
@@ -139,8 +135,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
         renderer.draw(uiCapturedDesktop);
         SwapBuffers(win.getDC());
-
-        uiIndex = 1 - uiIndex;
     }
 
     rfDeleteEncodeSession(&rfSession);

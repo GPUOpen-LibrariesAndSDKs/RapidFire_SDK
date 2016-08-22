@@ -51,7 +51,7 @@ public:
 
     virtual RFStatus    createBuffers(RFFormat format, unsigned int uiWidth, unsigned int uiHeight, unsigned int uiAlignedWidth, unsigned int uiAlignedHeight, bool bUseAsyncCopy) override;
 
-    virtual RFStatus    processBuffer(bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx) override;
+    virtual RFStatus    processBuffer(bool bRunCSC, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx) override;
 
     amf::AMFContextPtr  getAMFContext() const { return m_amfContext; };
 

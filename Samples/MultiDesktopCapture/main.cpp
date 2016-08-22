@@ -101,12 +101,10 @@ void RapidFireThread(unsigned int uiDisplayId, LONG wndPosX, LONG wndPosY, DWORD
         return;
     }
 
-    unsigned int uiBufferIndex = 0;
     unsigned int uiTexSize     = 0;
     void*        pPixels       = nullptr;
 
-    g_rfDll.rfFunc.rfEncodeFrame(rfSession, uiBufferIndex);
-    uiBufferIndex = 1 - uiBufferIndex;
+    g_rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
 
     MSG msg = {};
 
@@ -130,7 +128,7 @@ void RapidFireThread(unsigned int uiDisplayId, LONG wndPosX, LONG wndPosY, DWORD
             continue;
         }
 
-        g_rfDll.rfFunc.rfEncodeFrame(rfSession, uiBufferIndex);
+        g_rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
 
         rfStatus = g_rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiTexSize, &pPixels);
 
@@ -141,8 +139,6 @@ void RapidFireThread(unsigned int uiDisplayId, LONG wndPosX, LONG wndPosY, DWORD
 
         renderer.draw();
         SwapBuffers(win.getDC());
-
-        uiBufferIndex = 1 - uiBufferIndex;
     }
 
     g_rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);

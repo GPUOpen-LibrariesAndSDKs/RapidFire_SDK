@@ -98,7 +98,6 @@ int main(int argc, char** argv)
     // The file can be displayed using ffplay.
     outFile.open("./Desktop.h264", fstream::out | fstream::trunc | fstream::binary);
 
-    unsigned int uiBuffer        = 0;
     unsigned int uiBitStreamSize = 0;
     void*        pBitStreamdata  = nullptr;
 
@@ -106,7 +105,7 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < NUM_FRAMES; ++i)
     {
-        if (rfEncodeFrame(rfSession, uiBuffer) == RF_STATUS_OK)
+        if (rfEncodeFrame(rfSession, 0) == RF_STATUS_OK)
         {
             // Check if encoded frame is ready
             if (rfGetEncodedFrame(rfSession, &uiBitStreamSize, &pBitStreamdata) == RF_STATUS_OK)
@@ -117,8 +116,6 @@ int main(int argc, char** argv)
                 }
             }
         }
-
-        uiBuffer = 1 - uiBuffer;
     }
 
     rfDeleteEncodeSession(&rfSession);

@@ -91,7 +91,7 @@ public:
     virtual RFStatus    setInputTexture(IDirect3DSurface9* pD3D9Texture, const unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx);
 
     // Converts color space. The input buffer is m_clBuffer[uiSorceIdx], the output is stored in m_clResultBuffer[uiDestIdx].
-    virtual RFStatus    processBuffer(bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx);
+    virtual RFStatus    processBuffer(bool bRunCSC, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx);
 
     // Removes an OpenCL object that has been created from a GL/D3D object.
     RFStatus            removeCLInputMemObj(unsigned int idx);

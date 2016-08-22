@@ -86,6 +86,7 @@ protected:
     {
         RFEncoderID     EncoderId;
         unsigned int    uiInputDim[2];
+        bool            bEncoderCSC;
         bool            bInvertInput;
         bool            bAsyncCopyToSysMem;
         bool            bBlockingEncoderRead;

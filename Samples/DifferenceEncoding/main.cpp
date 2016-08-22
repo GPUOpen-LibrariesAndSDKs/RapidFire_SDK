@@ -120,10 +120,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     void*           pDifference     = nullptr;
     unsigned int    uiDiffSize      = 0;
     unsigned int    uiSourceSize    = 0;
-    unsigned int    uiIndex         = 0;
 
-    rfDll.rfFunc.rfEncodeFrame(rfSession, uiIndex);
-    uiIndex = 1 - uiIndex;
+    rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
 
     MSG msg = {};
 
@@ -146,7 +144,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             continue;
         }
 
-        rfDll.rfFunc.rfEncodeFrame(rfSession, uiIndex);
+        rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
 
         bool success = (RF_STATUS_OK == rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource));
         success &= (RF_STATUS_OK == rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference));
@@ -158,8 +156,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
         renderer.draw();
         SwapBuffers(win.getDC());
-
-        uiIndex = 1 - uiIndex;
     }
 
     rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);

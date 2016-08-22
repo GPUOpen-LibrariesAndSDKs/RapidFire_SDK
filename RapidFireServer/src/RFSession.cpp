@@ -79,6 +79,7 @@ RFSession::RFSession(RFEncoderID rfEncoder)
     m_Properties.bAsyncCopyToSysMem = false;
     m_Properties.bBlockingEncoderRead = false;
     m_Properties.bInvertInput = false;
+    m_Properties.bEncoderCSC = true;
     m_Properties.bMousedata = false;
 }
 
@@ -293,10 +294,10 @@ RFStatus RFSession::encodeFrame(unsigned int idx, unsigned int* oglDesktopTextur
     }
 
     // Processes input texture and stores it in the result buffer. The result buffer can be used as input
-    // for the encoders. During this process the CSC is done and the image can get inverted.
+    // for the encoders. During this process the CSC can be done and the image can get inverted.
     // If a sys mem buffer was requested when createBuffers was called, a transfer of the result to sys
     // mem is triggered.
-    SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.bInvertInput, idx, m_uiResultBuffer));
+    SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.bEncoderCSC, m_Properties.bInvertInput, idx, m_uiResultBuffer));
 
     // Encode frame
     SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer));

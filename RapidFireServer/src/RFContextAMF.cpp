@@ -311,7 +311,7 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
 }
 
 
-RFStatus RFContextAMF::processBuffer(bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx)
+RFStatus RFContextAMF::processBuffer(bool /*bRunCSC*/, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx)
 {
     if (!m_bValid)
     {

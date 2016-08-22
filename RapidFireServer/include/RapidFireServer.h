@@ -474,6 +474,7 @@ RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession session, unsigned int uiW
 *
 * @param[in] session: The encoding session.
 * @param[in] idx:     The index of the render target which will be encoded.
+*                     (ignored for encoding sessions with a desktop set as source)
 *
 * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
 *******************************************************************************

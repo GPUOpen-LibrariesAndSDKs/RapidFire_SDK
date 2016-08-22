@@ -43,10 +43,13 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder, HDC hDC, HGLRC hGlrc)
     , m_bBlockUntilChange(false)
     , m_bUpdateOnlyOnChange(false)
     , m_uiDisplayId(0)
+    , m_uiIdx(0)
     , m_pDeskotpCapture(nullptr)
     , m_pDrvInterface(nullptr)
     , m_pMouseGrab(nullptr)
 {
+    m_Properties.bEncoderCSC = false;
+
     if (hDC != NULL && hGlrc != NULL)
     {
         m_hDC = hDC;
@@ -389,12 +392,14 @@ RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx, unsigned int* oglDesk
     }
 
     // Render desktop to image.
-    if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, idx, oglDesktopTexture))
+    if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, m_uiIdx, oglDesktopTexture))
     {
         return RF_STATUS_DOPP_NO_UPDATE;
     }
 
-    idx = m_DesktopRTIndexList[idx];
+    idx = m_DesktopRTIndexList[m_uiIdx];
+
+    m_uiIdx = (m_uiIdx + 1) % m_pDeskotpCapture->getNumFramebufferTex();
 
     return RF_STATUS_OK;
 }

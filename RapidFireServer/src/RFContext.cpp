@@ -1221,7 +1221,7 @@ void RFContextCL::getInputImage(unsigned int idx, cl_mem* pBuffer) const
 }
 
 
-RFStatus RFContextCL::processBuffer(bool bInvert, unsigned int uiSrcIdx, unsigned int uiDestIdx)
+RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiSrcIdx, unsigned int uiDestIdx)
 {
     if (!m_bValid)
     {
@@ -1254,7 +1254,7 @@ RFStatus RFContextCL::processBuffer(bool bInvert, unsigned int uiSrcIdx, unsigne
         return rfStatus;
     }
 
-    if (m_uiCSCKernelIdx != RF_KERNEL_RGBA_COPY)
+    if (bRunCSC || m_uiCSCKernelIdx != RF_KERNEL_RGBA_COPY)
     {
         // RGBA input buffer (src)
         SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 0, sizeof(cl_mem), static_cast<void*>(&(m_clInputImage[uiSrcIdx]))));
@@ -1262,7 +1262,7 @@ RFStatus RFContextCL::processBuffer(bool bInvert, unsigned int uiSrcIdx, unsigne
         // output buffer (dst)
         SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 1, sizeof(cl_mem), static_cast<void*>(&(m_clResultBuffer[uiDestIdx]))));
 
-        int nInvert = 0;
+        int nInvert = (bInvert) ? 1 : 0;
         SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
 
         SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
