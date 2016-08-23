@@ -300,7 +300,7 @@ RFStatus RFSession::encodeFrame(unsigned int idx, unsigned int* oglDesktopTextur
     SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.bEncoderCSC, m_Properties.bInvertInput, idx, m_uiResultBuffer));
 
     // Encode frame
-    SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer));
+    SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer, !m_Properties.bEncoderCSC));
 
     // Store result buffer index in queue since processBuffer filled a new resultBuffer. The ResultBuffer
     // should only be considered as valid if the enode call succeeded. Only in this case a valid pair of

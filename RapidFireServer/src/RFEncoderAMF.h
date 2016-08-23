@@ -39,26 +39,26 @@ public:
     ~RFEncoderAMF(void);
 
     // Initializes encoder based on the configuration pConfig.
-    virtual RFStatus            init(const RFContextCL* pContextCL, const RFEncoderSettings* pConfig);
+    virtual RFStatus            init(const RFContextCL* pContextCL, const RFEncoderSettings* pConfig) override;
 
-    virtual RFStatus            resize(unsigned int uiWidth, unsigned int uiHeight);
+    virtual RFStatus            resize(unsigned int uiWidth, unsigned int uiHeight) override;
 
-    virtual RFStatus            encode(unsigned int uiBufferIdx);
+    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages) override;
 
     // Sets single parameter to encoder.
-    virtual RFStatus            setParameter(const unsigned int uiParameterName, RFParameterType rfType, RFProperties value);
+    virtual RFStatus            setParameter(const unsigned int uiParameterName, RFParameterType rfType, RFProperties value) override;
 
     // Returns the value that is used by the encoder for parameter uiParameterName.
-    virtual RFParameterState    getParameter(const unsigned int uiParameterName, RFProperties& value) const;
+    virtual RFParameterState    getParameter(const unsigned int uiParameterName, RFProperties& value) const override;
 
-    virtual bool                isFormatSupported(RFFormat format) const;
+    virtual bool                isFormatSupported(RFFormat format) const override;
 
-    virtual bool                isResizeSupported() const { return m_pContext ? m_pContext->getCtxType() == RFContextCL::RF_CTX_FROM_DX9 : false; }
+    virtual bool                isResizeSupported() const override { return m_pContext ? m_pContext->getCtxType() == RFContextCL::RF_CTX_FROM_DX9 : false; }
 
     // Returns preferred format of the encoder.
-    virtual RFFormat            getPreferredFormat() const { return RF_NV12; }
+    virtual RFFormat            getPreferredFormat() const override { return RF_NV12; }
 
-    virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream);
+    virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream) override;
 
     // Defines if getEncodeFrame should block until a frame is ready or not. If no blocking is used the call will return
     // immediatly unless the VCE queue is full and AMF needs to wait for an empty slot before submitting the next frame.

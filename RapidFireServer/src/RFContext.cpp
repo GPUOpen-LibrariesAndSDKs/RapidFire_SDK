@@ -1268,22 +1268,29 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
         SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
                      m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
                      nullptr, &m_clCSCFinished[uiDestIdx]));
+
+        clFlush(m_clCmdQueue);
+
+        if (m_bUseAsyncCopy)
+        {
+            clEnqueueCopyBuffer(m_clDMAQueue, m_clResultBuffer[uiDestIdx], m_clPageLockedBuffer[uiDestIdx], 0, 0, m_nOutputBufferSize, 1, &m_clCSCFinished[uiDestIdx], &m_clDMAFinished[uiDestIdx]);
+            clFlush(m_clDMAQueue);
+        }
     }
     else
     {
         const size_t src_origin[3] = { 0, 0, 0 };
         const size_t region[3] = { m_uiOutputWidth, m_uiOutputHeight, 1 };
-        SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clCmdQueue, m_clInputImage[uiSrcIdx], m_clResultBuffer[uiDestIdx], src_origin, region, 0, 0, nullptr, &m_clCSCFinished[uiDestIdx]));
-    }
-
-    clFlush(m_clCmdQueue);
-
-    // If m_bUseAsynCopy is set the transfer of the m_clResultBuffer is triggered here. 
-    // The buffer can be accessed by calling getResultBuffer. This function will wait for the tranfer to complete.
-    if (m_bUseAsyncCopy)
-    {
-        clEnqueueCopyBuffer(m_clDMAQueue, m_clResultBuffer[uiDestIdx], m_clPageLockedBuffer[uiDestIdx], 0, 0, m_nOutputBufferSize, 1, &m_clCSCFinished[uiDestIdx], &m_clDMAFinished[uiDestIdx]);
-        clFlush(m_clDMAQueue);
+        if (m_bUseAsyncCopy)
+        {
+            SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clDMAQueue, m_clInputImage[uiSrcIdx], m_clPageLockedBuffer[uiDestIdx], src_origin, region, 0, 0, nullptr, &m_clDMAFinished[uiDestIdx]));
+            clFlush(m_clDMAQueue);
+        }
+        else
+        {
+            SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clCmdQueue, m_clInputImage[uiSrcIdx], m_clResultBuffer[uiDestIdx], src_origin, region, 0, 0, nullptr, &m_clCSCFinished[uiDestIdx]));
+            clFlush(m_clCmdQueue);
+        }
     }
 
     // Release OpenCL object from OpenGL/D3D objec.

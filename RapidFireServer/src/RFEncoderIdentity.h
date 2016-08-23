@@ -36,7 +36,7 @@ public:
                                                                                               
     virtual bool        isFormatSupported(RFFormat format) const                              override;
                                                                                               
-    virtual RFStatus    encode(unsigned int uiBufferIdx)                                      override;
+    virtual RFStatus    encode(unsigned int uiBufferIdx, bool bUseInputImage)                 override;
                                                                                               
     virtual RFStatus    getEncodedFrame(unsigned int& uiSize, void* &pBitStream)              override;
 

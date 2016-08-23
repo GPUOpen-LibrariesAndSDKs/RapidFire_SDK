@@ -214,7 +214,7 @@ RFStatus RFEncoderAMF::resize(unsigned int uiWidth, unsigned int uiHeight)
 }
 
 
-RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx)
+RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx, bool bUseInputImage)
 {
     AMF_RESULT amfErr;
 

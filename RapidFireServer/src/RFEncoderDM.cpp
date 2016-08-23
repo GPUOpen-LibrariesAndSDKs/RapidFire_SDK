@@ -40,9 +40,47 @@ using namespace std;
 
 #define MULTI_LINE_STR(a) #a
 
-const char* str_cl_DiffMapkernels = MULTI_LINE_STR(
-                                                        __kernel void DiffMap_LocalreductionImage(__global unsigned int* Image1, __global unsigned int* Image2, __global unsigned char* DiffMap,
-                                                                                                  unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
+const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
+
+                                                        __kernel void DiffMap_Image(__read_only image2d_t Image1, __read_only image2d_t Image2, __global unsigned char* DiffMap,
+                                                                                    unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
+                                                        {
+                                                            short groupX = get_group_id(0);
+                                                            short groupY = get_group_id(1);
+                                                            short groupIndex = groupX + get_num_groups(0) * groupY;
+                                                            short groupSize = get_local_size(0) * get_local_size(1);
+                                                            short localIndex = get_local_id(0) + get_local_size(0) * get_local_id(1);
+
+                                                            // Offset into the image
+                                                            unsigned int x_offset = groupX * uiLocalPxX;
+                                                            unsigned int y_offset = groupY * uiLocalPxY;
+
+                                                            // Limit size to xDimension
+                                                            unsigned int localBlockSize = uiLocalPxX * uiLocalPxY;
+
+                                                            float4 pixels1;
+                                                            float4 pixels2;
+
+                                                            int2 pos = (int2)(x_offset, y_offset);
+
+                                                            for (; localIndex < localBlockSize; localIndex += groupSize)
+                                                            {
+                                                                unsigned int x = localIndex % uiLocalPxX;
+                                                                unsigned int y = localIndex / uiLocalPxX;
+
+                                                                pixels1 = read_imagef(Image1, sampler, pos + (int2)(x, y));
+                                                                pixels2 = read_imagef(Image2, sampler, pos + (int2)(x, y));
+
+                                                                if (amd_sad4(as_uint4(pixels1), as_uint4(pixels2), 0) != 0)
+                                                                {
+                                                                    DiffMap[groupIndex] = 1;
+                                                                }
+                                                            }
+                                                        };
+
+
+                                                        __kernel void DiffMap_Buffer(__global unsigned int* Image1, __global unsigned int* Image2, __global unsigned char* DiffMap,
+                                                                                     unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
                                                         {
                                                             short groupX = get_group_id(0);
                                                             short groupY = get_group_id(1);
@@ -62,7 +100,6 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(
 
                                                             uint4 pixels1;
                                                             uint4 pixels2;
-                                                            unsigned int discard = 0;
 
                                                             for (; localIndex < localBlockSize; localIndex += 4 * groupSize)
                                                             {
@@ -82,7 +119,7 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(
                                                                         ((unsigned int*)&(pixels2))[i] = 0;
                                                                     }
                                                                 }
-                                                                if (amd_sad4(pixels1, pixels2, discard) != 0)
+                                                                if (amd_sad4(pixels1, pixels2, 0) != 0)
                                                                 {
                                                                     DiffMap[groupIndex] = 1;
                                                                 }
@@ -103,7 +140,8 @@ RFEncoderDM::RFEncoderDM()
     , m_uiCurrentTargetBuffer(0)
     , m_pClearData(nullptr)
     , m_uiDiffMapSize(0)
-    , m_DiffMapkernel(NULL)
+    , m_DiffMapImagekernel(NULL)
+    , m_DiffMapBufferkernel(NULL)
     , m_DiffMapProgram(NULL)
     , m_pContext(nullptr)
     , m_pMappedBuffer(nullptr)
@@ -126,9 +164,14 @@ RFEncoderDM::RFEncoderDM()
 
 RFEncoderDM::~RFEncoderDM()
 {
-    if (m_DiffMapkernel != NULL)
+    if (m_DiffMapImagekernel != NULL)
     {
-        clReleaseKernel(m_DiffMapkernel);
+        clReleaseKernel(m_DiffMapImagekernel);
+    }
+
+    if (m_DiffMapBufferkernel != NULL)
+    {
+        clReleaseKernel(m_DiffMapBufferkernel);
     }
 
     if (m_DiffMapProgram != NULL)
@@ -359,7 +402,7 @@ bool RFEncoderDM::deleteBuffers()
 }
 
 
-RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx)
+RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
 {
     cl_mem          clCurrentImage;
     cl_mem          clPrevImage;
@@ -386,22 +429,33 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx)
         }
     }
 
-    m_pContext->getResultBuffer(uiBufferIdx, &clCurrentImage);
-    m_pContext->getResultBuffer(m_uiPreviousBuffer, &clPrevImage);
+    cl_kernel diffMapKernel;
+    if (bUseInputImages)
+    {
+        m_pContext->getInputImage(uiBufferIdx, &clCurrentImage);
+        m_pContext->getInputImage(m_uiPreviousBuffer, &clPrevImage);
+        diffMapKernel = m_DiffMapImagekernel;
+    }
+    else
+    {
+        m_pContext->getResultBuffer(uiBufferIdx, &clCurrentImage);
+        m_pContext->getResultBuffer(m_uiPreviousBuffer, &clPrevImage);
+        diffMapKernel = m_DiffMapBufferkernel;
+    }
 
     m_uiPreviousBuffer = uiBufferIdx;
 
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 0, sizeof(cl_mem),       &clCurrentImage));
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 1, sizeof(cl_mem),       &clPrevImage));
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 2, sizeof(cl_mem),       &(pCurrentBuffer->clGPUBuffer)));
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 3, sizeof(unsigned int), &m_uiWidth));
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 4, sizeof(unsigned int), &m_uiHeight));
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 5, sizeof(unsigned int), &m_uiTotalBlockSize[0]));
-    SAFE_CALL_CL(clSetKernelArg(m_DiffMapkernel, 6, sizeof(unsigned int), &m_uiTotalBlockSize[1]));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 0, sizeof(cl_mem),       &clCurrentImage));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 1, sizeof(cl_mem),       &clPrevImage));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 2, sizeof(cl_mem),       &(pCurrentBuffer->clGPUBuffer)));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 3, sizeof(unsigned int), &m_uiWidth));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 4, sizeof(unsigned int), &m_uiHeight));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 5, sizeof(unsigned int), &m_uiTotalBlockSize[0]));
+    SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 6, sizeof(unsigned int), &m_uiTotalBlockSize[1]));
 
     char cPattern = 0;
     SAFE_CALL_CL(clEnqueueFillBuffer(m_pContext->getCmdQueue(), pCurrentBuffer->clGPUBuffer, &cPattern, sizeof(cPattern), 0, m_uiDiffMapSize, 0, nullptr, nullptr));
-    SAFE_CALL_CL(clEnqueueNDRangeKernel(m_pContext->getCmdQueue(), m_DiffMapkernel, 2, nullptr, m_globalDim, m_localDim, 0, nullptr, &(pCurrentBuffer->clDiffFinished)));
+    SAFE_CALL_CL(clEnqueueNDRangeKernel(m_pContext->getCmdQueue(), diffMapKernel, 2, nullptr, m_globalDim, m_localDim, 0, nullptr, &(pCurrentBuffer->clDiffFinished)));
     SAFE_CALL_CL(clEnqueueCopyBuffer(m_pContext->getDMAQueue(), pCurrentBuffer->clGPUBuffer, pCurrentBuffer->clPageLockedBuffer, 0, 0, m_uiDiffMapSize, 1, &pCurrentBuffer->clDiffFinished, &pCurrentBuffer->clDMAFinished));
 
     // Now we can be sure to get a Diff Map -> Store buffer in queue to be retrieved by getEncodedFrame.
@@ -491,7 +545,8 @@ RFStatus RFEncoderDM::GenerateCLProgramAndKernel()
     if (m_pContext->buildCLProgram(DIFF_KERNEL_NAME, str_cl_DiffMapkernels, m_DiffMapProgram) == RF_STATUS_OK)
     {
         cl_int nStatus;
-        m_DiffMapkernel = clCreateKernel(m_DiffMapProgram, "DiffMap_LocalreductionImage", &nStatus);
+        m_DiffMapImagekernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Image", &nStatus);
+        m_DiffMapBufferkernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Buffer", &nStatus);
         SAFE_CALL_CL(nStatus);
 
         return RF_STATUS_OK;

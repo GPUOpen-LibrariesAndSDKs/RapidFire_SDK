@@ -59,10 +59,10 @@ WGLGENPRESENTTEXTUREAMD         wglGenPresentTextureAMD;
 // needs to be rendered into the FBO without beeing interrupted by another desktop session.
 static RFLock g_GlobalDOPPLock;
 
-GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv)
+GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, unsigned int uiNumFrameBuffers, DOPPDrvInterface* pDrv)
     : m_uiDesktopTexture(0)
     , m_uiDesktopId(uiDesktop)
-    , m_uiNumTargets(2)
+    , m_uiNumTargets(uiNumFrameBuffers)
     , m_uiDesktopWidth(0)
     , m_uiDesktopHeight(0)
     , m_uiPresentWidth(0)

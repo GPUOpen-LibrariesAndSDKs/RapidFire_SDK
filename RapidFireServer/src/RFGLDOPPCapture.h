@@ -36,7 +36,7 @@ class GLDOPPCapture
 {
 public:
 
-    GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv);
+    GLDOPPCapture(unsigned int uiDesktop, unsigned int uiNumFrameBuffers, DOPPDrvInterface* pDrv);
     virtual ~GLDOPPCapture();
 
     RFStatus            initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, RFFormat outputFormat, bool bTrackDesktopChanges, bool bBlocking);

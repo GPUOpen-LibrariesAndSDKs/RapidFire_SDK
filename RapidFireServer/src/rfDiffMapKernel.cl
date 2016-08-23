@@ -38,8 +38,47 @@
 // uiLocalPxY: Number of pixels each work item compares in y direction
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-__kernel void DiffMap_LocalreductionImage(__global unsigned int* Image1, __global unsigned int* Image2, __global unsigned char* DiffMap,
-                                          unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
+__constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
+
+__kernel void DiffMap_Image(__read_only image2d_t Image1, __read_only image2d_t Image2, __global unsigned char* DiffMap,
+                            unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
+{
+    short groupX = get_group_id(0);
+    short groupY = get_group_id(1);
+    short groupIndex = groupX + get_num_groups(0) * groupY;
+    short groupSize = get_local_size(0) * get_local_size(1);
+    short localIndex = get_local_id(0) + get_local_size(0) * get_local_id(1);
+
+    // Offset into the image
+    unsigned int x_offset = groupX * uiLocalPxX;
+    unsigned int y_offset = groupY * uiLocalPxY;
+
+    // Limit size to xDimension
+    unsigned int localBlockSize = uiLocalPxX * uiLocalPxY;
+
+    float4 pixels1;
+    float4 pixels2;
+
+    int2 pos = (int2)(x_offset, y_offset);
+
+    for (; localIndex < localBlockSize; localIndex += groupSize)
+    {
+        unsigned int x = localIndex % uiLocalPxX;
+        unsigned int y = localIndex / uiLocalPxX;
+
+        pixels1 = read_imagef(Image1, sampler, pos + (int2)(x, y));
+        pixels2 = read_imagef(Image2, sampler, pos + (int2)(x, y));
+
+        if (amd_sad4(as_uint4(pixels1), as_uint4(pixels2), 0) != 0)
+        {
+            DiffMap[groupIndex] = 1;
+        }
+    }
+};
+
+
+__kernel void DiffMap_Buffer(__global unsigned int* Image1, __global unsigned int* Image2, __global unsigned char* DiffMap,
+                             unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
 {
     short groupX = get_group_id(0);
     short groupY = get_group_id(1);
@@ -59,7 +98,6 @@ __kernel void DiffMap_LocalreductionImage(__global unsigned int* Image1, __globa
 
     uint4 pixels1;
     uint4 pixels2;
-    unsigned int discard = 0;
 
     for (; localIndex < localBlockSize; localIndex += 4 * groupSize)
     {
@@ -79,7 +117,7 @@ __kernel void DiffMap_LocalreductionImage(__global unsigned int* Image1, __globa
                 ((unsigned int*)&(pixels2))[i] = 0;
             }
         }
-        if (amd_sad4(pixels1, pixels2, discard) != 0)
+        if (amd_sad4(pixels1, pixels2, 0) != 0)
         {
             DiffMap[groupIndex] = 1;
         }

@@ -53,7 +53,7 @@ public:
     virtual RFParameterState    getParameter(unsigned int const uiParameterName, RFProperties &value) const { return RF_PARAMETER_STATE_INVALID; }
 
     // Encode a frame
-    virtual RFStatus            encode(unsigned int uiBufferIdx)                          { return RF_STATUS_FAIL; }
+    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages) { return RF_STATUS_FAIL; }
 
     virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream)  { return RF_STATUS_FAIL; }
 

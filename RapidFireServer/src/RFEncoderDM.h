@@ -45,7 +45,7 @@ public:
                                                                                                                              
     virtual RFStatus            resize(unsigned int uiWidth, unsigned int uiHeight)                                          override;
                                                                                                                              
-    virtual RFStatus            encode(unsigned int uiBufferIdx)                                                             override;
+    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages)                                       override;
                                                                                                                              
     virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream)                                     override;
                                                                                                                              
@@ -92,7 +92,8 @@ private:
     size_t                                      m_globalDim[2];
     size_t                                      m_localDim[2];
 
-    cl_kernel                                   m_DiffMapkernel;
+    cl_kernel                                   m_DiffMapImagekernel;
+    cl_kernel                                   m_DiffMapBufferkernel;
     cl_program                                  m_DiffMapProgram;
 
     const RFContextCL*                          m_pContext;

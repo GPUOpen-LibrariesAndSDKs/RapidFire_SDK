@@ -198,7 +198,7 @@ RFStatus RFDOPPSession::createContextFromGfx()
     {
         std::unique_ptr<DOPPDrvInterface> pDoppDrv = std::unique_ptr<DOPPDrvInterface>(new DOPPDrvInterface(m_strDisplayName, uiBusNumber));
 
-        std::unique_ptr<GLDOPPCapture>    pDoppCapture = std::unique_ptr<GLDOPPCapture>(new GLDOPPCapture(dpManager.getDesktopId(m_uiDisplayId), pDoppDrv.get()));
+        std::unique_ptr<GLDOPPCapture>    pDoppCapture = std::unique_ptr<GLDOPPCapture>(new GLDOPPCapture(dpManager.getDesktopId(m_uiDisplayId), m_pContextCL->getNumResultBuffers(), pDoppDrv.get()));
 
         if (m_bMouseShapeData)
         {
