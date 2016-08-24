@@ -45,6 +45,8 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
                                                         __kernel void DiffMap_Image(__read_only image2d_t Image1, __read_only image2d_t Image2, __global unsigned char* DiffMap,
                                                                                     unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
                                                         {
+                                                            __local unsigned int result = 0;
+                                                            barrier(CLK_LOCAL_MEM_FENCE);
                                                             short groupX = get_group_id(0);
                                                             short groupY = get_group_id(1);
                                                             short groupIndex = groupX + get_num_groups(0) * groupY;
@@ -65,6 +67,11 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
 
                                                             for (; localIndex < localBlockSize; localIndex += groupSize)
                                                             {
+                                                                if (result != 0)
+                                                                {
+                                                                    return;
+                                                                }
+
                                                                 unsigned int x = localIndex % uiLocalPxX;
                                                                 unsigned int y = localIndex / uiLocalPxX;
 
@@ -73,7 +80,9 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
 
                                                                 if (amd_sad4(as_uint4(pixels1), as_uint4(pixels2), 0) != 0)
                                                                 {
+                                                                    result = 1;
                                                                     DiffMap[groupIndex] = 1;
+                                                                    return;
                                                                 }
                                                             }
                                                         };
@@ -82,6 +91,8 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
                                                         __kernel void DiffMap_Buffer(__global unsigned int* Image1, __global unsigned int* Image2, __global unsigned char* DiffMap,
                                                                                      unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
                                                         {
+                                                            __local unsigned int result = 0;
+                                                            barrier(CLK_LOCAL_MEM_FENCE);
                                                             short groupX = get_group_id(0);
                                                             short groupY = get_group_id(1);
                                                             short groupIndex = groupX + get_num_groups(0) * groupY;
@@ -103,6 +114,11 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
 
                                                             for (; localIndex < localBlockSize; localIndex += 4 * groupSize)
                                                             {
+                                                                if(result != 0)
+                                                                {
+                                                                    return;
+                                                                }
+
                                                                 for (unsigned int i = 0; i < 4; ++i)
                                                                 {
                                                                     unsigned int localIndex_ = localIndex + i * groupSize;
@@ -121,7 +137,9 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
                                                                 }
                                                                 if (amd_sad4(pixels1, pixels2, 0) != 0)
                                                                 {
+                                                                    result = 1;
                                                                     DiffMap[groupIndex] = 1;
+                                                                    return;
                                                                 }
                                                             }
                                                         };
