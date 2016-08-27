@@ -45,7 +45,8 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
                                                         __kernel void DiffMap_Image(__read_only image2d_t Image1, __read_only image2d_t Image2, __global unsigned char* DiffMap,
                                                                                     unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
                                                         {
-                                                            __local unsigned int result = 0;
+                                                            __local unsigned int result;
+                                                            result = 0;
                                                             barrier(CLK_LOCAL_MEM_FENCE);
                                                             short groupX = get_group_id(0);
                                                             short groupY = get_group_id(1);
@@ -91,7 +92,8 @@ const char* str_cl_DiffMapkernels = MULTI_LINE_STR(     __constant sampler_t sam
                                                         __kernel void DiffMap_Buffer(__global unsigned int* Image1, __global unsigned int* Image2, __global unsigned char* DiffMap,
                                                                                      unsigned int DomainSizeX, unsigned int DomainSizeY, const unsigned int uiLocalPxX, const unsigned int uiLocalPxY)
                                                         {
-                                                            __local unsigned int result = 0;
+                                                            __local unsigned int result;
+                                                            result = 0;
                                                             barrier(CLK_LOCAL_MEM_FENCE);
                                                             short groupX = get_group_id(0);
                                                             short groupY = get_group_id(1);
