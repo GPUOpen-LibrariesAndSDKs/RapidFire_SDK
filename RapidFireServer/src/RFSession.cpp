@@ -248,14 +248,14 @@ RFStatus RFSession::getRenderTargetState(RFRenderTargetState* state, unsigned in
 // encoding. The submitted buffer ids are stored in m_BufferQueue.
 // getEncodeFrame will remove the index from the queue once a frame is encoded and was read by 
 // the application.
-RFStatus RFSession::encodeFrame(unsigned int idx, unsigned int* oglDesktopTexture)
+RFStatus RFSession::encodeFrame(unsigned int idx)
 {
     // Local lock: Make sure no other thread of this session is using the resources
     RFReadWriteAccess enabler(&m_SessionLock);
 
     // Check if we have a valid encoder. Having a valid encoder implies thet we have a valid
     // context as well.
-    if (!m_pEncoder || (oglDesktopTexture && m_Properties.EncoderId != RF_IDENTITY))
+    if (!m_pEncoder)
     {
         return RF_STATUS_INVALID_ENCODER;
     }
@@ -267,30 +267,25 @@ RFStatus RFSession::encodeFrame(unsigned int idx, unsigned int* oglDesktopTextur
 
     // We don't have to free the result buffer. A call to m_pContextCL->processBuffer will override an
     // existing buffer. The app needs to call getEncodedFrame to free the buffers.
-    if (!oglDesktopTexture && m_BufferQueue.size() >= m_pContextCL->getNumResultBuffers())
+    if (m_BufferQueue.size() >= m_pContextCL->getNumResultBuffers())
     {
         return RF_STATUS_QUEUE_FULL;
     }
 
     // Run pre processor. This function might be implemented by a derived class like e.g. DesktopSession.
     // ATTENTION: idx might be changed by preprocessFrame to map on some internally created RTs.
-    RFStatus rfStatus = preprocessFrame(idx, oglDesktopTexture);
+    RFStatus rfStatus = preprocessFrame(idx);
 
     if (rfStatus != RF_STATUS_OK)
     {
         // Preprocessing failed -> we have no new data but if a frame is still in the reslut queue
         // we can return this frame without error notification to the application
-        if (!oglDesktopTexture && m_BufferQueue.size() > 0)
+        if (m_BufferQueue.size() > 0)
         {
             return RF_STATUS_OK;
         }
 
         return rfStatus;
-    }
-
-    if (oglDesktopTexture)
-    {
-        return RF_STATUS_OK;
     }
 
     // Processes input texture and stores it in the result buffer. The result buffer can be used as input
@@ -498,7 +493,7 @@ RFStatus RFSession::getParameter(const int param, RFProperties& value) const
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-inline RFStatus RFSession::preprocessFrame(unsigned int& idx, unsigned int* oglDesktopTexture)
+inline RFStatus RFSession::preprocessFrame(unsigned int& idx)
 {
     // No preprocessing required for default session.
     return RF_STATUS_OK;

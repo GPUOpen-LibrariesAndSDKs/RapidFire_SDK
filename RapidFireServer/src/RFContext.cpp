@@ -1115,14 +1115,15 @@ bool RFContextCL::configureKernels()
 }
 
 
-inline RFStatus RFContextCL::acquireCLMemObj(unsigned int idx)
+RFStatus RFContextCL::acquireCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents, cl_event* eventsWait, cl_event* eventReturned)
 {
     if (m_fnAcquireMemObj)
     {
-        if (m_fnAcquireMemObj(m_clCmdQueue, 1, &m_clInputImage[idx], 0, nullptr, nullptr) != CL_SUCCESS)
+        if (m_fnAcquireMemObj(clQueue, 1, &m_clInputImage[idx], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
         {
             return RF_STATUS_OPENCL_FAIL;
         }
+        clFlush(clQueue);
     }
 
     m_rtState[idx] = RF_STATE_BLOCKED;
@@ -1131,14 +1132,15 @@ inline RFStatus RFContextCL::acquireCLMemObj(unsigned int idx)
 }
 
 
-inline RFStatus RFContextCL::releaseCLMemObj(unsigned int idx)
+RFStatus RFContextCL::releaseCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents, cl_event* eventsWait, cl_event* eventReturned)
 {
     if (m_fnReleaseMemObj)
     {
-        if (m_fnReleaseMemObj(m_clCmdQueue, 1, &m_clInputImage[idx], 0, nullptr, nullptr) != CL_SUCCESS)
+        if (m_fnReleaseMemObj(clQueue, 1, &m_clInputImage[idx], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
         {
             return RF_STATUS_OPENCL_FAIL;
         }
+        clFlush(clQueue);
     }
 
     m_rtState[idx] = RF_STATE_FREE;
@@ -1247,7 +1249,8 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
     }
 
     // Acquire OpenCL object from OpenGl/D3D object.
-    RFStatus rfStatus = acquireCLMemObj(uiSrcIdx);
+    RFEventCL clAcquireImageEvent;
+    RFStatus rfStatus = acquireCLMemObj(m_clCmdQueue, uiSrcIdx, 0, nullptr, &clAcquireImageEvent);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -1283,8 +1286,10 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
         const size_t region[3] = { m_uiOutputWidth, m_uiOutputHeight, 1 };
         if (m_bUseAsyncCopy)
         {
-            SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clDMAQueue, m_clInputImage[uiSrcIdx], m_clPageLockedBuffer[uiDestIdx], src_origin, region, 0, 0, nullptr, &m_clDMAFinished[uiDestIdx]));
+            SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clDMAQueue, m_clInputImage[uiSrcIdx], m_clPageLockedBuffer[uiDestIdx], src_origin, region, 0, 1, &clAcquireImageEvent, &m_clDMAFinished[uiDestIdx]));
             clFlush(m_clDMAQueue);
+            // Return without releasing the OpenCL MemObj as it will be used as input for the diffmap kernel.
+            return RF_STATUS_OK;
         }
         else
         {
@@ -1294,7 +1299,7 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
     }
 
     // Release OpenCL object from OpenGL/D3D objec.
-    rfStatus = releaseCLMemObj(uiSrcIdx);
+    rfStatus = releaseCLMemObj(m_clCmdQueue, uiSrcIdx);
 
     if (rfStatus != RF_STATUS_OK)
     {

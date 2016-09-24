@@ -8,7 +8,6 @@ rfRemoveRenderTarget
 rfGetRenderTargetState
 rfResizeSession
 rfEncodeFrame
-rfAcquireNextFrame
 rfGetEncodedFrame
 rfGetSourceFrame
 rfSetEncodeParameter

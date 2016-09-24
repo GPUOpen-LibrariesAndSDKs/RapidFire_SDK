@@ -105,20 +105,14 @@ const char* getErrorStringRF(int code)
             return "Invalid encoder config";
         case RF_STATUS_INVALID_ENCODER:
             return "Invalid encoder";
-        case RF_STATUS_INVALID_AUDIO_CODEC:
-            return "Invalid audio codec";
         case RF_STATUS_INVALID_RENDER_TARGET:
             return "Invalid render target";
-        case RF_STATUS_INVALID_CAPTURE_SOURCE:
-            return "Invalid capture source";
         case RF_STATUS_INVALID_DESKTOP_ID:
             return "Invalid desktop id";
         case RF_STATUS_INVALID_OPENGL_CONTEXT:
             return "Invalid OpenGL context";
         case RF_STATUS_INVALID_D3D_DEVICE:
             return "Invalid Direct3D device";
-        case RF_STATUS_INVALID_D3D_OBJECT:
-            return "Invalid Direct3D buffer or texture object";
         case RF_STATUS_INVALID_OPENCL_ENV:
             return "Invalid OpenCL environment";
         case RF_STATUS_INVALID_OPENCL_CONTEXT:

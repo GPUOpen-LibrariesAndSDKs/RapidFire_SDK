@@ -106,6 +106,12 @@ public:
     // Blocks until all results are written into the m_clResultBuffer[idx] and returns the pointer to the buffer in sys mem.
     void                getResultBuffer(unsigned int idx, void* &pBuffer) const;
 
+    // Acquires an OpenCL object that has been created from a GL/D3D object.
+    RFStatus            acquireCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
+
+    // Releases an OpenCL object that has been created from a GL/D3D object.
+    RFStatus            releaseCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
+
     void                getInputImage(unsigned int idx, cl_mem* pBuffer) const;
 
     bool                isValid()       const { return m_bValid; }
@@ -117,6 +123,8 @@ public:
     cl_command_queue    getCmdQueue()   const { return m_clCmdQueue; }
 
     cl_command_queue    getDMAQueue()   const { return m_clDMAQueue; }
+
+    cl_event*           getDMAEventPtr(unsigned int resultBufferIdx)   const { return &m_clDMAFinished[resultBufferIdx]; }
 
     size_t              getWaveFrontSize()   const { return m_WaveFrontSize; }
 
@@ -159,12 +167,6 @@ protected:
     bool                getFreeRenderTargetIndex(unsigned int& uiIndex);
 
     RFStatus            setupKernel();
-
-    // Acquires an OpenCL object that has been created from a GL/D3D object.
-    RFStatus            acquireCLMemObj(unsigned int idx);
-
-    // Releases an OpenCL object that has been created from a GL/D3D object.
-    RFStatus            releaseCLMemObj(unsigned int idx);
 
     // Checks if the texture and the buffer dimension match.
     bool                validateDimensions(unsigned int uiWidth, unsigned int uiHeight);

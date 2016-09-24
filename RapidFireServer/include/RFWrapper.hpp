@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.10         August 9th 2016
+* * File Version 1.1.0.17         September 23rd 2016
 *****************************************************************************/
 
 #pragma once
@@ -45,7 +45,6 @@ typedef RFStatus            (RAPIDFIRE_API *RF_REMOVE_RENDERTARGET)       (RFEnc
 typedef RFStatus            (RAPIDFIRE_API *RF_GET_RENDERTARGET_STATE)    (RFEncodeSession s, RFRenderTargetState* state, unsigned int idx);
 typedef RFStatus            (RAPIDFIRE_API *RF_RESIZE_SESSION)            (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight);
 typedef RFStatus            (RAPIDFIRE_API *RF_ENCODE_FRAME)              (RFEncodeSession s, unsigned int idx);
-typedef RFStatus            (RAPIDFIRE_API *RF_ACQUIRE_NEXT_FRAME)        (RFEncodeSession s, unsigned int idx, unsigned int* oglDesktopTexture);
 typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODED_FRAME)         (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
 typedef RFStatus            (RAPIDFIRE_API *RF_GET_SOURCE_FRAME)          (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
 typedef RFStatus            (RAPIDFIRE_API *RF_SET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties value);
@@ -88,7 +87,6 @@ public:
         RF_GET_RENDERTARGET_STATE   rfGetRenderTargetState;
         RF_RESIZE_SESSION           rfResizeSession;
         RF_ENCODE_FRAME             rfEncodeFrame;
-        RF_ACQUIRE_NEXT_FRAME       rfAcquireNextFrame;
         RF_GET_ENCODED_FRAME        rfGetEncodedFrame;
         RF_GET_SOURCE_FRAME         rfGetSourceFrame;
         RF_SET_ENCODE_PARAMETER     rfSetEncodeParameter;
@@ -156,7 +154,6 @@ inline bool RFWrapper::loadFunctions()
     GET_RF_PROC(rfGetRenderTargetState);
     GET_RF_PROC(rfResizeSession);
     GET_RF_PROC(rfEncodeFrame);
-    GET_RF_PROC(rfAcquireNextFrame);
     GET_RF_PROC(rfGetEncodedFrame);
     GET_RF_PROC(rfGetSourceFrame);
     GET_RF_PROC(rfSetEncodeParameter);

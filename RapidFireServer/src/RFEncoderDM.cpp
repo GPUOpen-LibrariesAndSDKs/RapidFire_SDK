@@ -463,8 +463,6 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
         diffMapKernel = m_DiffMapBufferkernel;
     }
 
-    m_uiPreviousBuffer = uiBufferIdx;
-
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 0, sizeof(cl_mem),       &clCurrentImage));
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 1, sizeof(cl_mem),       &clPrevImage));
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 2, sizeof(cl_mem),       &(pCurrentBuffer->clGPUBuffer)));
@@ -476,13 +474,18 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
     char cPattern = 0;
     SAFE_CALL_CL(clEnqueueFillBuffer(m_pContext->getCmdQueue(), pCurrentBuffer->clGPUBuffer, &cPattern, sizeof(cPattern), 0, m_uiDiffMapSize, 0, nullptr, nullptr));
     SAFE_CALL_CL(clEnqueueNDRangeKernel(m_pContext->getCmdQueue(), diffMapKernel, 2, nullptr, m_globalDim, m_localDim, 0, nullptr, &(pCurrentBuffer->clDiffFinished)));
-    SAFE_CALL_CL(clEnqueueCopyBuffer(m_pContext->getDMAQueue(), pCurrentBuffer->clGPUBuffer, pCurrentBuffer->clPageLockedBuffer, 0, 0, m_uiDiffMapSize, 1, &pCurrentBuffer->clDiffFinished, &pCurrentBuffer->clDMAFinished));
+    if (bUseInputImages)
+    {
+        const_cast<RFContextCL*>(m_pContext)->releaseCLMemObj(m_pContext->getCmdQueue(), m_uiPreviousBuffer, 1, m_pContext->getDMAEventPtr(m_uiPreviousBuffer));
+    }
+    SAFE_CALL_CL(clEnqueueCopyBuffer(m_pContext->getCmdQueue(), pCurrentBuffer->clGPUBuffer, pCurrentBuffer->clPageLockedBuffer, 0, 0, m_uiDiffMapSize, 1, &(pCurrentBuffer->clDiffFinished), &pCurrentBuffer->clDMAFinished));
 
     // Now we can be sure to get a Diff Map -> Store buffer in queue to be retrieved by getEncodedFrame.
     m_ResultQueue.push(pCurrentBuffer);
 
     clFlush(m_pContext->getCmdQueue());
-    clFlush(m_pContext->getDMAQueue());
+
+    m_uiPreviousBuffer = uiBufferIdx;
 
     m_uiCurrentTargetBuffer = (m_uiCurrentTargetBuffer + 1) % m_uiNumTargetBuffers;
 

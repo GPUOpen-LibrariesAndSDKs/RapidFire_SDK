@@ -555,7 +555,7 @@ bool GLDOPPCapture::initEffect()
 }
 
 
-bool GLDOPPCapture::processDesktop(bool bInvert, unsigned int idx, unsigned int* oglDesktopTexture)
+bool GLDOPPCapture::processDesktop(bool bInvert, unsigned int idx)
 {
     if (idx >= m_uiNumTargets)
     {
@@ -637,12 +637,6 @@ bool GLDOPPCapture::processDesktop(bool bInvert, unsigned int idx, unsigned int*
         glViewport(pVP[0], pVP[1], pVP[2], pVP[3]);
 
         m_bDesktopChanged = false;
-
-        if (oglDesktopTexture)
-        {
-            *oglDesktopTexture = m_pTexture[idx];
-            return true;
-        }
 
         glFinish();
     }

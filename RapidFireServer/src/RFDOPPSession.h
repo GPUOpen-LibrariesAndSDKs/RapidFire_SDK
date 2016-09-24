@@ -49,7 +49,7 @@ private:
 
     virtual RFStatus    registerTexture(RFTexture rt, unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx)    override;
 
-    virtual RFStatus    preprocessFrame(unsigned int& idx, unsigned int* oglDesktopTexture)                      override;
+    virtual RFStatus    preprocessFrame(unsigned int& idx)                      override;
 
     virtual RFStatus    releaseSessionEvents(RFNotification const rfEvent)      override;
 

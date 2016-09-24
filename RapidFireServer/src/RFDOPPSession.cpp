@@ -382,17 +382,12 @@ RFStatus RFDOPPSession::releaseSessionEvents(const RFNotification rfEvent)
     return RF_STATUS_FAIL;
 }
 
-RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx, unsigned int* oglDesktopTexture)
+RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx)
 {
     RFGLContextGuard glGuard(m_hDC, m_hGlrc);
 
-    if (oglDesktopTexture && m_bDeleteContexts)
-    {
-        return RF_STATUS_INVALID_OPENGL_CONTEXT;
-    }
-
     // Render desktop to image.
-    if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, m_uiIdx, oglDesktopTexture))
+    if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, m_uiIdx))
     {
         return RF_STATUS_DOPP_NO_UPDATE;
     }

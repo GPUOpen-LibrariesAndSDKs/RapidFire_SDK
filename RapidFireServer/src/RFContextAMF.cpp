@@ -356,7 +356,7 @@ RFStatus RFContextAMF::processBuffer(bool /*bRunCSC*/, bool bInvert, unsigned in
     }
 
     // Acquire OpenCL object from OpenGl/D3D object.
-    SAFE_CALL_RF(acquireCLMemObj(uiSorceIdx));
+    SAFE_CALL_RF(acquireCLMemObj(m_clCmdQueue, uiSorceIdx));
 
     // RGBA input buffer (src)
     SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 0, sizeof(cl_mem), static_cast<void*>(&(m_clInputImage[uiSorceIdx]))));
@@ -379,7 +379,7 @@ RFStatus RFContextAMF::processBuffer(bool /*bRunCSC*/, bool bInvert, unsigned in
     clFlush(m_clCmdQueue);
 
     // Release OpenCL object from OpenGL/D3D object.
-    SAFE_CALL_RF(releaseCLMemObj(uiSorceIdx));
+    SAFE_CALL_RF(releaseCLMemObj(m_clCmdQueue, uiSorceIdx));
 
     return RF_STATUS_OK;
 }

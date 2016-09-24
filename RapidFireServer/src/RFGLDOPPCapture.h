@@ -47,7 +47,7 @@ public:
     bool                releaseEvent();
 
     // Render desktop to rendertarget with id idx.
-    bool                processDesktop(bool bInvert, unsigned int idx, unsigned int* oglDesktopTexture);
+    bool                processDesktop(bool bInvert, unsigned int idx);
 
     // Returns the texture name of the texture that is used with render targt idx.
     unsigned int        getFramebufferTex(unsigned int idx) const;
