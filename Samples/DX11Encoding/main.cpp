@@ -37,6 +37,7 @@
 
 #include <windows.h>
 
+#include "..\..\external\AMF\include\components\VideoEncoderVCE.h"
 #include "..\common\DX11Window.h"
 #include "..\common\DX11RenderTarget.h"
 #include "..\common\Timer.h"
@@ -134,19 +135,15 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         return -1;
     }
 
-    // Set properties to quality preset with 60fps for rfCreateEncoder2
+    // Set encoder paramters to the balanced preset manually for rfCreateEncoder2
     RFProperties encoder_props[] = { RF_ENCODER_FORMAT,               static_cast<RFProperties>(RF_NV12),
-                                     RF_ENCODER_BITRATE,              static_cast<RFProperties>(20000000),
-                                     RF_ENCODER_PEAK_BITRATE,         static_cast<RFProperties>(20000000),
-                                     RF_ENCODER_RATE_CONTROL_METHOD,  static_cast<RFProperties>(0),
+                                     RF_ENCODER_BITRATE,              static_cast<RFProperties>(10000000),
+                                     RF_ENCODER_PEAK_BITRATE,         static_cast<RFProperties>(10000000),
+                                     RF_ENCODER_RATE_CONTROL_METHOD,  static_cast<RFProperties>(AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR),
                                      RF_ENCODER_MIN_QP,               static_cast<RFProperties>(18),
+                                     RF_ENCODER_MAX_QP,               static_cast<RFProperties>(51),
                                      RF_ENCODER_FRAME_RATE,           static_cast<RFProperties>(60),
-                                     RF_ENCODER_VBV_BUFFER_SIZE,      static_cast<RFProperties>(20000000),
-                                     RF_ENCODER_ENFORCE_HRD,          static_cast<RFProperties>(false),
-                                     RF_ENCODER_IDR_PERIOD,           static_cast<RFProperties>(30),
-                                     RF_ENCODER_INTRA_REFRESH_NUM_MB, static_cast<RFProperties>(0),
-                                     RF_ENCODER_DEBLOCKING_FILTER,    static_cast<RFProperties>(true),
-                                     RF_ENCODER_QUALITY_PRESET,       static_cast<RFProperties>(2),
+                                     RF_ENCODER_VBV_BUFFER_SIZE,      static_cast<RFProperties>(1000000),
                                      0 };
 
     rfStatus = rfCreateEncoder2(rfSession, g_stream_width, g_stream_height, encoder_props);

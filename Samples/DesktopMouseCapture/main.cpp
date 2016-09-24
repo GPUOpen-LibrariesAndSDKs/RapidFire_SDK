@@ -94,7 +94,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         return -1;
     }
 
-    RFMouseData     md         = {};
+    void*           pDesktopTexture = nullptr;
+    unsigned int    uiDesktopTextureSize = 0;
+    RFMouseData     md = {};
     MSG msg = {};
 
     for (;;)
@@ -120,20 +122,20 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         {
             // Typically the mouse pointer is 32x32. The texture that was created is 32x32 as well.
             // Some shapes have a larger dimensions, those will not be drawn by this sample
-            renderer.updateMouseTexture(static_cast<const unsigned char*>(md.color.pPixels), md.color.uiWidth, md.color.uiHeight, static_cast<const unsigned char*>(md.mask.pPixels), md.mask.uiWidth, md.mask.uiHeight);
+            renderer.updateMouseTexture(static_cast<const unsigned char*>(md.color.pPixels), md.color.uiWidth, md.color.uiHeight, 
+                                        static_cast<const unsigned char*>(md.mask.pPixels), md.mask.uiWidth, md.mask.uiHeight, md.mask.uiPitch);
         }
 
-        GLuint uiCapturedDesktop;
-        // Acquire the captured desktop texture directly on GPU as OpenGL texture
-        rfStatus = rfAcquireNextFrame(rfSession, 0, &uiCapturedDesktop);
-        if (rfStatus != RF_STATUS_OK && rfStatus != RF_STATUS_DOPP_NO_UPDATE)
+        rfEncodeFrame(rfSession, 0);
+
+        rfStatus = rfGetEncodedFrame(rfSession, &uiDesktopTextureSize, &pDesktopTexture);
+
+        if (rfStatus == RF_STATUS_OK)
         {
-            MessageBox(NULL, "Failed to capture desktop texture!", "RF Error", MB_ICONERROR | MB_OK);
-            rfDeleteEncodeSession(&rfSession);
-            return -1;
+            renderer.updateDesktopTexture(static_cast<char*>(pDesktopTexture));
         }
 
-        renderer.draw(uiCapturedDesktop);
+        renderer.draw();
         SwapBuffers(win.getDC());
     }
 

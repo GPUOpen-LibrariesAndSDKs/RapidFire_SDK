@@ -46,7 +46,7 @@ GLDesktopRenderer::GLDesktopRenderer(unsigned int uiDesktopTexWidth, unsigned in
     m_uiMouseTexDim[0] = uiMouseTexeWidth;
     m_uiMouseTexDim[1] = uiMouseTexHeight;
 
-    m_mouseTex.resize (uiMouseTexeWidth * uiMouseTexeWidth * 4);
+    m_mouseTex.resize (m_uiMouseTexDim[0] * m_uiMouseTexDim[1] * 4);
 
     m_uiDesktopTexSize = m_uiDesktopTexDim[0] * m_uiDesktopTexDim[1] * 4;
     m_uiMouseTexSize   = m_uiMouseTexDim[0]   * m_uiMouseTexDim[1]   * 4;
@@ -108,7 +108,7 @@ GLDesktopRenderer::~GLDesktopRenderer()
 }
 
 
-void GLDesktopRenderer::draw(GLuint texture) const
+void GLDesktopRenderer::draw() const
 {
     int nViewport[4];
     glGetIntegerv(GL_VIEWPORT, nViewport);
@@ -117,14 +117,7 @@ void GLDesktopRenderer::draw(GLuint texture) const
 
     glActiveTexture(GL_TEXTURE1);
 
-    if (texture != UINT32_MAX)
-    {
-        glBindTexture(GL_TEXTURE_2D, texture);
-    }
-    else
-    {
-        glBindTexture(GL_TEXTURE_2D, m_uiDesktopTex);
-    }
+    glBindTexture(GL_TEXTURE_2D, m_uiDesktopTex);
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, m_uiMouseTex);
@@ -184,7 +177,8 @@ void GLDesktopRenderer::updateDesktopTexture(const char* pNewTexture)
 }
 
 
-void GLDesktopRenderer::updateMouseTexture(const unsigned char* pPixels, unsigned int pixelsWidth, unsigned int pixelsHeight, const unsigned char* pMask, unsigned int maskWidth, unsigned int maskHeight)
+void GLDesktopRenderer::updateMouseTexture(const unsigned char* pPixels, unsigned int pixelsWidth, unsigned int pixelsHeight, 
+                                           const unsigned char* pMask, unsigned int maskWidth, unsigned int maskHeight, unsigned int maskPitch)
 {
     if (pPixels)
     {
@@ -194,11 +188,11 @@ void GLDesktopRenderer::updateMouseTexture(const unsigned char* pPixels, unsigne
 
             for (unsigned int i = 0; i < pixelsWidth * pixelsHeight * 4; i += 4)
             {
-                m_mouseTex[i    ] = ( *pTex      * *(pTex + 3)) / 255;
-                m_mouseTex[i + 1] = (*(pTex + 1) * *(pTex + 3)) / 255;
-                m_mouseTex[i + 2] = (*(pTex + 2) * *(pTex + 3)) / 255;
-                m_mouseTex[i + 3] =  *(pTex + 3);
-                pTex += 4;
+                unsigned char alpha = pTex[i + 3];
+                m_mouseTex[i    ] =  (pTex[i    ] * alpha) / 255;
+                m_mouseTex[i + 1] =  (pTex[i + 1] * alpha) / 255;
+                m_mouseTex[i + 2] =  (pTex[i + 2] * alpha) / 255;
+                m_mouseTex[i + 3] = alpha;
             }
 
             glBindTexture(GL_TEXTURE_2D, m_uiMouseTex);
@@ -210,49 +204,33 @@ void GLDesktopRenderer::updateMouseTexture(const unsigned char* pPixels, unsigne
     }
     else if (pMask)
     {
-        if (pixelsWidth <= m_uiMouseTexDim[0] && pixelsHeight <= m_uiMouseTexDim[1])
+        memset(m_mouseTex.data(), 0, m_mouseTex.size());
+
+        maskHeight /= 2;
+        if (maskWidth <= m_uiMouseTexDim[0] && maskHeight <= m_uiMouseTexDim[1])
         {
-            const unsigned char* pTex = pMask;
-            unsigned int maskBit = 7;
+            const unsigned char* pTex = pMask + maskPitch * maskHeight;
 
-            for (unsigned int i = 0; i < pixelsWidth * pixelsHeight; ++i)
+            for (unsigned int y = 0; y < maskWidth; ++y)
             {
-                --maskBit;
-                if (maskBit == -1)
+                for (unsigned int x = 0; x < maskHeight; ++x)
                 {
-                    ++pTex;
-                    maskBit = 7;
-                }
-            }
-
-            for (unsigned int i = 0; i < pixelsWidth * pixelsHeight * 4; i += 4)
-            {
-                if ((*pTex >> maskBit) & 1)
-                {
-                    m_mouseTex[i    ] = 0;
-                    m_mouseTex[i + 1] = 0;
-                    m_mouseTex[i + 2] = 0;
-                    m_mouseTex[i + 3] = 255;
-                }
-                else
-                {
-                    m_mouseTex[i]     = 0;
-                    m_mouseTex[i + 1] = 0;
-                    m_mouseTex[i + 2] = 0;
-                    m_mouseTex[i + 3] = 0;
-                }
-
-                --maskBit;
-                if (maskBit == -1)
-                {
-                    ++pTex;
-                    maskBit = 7;
+                    unsigned char* pColorPixel = &m_mouseTex[(y * maskWidth + x) * 4];
+                    
+                    if ((pTex[y * maskPitch + x / 8] >> (7 - x % 8)) & 1)
+                    {
+                        pColorPixel[3] = 255;
+                    }
+                    else
+                    {
+                        pColorPixel[3] = 0;
+                    }
                 }
             }
 
             glBindTexture(GL_TEXTURE_2D, m_uiMouseTex);
 
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pixelsWidth, pixelsHeight, GL_BGRA, GL_UNSIGNED_BYTE, m_mouseTex.data());
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, m_mouseTex.data());
 
             glBindTexture(GL_TEXTURE_2D, 0);
         }
