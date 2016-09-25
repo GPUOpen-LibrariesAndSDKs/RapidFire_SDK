@@ -22,6 +22,8 @@
 
 #include <RFEncoderSettings.h>
 
+#include "..\..\external\AMF\include\components\VideoEncoderVCE.h"
+
 #include <RFTypes.h>
 
 using namespace std;
@@ -199,10 +201,10 @@ bool RFEncoderSettings::createParameterMap()
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
     Entry.strParameterName                        = "Profile";
-    Entry.Value.uiValue                           = 77;       
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     = 77;
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 77;
-    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 77;
+    Entry.Value.uiValue                           = AMF_VIDEO_ENCODER_PROFILE_MAIN;       
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     = AMF_VIDEO_ENCODER_PROFILE_MAIN;
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = AMF_VIDEO_ENCODER_PROFILE_MAIN;
+    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = AMF_VIDEO_ENCODER_PROFILE_MAIN;
 
     m_ParameterMap[RF_ENCODER_PROFILE] = Entry;
    
@@ -312,10 +314,10 @@ bool RFEncoderSettings::createParameterMap()
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
     Entry.strParameterName                        = "Rate Control Method";
-    Entry.Value.uiValue                           = 3;    
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     = 3;   
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = 2; 
-    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = 2;
+    Entry.Value.uiValue                           = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_LATENCY_CONSTRAINED_VBR;    
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_LATENCY_CONSTRAINED_VBR;
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
 
     m_ParameterMap[RF_ENCODER_RATE_CONTROL_METHOD] = Entry;
 
@@ -494,10 +496,10 @@ bool RFEncoderSettings::createParameterMap()
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_UINT;
     Entry.strParameterName                        = "Quality Preset";
-    Entry.Value.uiValue                           =  2;    
-    Entry.PresetValue[RF_PRESET_FAST].uiValue     =  2;       // Speed
-    Entry.PresetValue[RF_PRESET_BALANCED].uiValue =  2;       // Speed
-    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  =  0;       // Balanced
+    Entry.Value.uiValue                           = AMF_VIDEO_ENCODER_QUALITY_PRESET_SPEED;
+    Entry.PresetValue[RF_PRESET_FAST].uiValue     = AMF_VIDEO_ENCODER_QUALITY_PRESET_SPEED;
+    Entry.PresetValue[RF_PRESET_BALANCED].uiValue = AMF_VIDEO_ENCODER_QUALITY_PRESET_SPEED;
+    Entry.PresetValue[RF_PRESET_QUALITY].uiValue  = AMF_VIDEO_ENCODER_QUALITY_PRESET_BALANCED;
 
     m_ParameterMap[RF_ENCODER_QUALITY_PRESET] = Entry;
 
@@ -622,10 +624,10 @@ bool RFEncoderSettings::createParameterMap()
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_BOOL;
     Entry.strParameterName                        = "Insert AUD";
-    Entry.Value.bValue                            =  true;    
-    Entry.PresetValue[RF_PRESET_FAST].bValue      =  true;   
-    Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  true;    
-    Entry.PresetValue[RF_PRESET_QUALITY].bValue   =  true; 
+    Entry.Value.bValue                            =  false;    
+    Entry.PresetValue[RF_PRESET_FAST].bValue      =  false;   
+    Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
+    Entry.PresetValue[RF_PRESET_QUALITY].bValue   =  false; 
 
     m_ParameterMap[RF_ENCODER_INSERT_AUD] = Entry;
 

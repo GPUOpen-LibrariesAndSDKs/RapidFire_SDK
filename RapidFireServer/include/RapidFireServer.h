@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.17         September 23rd 2016
+* * File Version 1.1.0.18         September 23rd 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -333,7 +333,7 @@ extern "C" {
     /**
     *******************************************************************************
     * @fn rfCreateEncodeSession
-    * @brief This function creates an encode session.
+    * @brief This function creates an encoding session.
     *        It also creates OpenCL environment based on input properties.
     *
     * @param[out] session:   The created encoding session.
@@ -559,6 +559,8 @@ extern "C" {
     *******************************************************************************
     * @fn rfReleaseEvent
     * @brief This function signals a notification event.
+    * This function can be used to unblock a thread that
+    * is waiting for an event to be signaled.
     *
     * @param[in] session:        The encoding session.
     * @param[in] rfNotification: Specifies which event to release.
