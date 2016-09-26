@@ -95,17 +95,17 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFire/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;RapidFireServer.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;RapidFire.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -116,17 +116,17 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFire/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;RapidFireServer64.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;RapidFire64.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -139,7 +139,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFire/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -147,11 +147,11 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32s.lib;RapidFireServer.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;RapidFire.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -164,7 +164,7 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../external/GLEW/include;../../RapidFire/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -172,11 +172,11 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32s.lib;RapidFireServer64.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;RapidFire64.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

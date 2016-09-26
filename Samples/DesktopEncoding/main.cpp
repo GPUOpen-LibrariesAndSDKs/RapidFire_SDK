@@ -34,7 +34,7 @@
 
 #include <windows.h>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 #define NUM_FRAMES 500
 

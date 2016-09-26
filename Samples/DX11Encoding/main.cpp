@@ -43,7 +43,7 @@
 #include "..\common\Timer.h"
 #include "StretchRectShader.h"
 #include "Cube.h"
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(x) \

@@ -94,16 +94,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../RapidFire/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RapidFireServer.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll" $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -114,16 +114,16 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll"
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../RapidFire/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RapidFireServer64.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire64.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x64\d3dcompiler_46.dll" $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -136,18 +136,18 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x64\d3dcompiler_46.dll"
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../RapidFire/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>RapidFireServer.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll" $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -160,18 +160,18 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x86\d3dcompiler_46.dll"
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../RapidFireServer/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../RapidFire/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>RapidFireServer64.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire64.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2012/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2012\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
 xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.0\Redist\D3D\x64\d3dcompiler_46.dll" $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

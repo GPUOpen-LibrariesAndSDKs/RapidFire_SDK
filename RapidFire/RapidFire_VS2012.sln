@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RapidFireServer", "RapidFireServer_VS2012.vcxproj", "{AE76FF5A-9382-4FA1-9137-868E9F3C6064}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RapidFire", "RapidFire_VS2012.vcxproj", "{AE76FF5A-9382-4FA1-9137-868E9F3C6064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -18,7 +18,7 @@
 #include "FireCube.h"
 #include "GLRenderTarget.h"
 #include "GLWindow.h"
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 bool            g_running = true;
 

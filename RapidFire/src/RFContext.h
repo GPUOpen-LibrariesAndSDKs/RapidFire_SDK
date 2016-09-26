@@ -29,7 +29,7 @@
 #include <CL/cl.h>
 #endif
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 #include "RFPlatform.h"
 #include "RFTypes.h"
 
@@ -123,8 +123,6 @@ public:
     cl_command_queue    getCmdQueue()   const { return m_clCmdQueue; }
 
     cl_command_queue    getDMAQueue()   const { return m_clDMAQueue; }
-
-    cl_event*           getDMAEventPtr(unsigned int resultBufferIdx)   const { return &m_clDMAFinished[resultBufferIdx]; }
 
     size_t              getWaveFrontSize()   const { return m_WaveFrontSize; }
 

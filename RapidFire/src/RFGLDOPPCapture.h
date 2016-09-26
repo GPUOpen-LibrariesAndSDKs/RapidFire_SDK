@@ -28,7 +28,7 @@
 #include "DoppDrv.h"
 #include <GL/glew.h>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 class GLShader;
 

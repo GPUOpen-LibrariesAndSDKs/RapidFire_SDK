@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 /* Support of multiple render targets
    1 : allow only single buffering

@@ -35,7 +35,7 @@
 
 #include "GLDesktopRenderer.h"
 #include "GLWindow.h"
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd)

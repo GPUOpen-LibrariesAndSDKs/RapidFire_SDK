@@ -18,7 +18,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\RapidFireServer.cpp">
+    <ClCompile Include="src\RapidFire.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\RFContext.cpp">
@@ -149,7 +149,7 @@
     <ClInclude Include="src\RFDOPPSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\RapidFireServer.h">
+    <ClInclude Include="include\RapidFire.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="src\AMFWrapper.h">
@@ -168,7 +168,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="res\RapidFireServer.rc">
+    <ResourceCompile Include="res\RapidFire.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

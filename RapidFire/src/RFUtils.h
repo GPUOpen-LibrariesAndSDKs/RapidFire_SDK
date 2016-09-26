@@ -39,7 +39,7 @@ bool utilIsPropertyValid(size_t Property);
 #ifdef _DEBUG
 #include <CL/cl.h>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 #include "RFContext.h"
 
 void dumpCLBuffer(cl_mem clBuffer, RFContextCL* pContext, unsigned int uiWidth, unsigned int uiHeight, RFFormat rfFormat, const char* pFileName);

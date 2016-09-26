@@ -914,9 +914,9 @@ bool RFSession::getModuleInformation(std::string& strPath, std::string& strVersi
     size_t const    maxlength = 512;
 
 #ifdef _WIN64
-    HMODULE         hModule = GetModuleHandle("RapidFireServer64.dll");
+    HMODULE         hModule = GetModuleHandle("RapidFire64.dll");
 #else
-    HMODULE         hModule = GetModuleHandle("RapidFireServer.dll");
+    HMODULE         hModule = GetModuleHandle("RapidFire.dll");
 #endif
 
     if (!hModule)

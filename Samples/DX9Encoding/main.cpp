@@ -38,7 +38,7 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(x) \

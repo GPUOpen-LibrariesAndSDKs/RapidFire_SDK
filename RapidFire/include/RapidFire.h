@@ -21,11 +21,11 @@
 //
 
 /*****************************************************************************
-* RapidFireServer.h 
+* RapidFire.h 
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.18         September 23rd 2016
+* * File Version 1.1.0.19         September 26th 2016
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -57,7 +57,7 @@ typedef void*               RFEncodeSession;
 typedef void*               RFRenderTarget;
 
 /**************************************************************************
-* The RapidFire Server API status *
+* The RapidFire API status *
 **************************************************************************/
 typedef enum RFStatus
 {

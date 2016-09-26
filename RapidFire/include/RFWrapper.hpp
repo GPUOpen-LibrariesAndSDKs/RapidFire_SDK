@@ -25,7 +25,7 @@
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
-* * File Version 1.1.0.17         September 23rd 2016
+* * File Version 1.1.0.19         September 26th 2016
 *****************************************************************************/
 
 #pragma once
@@ -34,7 +34,7 @@
 
 #include <Windows.h>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 typedef RFStatus		    (RAPIDFIRE_API *RF_CREATE_ENCODE_SESSION)     (RFEncodeSession* s, RFProperties* properties);
 typedef RFStatus            (RAPIDFIRE_API *RF_DELETE_ENCODE_SESSION)     (RFEncodeSession* s);
@@ -133,11 +133,11 @@ inline RFWrapper::~RFWrapper()
 
 inline bool RFWrapper::loadFunctions()
 {
-    m_hDLL = LoadLibrary(_T("RapidFireServer.dll"));
+    m_hDLL = LoadLibrary(_T("RapidFire.dll"));
 
     if (!m_hDLL)
     {
-        m_hDLL = LoadLibrary(_T("RapidFireServer64.dll"));
+        m_hDLL = LoadLibrary(_T("RapidFire64.dll"));
     }
 
     if (!m_hDLL)

@@ -26,7 +26,7 @@
 
 #include <Windows.h>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 #include "RFLock.h"
 
 class DOPPDrvInterface;

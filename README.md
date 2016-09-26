@@ -16,3 +16,5 @@ The RapidFire SDK provides an interface for cloud gaming and virtualization appl
 ### Attribution
 * AMD, the AMD Arrow logo, FirePro, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
 * DirectX&reg;, Visual Studio&reg;, and Windows&reg; are registered trademarks of Microsoft Corporation in the United States and/or other countries.
+* OpenGL&reg; and the oval logo are trademarks or registered trademarks of Silicon Graphics, Inc. in the United States and/or other countries worldwide.
+* OpenCL&trade; and the OpenCL logo are trademarks of Apple Inc. used by permission by Khronos.

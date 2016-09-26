@@ -26,7 +26,7 @@
 #include <sstream>
 #include <string>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 
 void rfError(int code, const char* err, const char* file, int line);
 

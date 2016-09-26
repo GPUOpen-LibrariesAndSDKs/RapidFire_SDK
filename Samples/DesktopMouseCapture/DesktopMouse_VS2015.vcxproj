@@ -95,18 +95,18 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../RapidFire/include;../../external/GLEW/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RapidFireServer.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -116,18 +116,18 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../RapidFire/include;../../external/GLEW/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RapidFireServer64.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire64.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,7 +139,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../RapidFire/include;../../external/GLEW/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -147,12 +147,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RapidFireServer.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -164,7 +164,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../common/;../../RapidFireServer/include;../../external/GLEW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../common/;../../RapidFire/include;../../external/GLEW/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -172,12 +172,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../RapidFireServer/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RapidFireServer64.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidFire64.lib;glew32s.lib;OpenGL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D ..\..\RapidFireServer\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
+      <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

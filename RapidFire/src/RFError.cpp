@@ -39,7 +39,7 @@
 #include <CL/cl_gl.h>
 #endif
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 #include "RFTypes.h"
 
 void rfError(int code, const char* err, const char* file, const int line)
@@ -50,7 +50,7 @@ void rfError(int code, const char* err, const char* file, const int line)
 
     std::stringstream oss;
 
-    oss << "RapidFireServer Error: " << err << " File : " << file << " Line " << line << " code : " << code;
+    oss << "RapidFire Error: " << err << " File : " << file << " Line " << line << " code : " << code;
 
     g_ErrorFile.logMessage(RFLogFile::MessageType::RF_LOG_ERROR, oss.str());
 
@@ -67,7 +67,7 @@ const char* getErrorStringRF(int code)
     switch (code)
     {
         case RF_STATUS_FAIL:
-            return "RapidFireServer operation failed";
+            return "RapidFire operation failed";
         case RF_STATUS_MEMORY_FAIL:
             return "Failed to allocate memory";
         case RF_STATUS_RENDER_TARGET_FAIL:
@@ -90,9 +90,9 @@ const char* getErrorStringRF(int code)
             return "Access to parameter denied";
 
         case RF_STATUS_INVALID_SESSION:
-            return "Invalid RapidFireServer session";
+            return "Invalid RapidFire session";
         case RF_STATUS_INVALID_CONTEXT:
-            return "Invalid RapidFireServer context";
+            return "Invalid RapidFire context";
         case RF_STATUS_INVALID_DIMENSION:
             return "Invalid image dimension";
         case RF_STATUS_INVALID_TEXTURE:

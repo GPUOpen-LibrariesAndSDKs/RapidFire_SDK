@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#include "RapidFireServer.h"
+#include "RapidFire.h"
 #include "RFTypes.h"
 
 class RFEncoderSettings
