@@ -24,7 +24,7 @@
 #include "RFSession.h"
 
 
-RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, RFProperties* properties)
+RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, const RFProperties* properties)
 {
     RFSession* pSession = nullptr;
     RFStatus rfStatus = createRFSession(&pSession, properties);
@@ -65,7 +65,7 @@ RFStatus RAPIDFIRE_API rfDeleteEncodeSession(RFEncodeSession* s)
 }
 
 
-RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset p)
+RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession s, const unsigned int uiWidth, const unsigned int uiHeight, const RFEncodePreset p)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -78,7 +78,7 @@ RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession s, unsigned int uiWidth, 
 }
 
 
-RFStatus RAPIDFIRE_API rfCreateEncoder2(RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight, const RFProperties* properties)
+RFStatus RAPIDFIRE_API rfCreateEncoder2(RFEncodeSession s, const unsigned int uiWidth, const unsigned int uiHeight, const RFProperties* properties)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -91,7 +91,7 @@ RFStatus RAPIDFIRE_API rfCreateEncoder2(RFEncodeSession s, unsigned int uiWidth,
 }
 
 
-RFStatus RAPIDFIRE_API rfSetEncodeParameter(RFEncodeSession s, const int param, RFProperties value)
+RFStatus RAPIDFIRE_API rfSetEncodeParameter(RFEncodeSession s, const int param, const RFProperties value)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -117,7 +117,7 @@ RFStatus RAPIDFIRE_API rfGetEncodeParameter(RFEncodeSession s, const int param, 
 }
 
 
-RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession s, RFRenderTarget rt, unsigned int uiRTWidth, unsigned int uiRTHeight, unsigned int* idx)
+RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession s, const RFRenderTarget rt, const unsigned int uiRTWidth, const unsigned int uiRTHeight, unsigned int* idx)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -133,7 +133,7 @@ RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession s, RFRenderTarget 
 }
 
 
-RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession s, unsigned int idx)
+RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession s, const unsigned int idx)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -146,7 +146,7 @@ RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession s, unsigned int idx)
 }
 
 
-RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession s, RFRenderTargetState* state, unsigned int idx)
+RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession s, RFRenderTargetState* state, const unsigned int idx)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -160,7 +160,7 @@ RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession s, RFRenderTargetS
 }
 
 
-RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight)
+RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession s, const unsigned int uiWidth, const unsigned int uiHeight)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
 
@@ -173,7 +173,7 @@ RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession s, unsigned int uiWidth, 
 }
 
 
-RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession s, unsigned int idx)
+RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession s, const unsigned int idx)
 {
     RFSession* pEncodeSession = reinterpret_cast<RFSession*>(s);
 
@@ -212,7 +212,7 @@ RFStatus RAPIDFIRE_API rfGetSourceFrame(RFEncodeSession session, unsigned int* u
 }
 
 
-RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, int iWaitForShapeChange, RFMouseData* md)
+RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, const int iWaitForShapeChange, RFMouseData* md)
 {
     RFSession* pEncodeSession = reinterpret_cast<RFSession*>(s);
 
@@ -225,7 +225,7 @@ RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, int iWaitForShapeChange
 }
 
 
-RFStatus RAPIDFIRE_API rfReleaseEvent(RFEncodeSession s, RFNotification const rfNotification)
+RFStatus RAPIDFIRE_API rfReleaseEvent(RFEncodeSession s, const RFNotification rfNotification)
 {
     RFSession* pEncodeSession = reinterpret_cast<RFSession*>(s);
 

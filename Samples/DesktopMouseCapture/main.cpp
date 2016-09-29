@@ -54,8 +54,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
     RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_IDENTITY),
                              RF_DESKTOP,                  static_cast<RFProperties>(1),
-                             RF_GL_DEVICE_CTX,            reinterpret_cast<RFProperties>(win.getDC()),
-                             RF_GL_GRAPHICS_CTX,          reinterpret_cast<RFProperties>(win.getGLRC()),
                              RF_DESKTOP_UPDATE_ON_CHANGE, static_cast<RFProperties>(1),
                              RF_MOUSE_DATA,               static_cast<RFProperties>(1),
                              0 };

@@ -30,28 +30,9 @@
 
 #pragma once
 
-#include <tchar.h>
-
 #include <Windows.h>
 
 #include "RapidFire.h"
-
-typedef RFStatus		    (RAPIDFIRE_API *RF_CREATE_ENCODE_SESSION)     (RFEncodeSession* s, RFProperties* properties);
-typedef RFStatus            (RAPIDFIRE_API *RF_DELETE_ENCODE_SESSION)     (RFEncodeSession* s);
-typedef RFStatus            (RAPIDFIRE_API *RF_CREATE_ENCODER)            (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset p);
-typedef RFStatus            (RAPIDFIRE_API *RF_CREATE_ENCODER2)           (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight, const RFProperties* properties);
-typedef RFStatus            (RAPIDFIRE_API *RF_REGISTER_RENDERTARGET)     (RFEncodeSession s, RFRenderTarget rt, unsigned int uiRTWidth, unsigned int uiRTHeight, unsigned int* idx);
-typedef RFStatus            (RAPIDFIRE_API *RF_REMOVE_RENDERTARGET)       (RFEncodeSession s, unsigned int idx);
-typedef RFStatus            (RAPIDFIRE_API *RF_GET_RENDERTARGET_STATE)    (RFEncodeSession s, RFRenderTargetState* state, unsigned int idx);
-typedef RFStatus            (RAPIDFIRE_API *RF_RESIZE_SESSION)            (RFEncodeSession s, unsigned int uiWidth, unsigned int uiHeight);
-typedef RFStatus            (RAPIDFIRE_API *RF_ENCODE_FRAME)              (RFEncodeSession s, unsigned int idx);
-typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODED_FRAME)         (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
-typedef RFStatus            (RAPIDFIRE_API *RF_GET_SOURCE_FRAME)          (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
-typedef RFStatus            (RAPIDFIRE_API *RF_SET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties value);
-typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties* value);
-typedef RFStatus            (RAPIDFIRE_API *RF_GET_MOUSEDATA)             (RFEncodeSession s, int iWaitForShapeChange, RFMouseData* md);
-typedef RFStatus            (RAPIDFIRE_API *RF_RELEASE_EVENT)             (RFEncodeSession s, RFNotification const rfNotification);
-
 
 #define GET_RF_PROC(xx)                                          \
     {                                                            \
@@ -67,6 +48,22 @@ typedef RFStatus            (RAPIDFIRE_API *RF_RELEASE_EVENT)             (RFEnc
 class RFWrapper
 {
 public:
+
+    typedef RFStatus		    (RAPIDFIRE_API *RF_CREATE_ENCODE_SESSION)     (RFEncodeSession* s, const RFProperties* properties);
+    typedef RFStatus            (RAPIDFIRE_API *RF_DELETE_ENCODE_SESSION)     (RFEncodeSession* s);
+    typedef RFStatus            (RAPIDFIRE_API *RF_CREATE_ENCODER)            (RFEncodeSession s, const unsigned int uiWidth, const unsigned int uiHeight, const RFEncodePreset p);
+    typedef RFStatus            (RAPIDFIRE_API *RF_CREATE_ENCODER2)           (RFEncodeSession s, const unsigned int uiWidth, const unsigned int uiHeight, const RFProperties* properties);
+    typedef RFStatus            (RAPIDFIRE_API *RF_REGISTER_RENDERTARGET)     (RFEncodeSession s, const RFRenderTarget rt, const unsigned int uiRTWidth, const unsigned int uiRTHeight, unsigned int* idx);
+    typedef RFStatus            (RAPIDFIRE_API *RF_REMOVE_RENDERTARGET)       (RFEncodeSession s, const unsigned int idx);
+    typedef RFStatus            (RAPIDFIRE_API *RF_GET_RENDERTARGET_STATE)    (RFEncodeSession s, RFRenderTargetState* state, const unsigned int idx);
+    typedef RFStatus            (RAPIDFIRE_API *RF_RESIZE_SESSION)            (RFEncodeSession s, const unsigned int uiWidth, const unsigned int uiHeight);
+    typedef RFStatus            (RAPIDFIRE_API *RF_ENCODE_FRAME)              (RFEncodeSession s, const unsigned int idx);
+    typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODED_FRAME)         (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
+    typedef RFStatus            (RAPIDFIRE_API *RF_GET_SOURCE_FRAME)          (RFEncodeSession s, unsigned int* uiSize, void** pBitStream);
+    typedef RFStatus            (RAPIDFIRE_API *RF_SET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, const RFProperties value);
+    typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties* value);
+    typedef RFStatus            (RAPIDFIRE_API *RF_GET_MOUSEDATA)             (RFEncodeSession s, const int iWaitForShapeChange, RFMouseData* md);
+    typedef RFStatus            (RAPIDFIRE_API *RF_RELEASE_EVENT)             (RFEncodeSession s, const RFNotification rfNotification);
 
     static const RFWrapper& getInstance()
     {
@@ -112,7 +109,7 @@ private:
     bool m_bRFFuncLoaded;
 };
 
-inline RFWrapper::RFWrapper()
+RFWrapper::RFWrapper()
     : m_hDLL(NULL)
     , m_bRFFuncLoaded(false)
 {
@@ -120,7 +117,7 @@ inline RFWrapper::RFWrapper()
     m_bRFFuncLoaded = loadFunctions();
 }
 
-inline RFWrapper::~RFWrapper()
+RFWrapper::~RFWrapper()
 {
     if (m_hDLL)
     {
@@ -131,13 +128,13 @@ inline RFWrapper::~RFWrapper()
     memset(&rfFunc, 0, sizeof(RFFunctions));
 }
 
-inline bool RFWrapper::loadFunctions()
+bool RFWrapper::loadFunctions()
 {
-    m_hDLL = LoadLibrary(_T("RapidFire.dll"));
+    m_hDLL = LoadLibrary(TEXT("RapidFire.dll"));
 
     if (!m_hDLL)
     {
-        m_hDLL = LoadLibrary(_T("RapidFire64.dll"));
+        m_hDLL = LoadLibrary(TEXT("RapidFire64.dll"));
     }
 
     if (!m_hDLL)
@@ -163,3 +160,5 @@ inline bool RFWrapper::loadFunctions()
 
     return true;
 }
+
+#undef GET_RF_PROC

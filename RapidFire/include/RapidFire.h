@@ -344,7 +344,7 @@ extern "C" {
     * @return RFEncodeSession: RF_STATUS_OK if successful; otherwise an error code and session is set to NULL.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, RFProperties* properties);
+    RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, const RFProperties* properties);
 
     /**
     *******************************************************************************
@@ -372,7 +372,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession session, unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset preset);
+    RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession session, const unsigned int uiWidth, const unsigned int uiHeight, const RFEncodePreset preset);
 
     /**
     *******************************************************************************
@@ -394,7 +394,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfCreateEncoder2(RFEncodeSession session, unsigned int uiWidth, unsigned int uiHeight, const RFProperties* properties);
+    RFStatus RAPIDFIRE_API rfCreateEncoder2(RFEncodeSession session, const unsigned int uiWidth, const unsigned int uiHeight, const RFProperties* properties);
 
     /**
     *******************************************************************************
@@ -412,7 +412,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession session, RFRenderTarget renderTarget, unsigned int uiRTWidth, unsigned int uiRTHeight, unsigned int* idx);
+    RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession session, const RFRenderTarget renderTarget, const unsigned int uiRTWidth, const unsigned int uiRTHeight, unsigned int* idx);
 
     /**
     *******************************************************************************
@@ -426,7 +426,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession session, unsigned int idx);
+    RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession session, const unsigned int idx);
 
     /**
     *******************************************************************************
@@ -442,7 +442,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession session, RFRenderTargetState* state, unsigned int idx);
+    RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession session, RFRenderTargetState* state, const unsigned int idx);
 
     /**
     *******************************************************************************
@@ -457,7 +457,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession session, unsigned int uiWidth, unsigned int uiHeight);
+    RFStatus RAPIDFIRE_API rfResizeSession(RFEncodeSession session, const unsigned int uiWidth, const unsigned int uiHeight);
 
     /**
     *******************************************************************************
@@ -472,7 +472,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession session, unsigned int idx);
+    RFStatus RAPIDFIRE_API rfEncodeFrame(RFEncodeSession session, const unsigned int idx);
 
     /**
     *******************************************************************************
@@ -524,7 +524,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfSetEncodeParameter(RFEncodeSession session, const int property, RFProperties value);
+    RFStatus RAPIDFIRE_API rfSetEncodeParameter(RFEncodeSession session, const int property, const RFProperties value);
 
     /**
     *******************************************************************************
@@ -553,7 +553,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession session, int iWaitForShapeChange, RFMouseData* mouseData);
+    RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession session, const int iWaitForShapeChange, RFMouseData* mouseData);
 
     /**
     *******************************************************************************
@@ -568,7 +568,7 @@ extern "C" {
     * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
     *******************************************************************************
     */
-    RFStatus RAPIDFIRE_API rfReleaseEvent(RFEncodeSession session, RFNotification const rfNotification);
+    RFStatus RAPIDFIRE_API rfReleaseEvent(RFEncodeSession session, const RFNotification rfNotification);
 
 #ifdef __cplusplus
 };
