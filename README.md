@@ -13,8 +13,19 @@ The RapidFire SDK provides an interface for cloud gaming and virtual desktop app
 * A Visual Studio&reg; solution for the samples can be found in the `Samples` directory.
 * Additional documentation can be found in the `doc` directory.
 
-### Attribution
-* AMD, the AMD Arrow logo, FirePro, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
-* DirectX&reg;, Visual Studio&reg;, and Windows&reg; are registered trademarks of Microsoft Corporation in the United States and/or other countries.
-* OpenGL&reg; and the oval logo are trademarks or registered trademarks of Silicon Graphics, Inc. in the United States and/or other countries worldwide.
-* OpenCL&trade; and the OpenCL logo are trademarks of Apple Inc. used by permission by Khronos.
+### License
+RapidFire is licensed under the MIT license. See LICENSE file for full license information.
+
+### Copyright information
+
+##### DirectX, Visual Studio and Windows
+DirectX&reg;, Visual Studio&reg;, and Windows&reg; are registered trademarks of Microsoft Corporation in the United States and/or other countries.
+
+##### OpenGL
+OpenGL&reg; and the oval logo are trademarks or registered trademarks of Silicon Graphics, Inc. in the United States and/or other countries worldwide.
+
+##### OpenCL
+OpenCL&trade; and the OpenCL logo are trademarks of Apple Inc. used by permission by Khronos.
+
+##### glew
+The OpenGL Extension Wrangler Library Copyright (C) 2008-2015, Nigel Stewart Copyright (C) 2002-2008, Milan Ikits Copyright (C) 2002-2008, Marcelo E. Magallon Copyright (C) 2002, Lev Povalahev All rights reserved.
