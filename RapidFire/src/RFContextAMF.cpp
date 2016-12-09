@@ -284,14 +284,8 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
     // Create surdfaces that are used as target for the CSC and as input for the VCE.
     for (unsigned int i = 0; i < NUM_RESULT_BUFFERS; ++i)
     {
-        // For OpenCL it is recommended to allocate a DX9 surface and convert it.
-        amfErr = m_amfContext->AllocSurface(AMF_MEMORY_DX9, m_amfFormat, m_uiAlignedOutputWidth, m_uiAlignedOutputHeight, &(m_pSurfaceList[i]));
+        amfErr = m_amfContext->AllocSurface(m_amfMemory, m_amfFormat, m_uiAlignedOutputWidth, m_uiAlignedOutputHeight, &(m_pSurfaceList[i]));
         CHECK_AMF_ERROR(amfErr);
-
-        if (m_amfMemory == AMF_MEMORY_OPENCL)
-        {
-            m_pSurfaceList[i]->Convert(AMF_MEMORY_OPENCL);
-        }
     }
 
     if (m_CtxType == RF_CTX_FROM_DX9)

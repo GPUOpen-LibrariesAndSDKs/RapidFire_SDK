@@ -96,6 +96,7 @@ private:
 
     bool                        m_bTrackDesktopChanges;
     bool                        m_bBlocking;
+    int                         m_iNumRemainingFrames;
 
     std::atomic_bool            m_bDesktopChanged;
 

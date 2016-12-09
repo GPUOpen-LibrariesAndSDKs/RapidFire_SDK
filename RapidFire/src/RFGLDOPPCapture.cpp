@@ -75,6 +75,7 @@ GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, unsigned int uiNumFrameBuff
     , m_pTexture(nullptr)
     , m_bTrackDesktopChanges(false)
     , m_bBlocking(false)
+    , m_iNumRemainingFrames(uiNumFrameBuffers)
     , m_pDOPPDrvInterface(pDrv)
 {
     if (!m_pDOPPDrvInterface)
@@ -107,7 +108,6 @@ GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, unsigned int uiNumFrameBuff
 
 GLDOPPCapture::~GLDOPPCapture()
 {
-    wglEnablePostProcessAMD(false);
     HGLRC glrc = wglGetCurrentContext();
 
     // Make sure we still have a valid context.
@@ -564,20 +564,27 @@ bool GLDOPPCapture::processDesktop(bool bInvert, unsigned int idx)
 
     if (m_bTrackDesktopChanges)
     {
-        if (m_bBlocking)
+        if (m_iNumRemainingFrames <= 0)
         {
-            DWORD dwResult = WaitForMultipleObjects(2, m_hDesktopEvent, FALSE, INFINITE);
-
-            if ((dwResult - WAIT_OBJECT_0) == 1)
+            if (m_bBlocking)
             {
-                // Thread was unblocked by internal event not by DOPP.
+                DWORD dwResult = WaitForMultipleObjects(2, m_hDesktopEvent, FALSE, INFINITE);
+
+                if ((dwResult - WAIT_OBJECT_0) == 1)
+                {
+                    // Thread was unblocked by internal event not by DOPP.
+                    return false;
+                }
+            }
+            else if (!m_bDesktopChanged.load())
+            {
                 return false;
             }
+
+            m_iNumRemainingFrames = m_uiNumTargets;
         }
-        else if (!m_bDesktopChanged.load())
-        {
-            return false;
-        }
+            
+        --m_iNumRemainingFrames;
     }
 
     {

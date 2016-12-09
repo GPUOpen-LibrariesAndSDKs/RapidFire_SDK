@@ -544,7 +544,7 @@ bool RFEncoderSettings::createParameterMap()
     // possible values: true, false
     ////////////////////////////////////////////////////////////////////////////////////
     Entry.EntryType                               = RF_PARAMETER_BOOL;
-    Entry.strParameterName                        = "Intra-Refresh Frames Picture Type";
+    Entry.strParameterName                        = "Force Intra-Refresh Frames Picture Type";
     Entry.Value.bValue                            =  false;    
     Entry.PresetValue[RF_PRESET_FAST].bValue      =  false;   
     Entry.PresetValue[RF_PRESET_BALANCED].bValue  =  false;    
