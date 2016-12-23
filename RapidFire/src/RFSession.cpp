@@ -189,17 +189,6 @@ RFStatus RFSession::registerRenderTarget(RFTexture rt, unsigned int uiWidth, uns
         return RF_STATUS_INVALID_DIMENSION;
     }
 
-    if (m_Properties.uiInputDim[0] == 0)
-    {
-        m_Properties.uiInputDim[0] = uiWidth;
-        m_Properties.uiInputDim[1] = uiHeight;
-    }
-    else if (m_Properties.uiInputDim[0] != uiWidth || m_Properties.uiInputDim[1] != uiHeight)
-    {
-        m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[rfRegisterRenderTarget] Render target width or height is not the same as previous registered render target");
-        return RF_STATUS_INVALID_DIMENSION;
-    }
-
     RFStatus rfStatus = registerTexture(rt, uiWidth, uiHeight, idx);
 
     std::stringstream oss;
@@ -211,6 +200,18 @@ RFStatus RFSession::registerRenderTarget(RFTexture rt, unsigned int uiWidth, uns
         m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, oss.str());
 
         return rfStatus;
+    }
+
+    if (m_Properties.uiInputDim[0] == 0)
+    {
+        m_Properties.uiInputDim[0] = uiWidth;
+        m_Properties.uiInputDim[1] = uiHeight;
+    }
+    else if (m_Properties.uiInputDim[0] != uiWidth || m_Properties.uiInputDim[1] != uiHeight)
+    {
+        m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[rfRegisterRenderTarget] Render target width or height is not the same as previous registered render target");
+        m_pContextCL->removeCLInputMemObj(idx);
+        return RF_STATUS_INVALID_DIMENSION;
     }
 
     oss << "[rfRegisterRenderTarget]  Successfully registered Texture " << idx << " " << uiWidth << "x" << uiHeight;
@@ -439,6 +440,9 @@ RFStatus RFSession::resize(unsigned int uiWidth, unsigned int uiHeight)
         m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "Failed to resize resources", rfStatus);
         return RF_STATUS_FAIL;
     }
+
+    m_Properties.uiInputDim[0] = 0;
+    m_Properties.uiInputDim[1] = 0;
 
     std::stringstream oss;
 

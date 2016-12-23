@@ -29,8 +29,10 @@
 // Then a RapidFire session is created, that will capture the virtual display.
 // The session will use the identity encoder since we only want to capture the desktop.
 //
-// Note: RapidFire currently only supports one GPU and capturing of displays,
-//       that are created on the GPU with the primary display.
+// Notes: - RapidFire currently only supports one GPU and capturing of displays,
+//          that are created on the GPU with the primary display.
+//        - If the virtual display capture shows black borders around the captured desktop
+//          the registry key "KMD_Wddm2DisplayVirtualModeSupport" has to be set to 0.
 // 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -103,8 +105,8 @@ bool InitializeADL();
 bool setConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int iConnectionType, const char* FileName);
 bool removeConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int iPreviousEmulationMode);
 
-const unsigned int g_uiVirtualDisplayWidth = 1937;
-const unsigned int g_uiVirtualDisplayHeight = 1075;
+const unsigned int g_uiVirtualDisplayWidth = 1028;
+const unsigned int g_uiVirtualDisplayHeight = 1028;
 const unsigned int g_uiRefreshRate = 60;
 const RFWrapper& g_rfDll = RFWrapper::getInstance();
 bool g_bAddedCustomResolution = false;

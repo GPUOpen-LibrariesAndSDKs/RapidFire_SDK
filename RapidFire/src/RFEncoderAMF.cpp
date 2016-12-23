@@ -201,6 +201,9 @@ RFStatus RFEncoderAMF::resize(unsigned int uiWidth, unsigned int uiHeight)
 {
     AMF_RESULT amfErr;
 
+    m_uiWidth = uiWidth;
+    m_uiHeight = uiHeight;
+
     m_uiAlignedWidth  = m_uiWidth,
     m_uiAlignedHeight = m_uiHeight;
 

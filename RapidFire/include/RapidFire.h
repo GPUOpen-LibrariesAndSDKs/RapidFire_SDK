@@ -447,8 +447,11 @@ extern "C" {
     /**
     *******************************************************************************
     * @fn rfResizeSession
-    * @brief This function resizes the session and the encoder. Rendertargets that
-    * are registered by the application won't be resized automatically.
+    * @brief Resizes the session and the encoder if the encoder supports resizing. 
+    * Before calling rfResizeSession the encoding queue must be empty. 
+    * Otherwise submitting additional frames to the encoding queue might fail. 
+    * Render targets that are registered by the application will be removed 
+    * and have to be registered again with the new size.
     *
     * @param[in] session: The encoding session.
     * @param[in] uiWidth: New width

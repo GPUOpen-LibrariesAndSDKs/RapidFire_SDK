@@ -53,7 +53,7 @@ public:
 
     virtual bool                isFormatSupported(RFFormat format) const override;
 
-    virtual bool                isResizeSupported() const override { return m_pContext ? m_pContext->getCtxType() == RFContextCL::RF_CTX_FROM_DX9 : false; }
+    virtual bool                isResizeSupported() const override { return true; }
 
     // Returns preferred format of the encoder.
     virtual RFFormat            getPreferredFormat() const override { return RF_NV12; }
