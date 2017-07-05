@@ -21,7 +21,10 @@
 //
 #pragma once
 
+#include <cstdint>
+#include <mutex>
 #include <string>
+#include <vector>
 
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <OpenCL/cl.h>
@@ -56,6 +59,59 @@ private:
 
     bool        m_bReleased;
     cl_event    m_clEvent;
+};
+
+
+class RFProgramCL
+{
+public:
+
+	RFProgramCL() : m_device(NULL), m_program(NULL), m_built(false) {}
+	bool Create(cl_context context, cl_device_id device, const char* kernelFileName, const char* kernelSourceCode, const char* options = nullptr);
+
+	std::string GetBuildLog() const;
+
+	void Release();
+
+	operator cl_program() const { return m_program; }
+
+	operator bool() const
+	{
+		return m_built;
+	}
+
+private:
+
+	// disable copy constructor
+	RFProgramCL(const RFProgramCL& RFProgramCL);
+	// Disable assignment
+	RFProgramCL& operator=(const RFProgramCL& rhs);
+
+	uint64_t GetModuleVer(const char* moduleName) const;
+	std::string GetDeviceName() const;
+
+	struct BinFileData
+	{
+		BinFileData() : moduleVer(0), openCLVer(0) {}
+
+		uint64_t moduleVer;
+		uint64_t openCLVer;
+		std::string deviceName;
+		std::vector<unsigned char> data;
+	};
+	BinFileData LoadBinaryFile(const char* binaryFileName) const;
+	void StoreBinaryFile(const char* binaryFileName, const char* deviceName) const;
+
+	bool BuildFromSourceCode(cl_context context, const char* sourceCode, const char* options);
+	bool BuildFromSourceFile(cl_context context, const char* sourceFile, const char* options);
+
+	cl_device_id		m_device;
+	cl_program			m_program;
+	bool				m_built;
+
+	static uint64_t		s_uiModuleVer;
+	static uint64_t		s_uiOpenCLVer;
+	static std::mutex	s_lock;
 };
 
 
@@ -96,8 +152,6 @@ public:
     // Removes an OpenCL object that has been created from a GL/D3D object.
     RFStatus            removeCLInputMemObj(unsigned int idx);
 
-    RFStatus            buildCLProgram(const std::string& strKernelFileName, const char* pSources, cl_program& clProgram) const;
-
     // Gets the state of a GL/D3D object.
     RFStatus            getInputMemObjState(RFRenderTargetState* state, unsigned int idx) const;
 
@@ -123,8 +177,6 @@ public:
     cl_command_queue    getCmdQueue()   const { return m_clCmdQueue; }
 
     cl_command_queue    getDMAQueue()   const { return m_clDMAQueue; }
-
-    size_t              getWaveFrontSize()   const { return m_WaveFrontSize; }
 
     unsigned int        getNumResultBuffers() const { return m_uiNumResultBuffers; }
 
@@ -193,7 +245,7 @@ protected:
     cl_platform_id              m_clPlatformId;
     cl_device_id                m_clDevId;
     cl_context                  m_clCtx;
-    cl_program                  m_clCscProgram;
+	RFProgramCL					m_clCscProgram;
     cl_command_queue            m_clCmdQueue;
     cl_command_queue            m_clDMAQueue;
 
@@ -221,8 +273,6 @@ protected:
     bool                        m_bUseAsyncCopy;
 
     ctx_type                    m_CtxType;
-
-    size_t                      m_WaveFrontSize;
 
     CL_MEM_ACCESS_FUNCTION      m_fnAcquireMemObj;
     CL_MEM_ACCESS_FUNCTION      m_fnReleaseMemObj;

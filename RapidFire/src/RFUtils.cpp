@@ -28,6 +28,36 @@
 #include <windows.h>
 #endif
 
+float Timer::s_clockTime = 0.0;
+
+Timer::Timer()
+{
+    if (s_clockTime == 0.0)
+    {
+        LARGE_INTEGER freq;
+        QueryPerformanceFrequency(&freq);
+
+        s_clockTime = 1.0f / freq.QuadPart;
+    }
+
+    reset();
+}
+
+void Timer::reset()
+{
+    LARGE_INTEGER time;
+    QueryPerformanceCounter(&time);
+    m_startTime = time.QuadPart;
+}
+
+float Timer::getTime()
+{
+    LARGE_INTEGER time;
+    QueryPerformanceCounter(&time);
+
+    return s_clockTime * (time.QuadPart - m_startTime);
+}
+
 #if defined WIN32 || defined _WIN32
 
 #ifdef _DEBUG
@@ -128,7 +158,7 @@ void dumpCLBuffer(cl_mem clBuffer, RFContextCL* pContext, unsigned int uiWidth, 
         uiBufferSize = uiWidth * uiHeight * 4;
         break;
     }
-    
+
     cl_mem              clImageBuffer = NULL;
     cl_mem_object_type  clMemType;
 
@@ -153,7 +183,7 @@ void dumpCLBuffer(cl_mem clBuffer, RFContextCL* pContext, unsigned int uiWidth, 
         {
             clImageBuffer = clBuffer;
         }
-        
+
         char* pTmp = static_cast<char*>(clEnqueueMapBuffer(pContext->getCmdQueue(), clImageBuffer, CL_TRUE, CL_MAP_READ, 0, uiBufferSize, 0, nullptr, nullptr, &nStatus));
 
         if (nStatus == CL_SUCCESS && pTmp != nullptr)

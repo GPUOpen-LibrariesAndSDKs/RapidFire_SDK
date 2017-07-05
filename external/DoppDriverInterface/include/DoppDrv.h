@@ -30,10 +30,12 @@
 class  ADLWrapper;
 class  GPU_LIST_ENTRY;
 
-typedef enum _DOPPEventType 
+typedef enum _DOPPEventType
 {
-    DOPP_DESKOTOP_EVENT = 0, 
+    DOPP_CURSORHIDE_EVENT = 0,
     DOPP_MOUSE_EVENT,
+    DOPP_CURSORSHOW_EVENT,
+    DOPP_DESKOTOP_EVENT,
     DOPP_MAX_EVENT,
 } DOPPEventType;
 
@@ -47,20 +49,27 @@ class DOPPDrvInterface
 public:
 
     DOPPDrvInterface(const std::string& strDisplayName, unsigned int uiBusId);
+    DOPPDrvInterface();
 
     // The destructor will un-register all kmd events.
     // If DOPP was enabled by calling enableDOPP, the destructor will disable DOPP.
     ~DOPPDrvInterface();
 
+    unsigned int getNumGpus() const { return m_numAMDGpus; }
+
     // Gets current DOPP state.
     bool getDoppState();
 
-    // Tries to enable DOPP. 
+    // Tries to enable DOPP.
     // This will only work on drivers that have DOPP support enabled.
     bool enableDopp();
 
     // Disbales DOPP, should only be called if DOPP was enabled by calling enableDopp.
     bool disableDopp();
+
+    bool getPrimarySurfacePixelFormat(int* pATIFormat) const;
+
+    bool getCursorVisibility() const;
 
     // Creates and registers a user event that gets signaled by the driver.
     HANDLE createDOPPEvent(DOPPEventType eventType);
@@ -69,6 +78,8 @@ public:
     void deleteDOPPEvent(HANDLE hEvent);
 
 private:
+
+    void init(const std::string& strDisplayName, unsigned int uiBusId);
 
     struct GPU_USER_EVENT
     {
@@ -79,7 +90,7 @@ private:
     // Builds a static list containing information on all GPUs in the system.
     bool buildGpuList();
 
-    // The device context used for this intance. 
+    // The device context used for this intance.
     // The DC is required to register events.
     HDC m_hDC;
 
@@ -88,6 +99,7 @@ private:
 
     // Pointer to the entry of the GPU on which this intance is created.
     GPU_LIST_ENTRY* m_pMyGpu;
+    unsigned int m_numAMDGpus;
 
     const ADLWrapper& m_adl;
 };

@@ -162,7 +162,6 @@ RFEncoderDM::RFEncoderDM()
     , m_uiDiffMapSize(0)
     , m_DiffMapImagekernel(NULL)
     , m_DiffMapBufferkernel(NULL)
-    , m_DiffMapProgram(NULL)
     , m_pContext(nullptr)
     , m_pMappedBuffer(nullptr)
 {
@@ -194,10 +193,7 @@ RFEncoderDM::~RFEncoderDM()
         clReleaseKernel(m_DiffMapBufferkernel);
     }
 
-    if (m_DiffMapProgram != NULL)
-    {
-        clReleaseProgram(m_DiffMapProgram);
-    }
+	m_DiffMapProgram.Release();
 
     deleteBuffers();
 }
@@ -561,20 +557,26 @@ RFParameterState RFEncoderDM::getParameter(const unsigned int uiParameterName, R
     return RF_PARAMETER_STATE_INVALID;
 }
 
-
 RFStatus RFEncoderDM::GenerateCLProgramAndKernel()
 {
     assert(m_pContext);
 
-    if (m_pContext->buildCLProgram(DIFF_KERNEL_NAME, str_cl_DiffMapkernels, m_DiffMapProgram) == RF_STATUS_OK)
+	m_DiffMapProgram.Create(m_pContext->getContext(), m_pContext->getDeviceId(), DIFF_KERNEL_NAME, str_cl_DiffMapkernels);
+
+    if (m_DiffMapProgram)
     {
         cl_int nStatus;
         m_DiffMapImagekernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Image", &nStatus);
+		SAFE_CALL_CL(nStatus);
         m_DiffMapBufferkernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Buffer", &nStatus);
         SAFE_CALL_CL(nStatus);
 
         return RF_STATUS_OK;
     }
+	else
+	{
+		RF_Error(RF_STATUS_OPENCL_FAIL, m_DiffMapProgram.GetBuildLog().c_str());
+	}
 
     return RF_STATUS_OPENCL_FAIL;
 }

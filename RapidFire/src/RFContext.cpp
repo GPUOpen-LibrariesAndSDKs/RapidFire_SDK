@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -233,6 +234,438 @@ cl_event* RFEventCL::operator&()
 }
 
 
+uint64_t RFProgramCL::s_uiModuleVer = UINT64_MAX;
+uint64_t RFProgramCL::s_uiOpenCLVer = UINT64_MAX;
+std::mutex RFProgramCL::s_lock;
+
+bool RFProgramCL::Create(cl_context context, cl_device_id device, const char* kernelFileName, const char* kernelSourceCode, const char* options)
+{
+    if (m_built || !context || !device || (!kernelFileName && !kernelSourceCode))
+    {
+        return false;
+    }
+
+    m_device = device;
+
+#ifdef _DEBUG
+    bool bUseKernelCache = false;
+#else
+    bool bUseKernelCache = (kernelFileName != nullptr);
+#endif
+
+    s_lock.lock();
+    if (bUseKernelCache && s_uiModuleVer == UINT64_MAX)
+    {
+#ifdef _WIN64
+        s_uiModuleVer = GetModuleVer("RapidFire64.dll");
+#else
+        s_uiModuleVer = GetModuleVer("RapidFire.dll");
+#endif
+    }
+
+    if (s_uiModuleVer == 0)
+    {
+        bUseKernelCache = false;
+    }
+
+    if (bUseKernelCache && s_uiOpenCLVer == UINT64_MAX)
+    {
+#ifdef _WIN64
+        s_uiOpenCLVer = GetModuleVer("amdocl64.dll");
+#else
+        s_uiOpenCLVer = GetModuleVer("amdocl.dll");
+#endif
+    }
+    s_lock.unlock();
+
+    if (s_uiOpenCLVer == 0)
+    {
+        bUseKernelCache = false;
+    }
+
+    std::string deviceName;
+    if (bUseKernelCache)
+    {
+        deviceName = GetDeviceName();
+        if (deviceName.length() == 0)
+        {
+            bUseKernelCache = false;
+        }
+    }
+
+    std::string binFileName = kernelFileName;
+    binFileName += "bin";
+#ifdef _WIN64
+    binFileName += "64";
+#endif
+
+    // try to create from binary
+    if (bUseKernelCache)
+    {
+        BinFileData binData = LoadBinaryFile(binFileName.c_str());
+
+        if (binData.moduleVer == s_uiModuleVer && binData.openCLVer == s_uiOpenCLVer && binData.deviceName.compare(deviceName) == 0)
+        {
+            const size_t dataSize = binData.data.size();
+            const unsigned char* binary = binData.data.data();
+
+            cl_int nStatus;
+            m_program = clCreateProgramWithBinary(context, 1, &device, &dataSize, &binary, nullptr, &nStatus);
+            if (nStatus == CL_SUCCESS)
+            {
+                nStatus = clBuildProgram(m_program, 1, &device, options, nullptr, nullptr);
+                if (nStatus == CL_SUCCESS)
+                {
+                    m_built = true;
+                    return true;
+                }
+            }
+        }
+    }
+
+#ifdef _DEBUG
+    // try to create from .cl file
+    if (BuildFromSourceFile(context, kernelFileName, options))
+    {
+        m_built = true;
+        return true;
+    }
+#endif
+
+    // create from built-in source code
+    if (BuildFromSourceCode(context, kernelSourceCode, options))
+    {
+        m_built = true;
+
+        if (bUseKernelCache)
+        {
+            StoreBinaryFile(binFileName.c_str(), deviceName.c_str());
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+std::string RFProgramCL::GetBuildLog() const
+{
+    if (!m_built)
+    {
+        return std::string();
+    }
+
+    assert(m_program && m_device);
+
+    cl_int nStatus;
+    size_t buildLogSize;
+    nStatus = clGetProgramBuildInfo(m_program, m_device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &buildLogSize);
+    if (nStatus != CL_SUCCESS)
+    {
+        return std::string();
+    }
+
+    std::vector<char> buildLog(buildLogSize);
+    nStatus = clGetProgramBuildInfo(m_program, m_device, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog.data(), nullptr);
+    if (nStatus != CL_SUCCESS)
+    {
+        return std::string();
+    }
+
+    return buildLog.data();
+}
+
+void RFProgramCL::Release()
+{
+    m_device = NULL;
+    m_built = false;
+
+    if (m_program)
+    {
+        clReleaseProgram(m_program);
+        m_program = NULL;
+    }
+}
+
+uint64_t RFProgramCL::GetModuleVer(const char* moduleName) const
+{
+    if (!moduleName)
+    {
+        return 0;
+    }
+
+    DWORD infoSize = GetFileVersionInfoSize(moduleName, NULL);
+
+    if (infoSize > 0 && infoSize < 4096)
+    {
+        void* pData = alloca(infoSize);
+        if (GetFileVersionInfo(moduleName, NULL, infoSize, pData))
+        {
+            VS_FIXEDFILEINFO* pFileInfo;
+            unsigned int uiInfoSize;
+            if (VerQueryValue(pData, TEXT("\\"), reinterpret_cast<LPVOID*>(&pFileInfo), &uiInfoSize) && uiInfoSize == sizeof(VS_FIXEDFILEINFO))
+            {
+                return (static_cast<uint64_t>(pFileInfo->dwFileVersionMS) << 32) | pFileInfo->dwFileVersionLS;
+            }
+        }
+    }
+
+    return 0;
+}
+
+std::string RFProgramCL::GetDeviceName() const
+{
+    if (!m_device)
+    {
+        return std::string();
+    }
+
+    cl_int nStatus;
+    size_t deviceNameLength;
+
+    nStatus = clGetDeviceInfo(m_device, CL_DEVICE_NAME, 0, nullptr, &deviceNameLength);
+    if (nStatus == CL_SUCCESS && deviceNameLength < 512)
+    {
+        char* deviceName = static_cast<char*>(alloca(deviceNameLength));
+        nStatus = clGetDeviceInfo(m_device, CL_DEVICE_NAME, deviceNameLength, deviceName, nullptr);
+        if (nStatus == CL_SUCCESS)
+        {
+            return deviceName;
+        }
+    }
+
+    return std::string();
+}
+
+RFProgramCL::BinFileData RFProgramCL::LoadBinaryFile(const char* binaryFileName) const
+{
+    if (!binaryFileName)
+    {
+        return BinFileData();
+    }
+
+    std::ifstream file(binaryFileName, std::ios::in | std::ios::binary);
+    if (!file)
+    {
+        return BinFileData();
+    }
+
+    file.seekg(0, file.end);
+    size_t fileSize = static_cast<size_t>(file.tellg());
+    file.seekg(0, file.beg);
+
+    if (fileSize > 1e8)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    BinFileData binData;
+    file.read(reinterpret_cast<char*>(&binData.moduleVer), sizeof(binData.moduleVer));
+    if (!file)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    if (binData.moduleVer != s_uiModuleVer)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    file.read(reinterpret_cast<char*>(&binData.openCLVer), sizeof(binData.openCLVer));
+    if (!file)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    if (binData.openCLVer != s_uiOpenCLVer)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    uint16_t deviceNameLength;
+    file.read(reinterpret_cast<char*>(&deviceNameLength), sizeof(deviceNameLength));
+    if (!file || deviceNameLength >= 512)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    char* deviceName = static_cast<char*>(alloca(deviceNameLength));
+    file.read(deviceName, deviceNameLength);
+    if (!file)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    binData.deviceName = std::string(deviceName, deviceNameLength);
+
+    uint32_t dataSize;
+    file.read(reinterpret_cast<char*>(&dataSize), sizeof(dataSize));
+    if (!file)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    size_t fileDataSize = fileSize - static_cast<size_t>(file.tellg());
+    if (dataSize != fileDataSize)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    binData.data.resize(dataSize);
+    file.read(reinterpret_cast<char*>(binData.data.data()), dataSize);
+    if (!file)
+    {
+        file.close();
+        return BinFileData();
+    }
+
+    file.close();
+    return binData;
+}
+
+void RFProgramCL::StoreBinaryFile(const char* binaryFileName, const char* deviceName) const
+{
+    if (!m_built || !binaryFileName || !deviceName || !s_uiModuleVer || !s_uiOpenCLVer || !m_program)
+    {
+        return;
+    }
+
+    size_t binSize;
+    cl_int nStatus = clGetProgramInfo(m_program, CL_PROGRAM_BINARY_SIZES, sizeof(binSize), &binSize, nullptr);
+    if (nStatus != CL_SUCCESS || binSize >= 1e8)
+    {
+        return;
+    }
+
+    std::vector<unsigned char> binary(binSize);
+    unsigned char* ptrBinary = binary.data();
+    nStatus = clGetProgramInfo(m_program, CL_PROGRAM_BINARIES, sizeof(unsigned char*), &ptrBinary, nullptr);
+    if (nStatus != CL_SUCCESS)
+    {
+        return;
+    }
+
+    std::ofstream file(binaryFileName, std::ios::out | std::ios::binary | std::ios::trunc);
+    if (!file)
+    {
+        return;
+    }
+
+    file.write(reinterpret_cast<char*>(&s_uiModuleVer), sizeof(s_uiModuleVer));
+    if (!file)
+    {
+        file.close();
+        return;
+    }
+
+    file.write(reinterpret_cast<char*>(&s_uiOpenCLVer), sizeof(s_uiOpenCLVer));
+    if (!file)
+    {
+        file.close();
+        return;
+    }
+
+    uint16_t deviceNameLength = static_cast<uint16_t>(strlen(deviceName));
+    file.write(reinterpret_cast<char*>(&deviceNameLength), sizeof(deviceNameLength));
+    if (!file)
+    {
+        file.close();
+        return;
+    }
+
+    file.write(deviceName, deviceNameLength);
+    if (!file)
+    {
+        file.close();
+        return;
+    }
+
+    uint32_t dataSize = static_cast<uint32_t>(binSize);
+    file.write(reinterpret_cast<char*>(&dataSize), sizeof(dataSize));
+    if (!file)
+    {
+        file.close();
+        return;
+    }
+
+    file.write(reinterpret_cast<char*>(binary.data()), binSize);
+    if (!file)
+    {
+        file.close();
+        return;
+    }
+
+    file.close();
+}
+
+bool RFProgramCL::BuildFromSourceFile(cl_context context, const char* sourceFile, const char* options)
+{
+    if (!context || !sourceFile)
+    {
+        return false;
+    }
+
+    std::ifstream srcFile(sourceFile, std::ios::in | std::ios::binary);
+    if (!srcFile)
+    {
+        return false;
+    }
+
+    srcFile.seekg(0, srcFile.end);
+    size_t size = static_cast<size_t>(srcFile.tellg());
+    srcFile.seekg(0, srcFile.beg);
+
+    if (size > 1e8)
+    {
+        return false;
+    }
+
+    std::vector<char> sourceCode(size);
+    srcFile.read(sourceCode.data(), size);
+    if (!srcFile)
+    {
+        srcFile.close();
+        return false;
+    }
+
+    srcFile.close();
+
+    return BuildFromSourceCode(context, sourceCode.data(), options);
+}
+
+bool RFProgramCL::BuildFromSourceCode(cl_context context, const char* sourceCode, const char* options)
+{
+    if (!context || !sourceCode)
+    {
+        return false;
+    }
+
+    cl_int nStatus;
+    m_program = clCreateProgramWithSource(context, 1, &sourceCode, nullptr, &nStatus);
+    if (nStatus != CL_SUCCESS)
+    {
+        return false;
+    }
+
+    nStatus = clBuildProgram(m_program, 1, &m_device, options, nullptr, nullptr);
+    if (nStatus != CL_SUCCESS)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
 //////////////////////////////////////////////////////////
 // Native CL context for CSC
 //////////////////////////////////////////////////////////
@@ -249,11 +682,9 @@ RFContextCL::RFContextCL()
     , m_uiInputHeight(0)
     , m_uiNumRegisteredRT(0)
     , m_uiPendingTransfers(0)
-    , m_WaveFrontSize(64)
     , m_clPlatformId(NULL)
     , m_clDevId(NULL)
     , m_clCtx(NULL)
-    , m_clCscProgram(NULL)
     , m_clCmdQueue(NULL)
     , m_clDMAQueue(NULL)
     , m_CtxType(RF_CTX_UNKNOWN)
@@ -350,10 +781,7 @@ RFContextCL::~RFContextCL()
 
     memset(m_CSCKernels, 0, RF_KERNEL_NUMBER * sizeof(CSC_KERNEL));
 
-    if (m_clCscProgram)
-    {
-        nStatus = clReleaseProgram(m_clCscProgram);
-    }
+    m_clCscProgram.Release();
 
     deleteBuffers();
 
@@ -626,11 +1054,6 @@ RFStatus RFContextCL::finalizeContext(const cl_context_properties* pContextPrope
     cl_device_type DeviceType = 0;
 
     nStatus = clGetDeviceInfo(m_clDevId, CL_DEVICE_TYPE, sizeof(cl_device_type), &DeviceType, nullptr);
-
-    if ((nStatus == CL_SUCCESS) && (DeviceType & CL_DEVICE_TYPE_GPU))
-    {
-        nStatus = clGetDeviceInfo(m_clDevId, CL_DEVICE_WAVEFRONT_WIDTH_AMD, sizeof(size_t), &m_WaveFrontSize, nullptr);
-    }
 
     // Create CSC kernel.
     SAFE_CALL_CL(setupKernel());
@@ -1019,7 +1442,7 @@ RFStatus RFContextCL::deleteBuffers()
 // or vice versa. In any case the dimensions have to match.
 bool RFContextCL::validateDimensions(unsigned int uiWidth, unsigned int uiHeight)
 {
-    // If an input texture was already registered any new input texture or 
+    // If an input texture was already registered any new input texture or
     // result buffer has to match those dimensions.
     if (m_uiInputWidth > 0)
     {
@@ -1242,7 +1665,7 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
     m_clDMAFinished[uiDestIdx].release();
     m_clCSCFinished[uiDestIdx].release();
 
-    // Test if output mem object is valid. Acquire will test that the input mem object is valid. 
+    // Test if output mem object is valid. Acquire will test that the input mem object is valid.
     if (!m_clResultBuffer[uiDestIdx])
     {
         return RF_STATUS_INVALID_OPENCL_MEMOBJ;
@@ -1339,7 +1762,9 @@ bool RFContextCL::getFreeRenderTargetIndex(unsigned int& uiIndex)
 
 RFStatus RFContextCL::setupKernel()
 {
-    if (buildCLProgram(CSC_KERNEL_FILE_NAME, str_cl_kernels, m_clCscProgram) == RF_STATUS_OK)
+    m_clCscProgram.Create(m_clCtx, m_clDevId, CSC_KERNEL_FILE_NAME, str_cl_kernels);
+
+    if (m_clCscProgram)
     {
         cl_int nStatus = 0;
 
@@ -1355,201 +1780,10 @@ RFStatus RFContextCL::setupKernel()
 
         return RF_STATUS_OK;
     }
-
-    m_clCscProgram = NULL;
+    else
+    {
+        RF_Error(RF_STATUS_OPENCL_FAIL, m_clCscProgram.GetBuildLog().c_str());
+    }
 
     return RF_STATUS_OPENCL_FAIL;
-}
-
-
-RFStatus RFContextCL::buildCLProgram(const std::string& strKernelFileName, const char* pSources, cl_program& clProgram) const
-{
-    cl_int nStatus;
-    std::string binFileName(utilGetExecutablePath());
-
-    // Build binary file name.
-    size_t dot_pos = strKernelFileName.find_last_of(".");
-
-    if (dot_pos == std::string::npos)
-    {
-        binFileName += strKernelFileName;
-    }
-    else
-    {
-        binFileName += strKernelFileName.substr(0, dot_pos);
-    }
-
-    binFileName.append(".clbin");
-
-    string options;
-
-    if (m_WaveFrontSize != 0)
-    {
-        stringstream strStream;
-
-        strStream << m_WaveFrontSize;
-        string cWaveSize = strStream.str();
-        options = "-D WAVEFRONTSIZE=";
-
-        options += cWaveSize;
-    }
-
-#ifndef _DEBUG
-
-    bool sourceWithBinary = false;
-    FILE* fp = fopen(binFileName.c_str(), "rb");
-
-    if (fp)
-    {
-        fseek(fp, 0L, SEEK_END);
-        size_t size = ftell(fp);
-        fseek(fp, 0L, SEEK_SET);
-        DWORD fileVersion[] = { UINT_MAX, UINT_MAX, UINT_MAX, UINT_MAX };
-        if (size > sizeof(DWORD) * 4)
-        {
-            fread(fileVersion, sizeof(DWORD), 4, fp);
-        }
-
-        if (   fileVersion[0] == m_dwVersion[0] && fileVersion[1] == m_dwVersion[1]
-            && fileVersion[2] == m_dwVersion[2] && fileVersion[3] == m_dwVersion[3])
-        {
-            size_t binSize = size - (4 * sizeof(DWORD));
-            unsigned char* binary = new (nothrow)unsigned char[binSize];
-            if (!binary)
-            {
-                return RF_STATUS_MEMORY_FAIL;
-            }
-            fread(binary, sizeof(char), binSize, fp);
-            clProgram = clCreateProgramWithBinary(m_clCtx, 1, &m_clDevId, &binSize, const_cast<const unsigned char**>(&binary), nullptr, &nStatus);
-            sourceWithBinary = true;
-            delete[] binary;
-        }
-
-        fclose(fp);
-    }
-
-    if (!sourceWithBinary)
-    {
-        clProgram = clCreateProgramWithSource(m_clCtx, 1, &pSources, nullptr, &nStatus);
-    }
-    SAFE_CALL_CL(nStatus);
-
-    nStatus = clBuildProgram(clProgram, 1, &m_clDevId, options.c_str(), nullptr, nullptr);
-    if (nStatus != CL_SUCCESS)
-    {
-        if (nStatus == CL_BUILD_PROGRAM_FAILURE)
-        {
-            char* buildLog = nullptr;
-            size_t buildLogSize = 0;
-            SAFE_CALL_CL(clGetProgramBuildInfo(clProgram, m_clDevId, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, &buildLogSize));
-
-            buildLog = new (nothrow)char[buildLogSize];
-            RF_Assert(!buildLog);
-            memset(buildLog, 0, buildLogSize);
-
-            SAFE_CALL_CL(clGetProgramBuildInfo(clProgram, m_clDevId, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, nullptr));
-            RF_Error(RF_STATUS_OPENCL_FAIL, buildLog);
-            delete[] buildLog;
-        }
-        return RF_STATUS_OPENCL_FAIL;
-    }
-    else if (sourceWithBinary == false)
-    {
-        size_t binSize;
-        char* clBin;
-        SAFE_CALL_CL(clGetProgramInfo(clProgram, CL_PROGRAM_BINARY_SIZES, sizeof(binSize), &binSize, nullptr));
-        clBin = new (nothrow)char[binSize];
-        if (!clBin)
-        {
-            return RF_STATUS_MEMORY_FAIL;
-        }
-        SAFE_CALL_CL(clGetProgramInfo(clProgram, CL_PROGRAM_BINARIES, sizeof(char*), &clBin, nullptr));
-
-        fstream f(binFileName.c_str(), fstream::out | fstream::binary | fstream::trunc);
-        if (   0 == m_dwVersion[0] && 0 == m_dwVersion[1]
-            && 0 == m_dwVersion[2] && 0 == m_dwVersion[3])
-        {
-            DWORD fileVersion[] = { UINT_MAX, UINT_MAX, UINT_MAX, UINT_MAX };
-            f.write(reinterpret_cast<const char*>(fileVersion), sizeof(DWORD) * 4);
-        }
-        else
-        {
-            f.write(reinterpret_cast<const char*>(m_dwVersion), sizeof(DWORD) * 4);
-        }
-        f.write(clBin, binSize);
-        f.close();
-        delete[] clBin;
-    }
-
-#else
-    // In case of DEBUG builds load kernel from file. This makes tests with kernel changes easier.
-    fstream         InFile;
-    string          strLine;
-    string          strKernelSource;
-
-    // Read kernel sources from file.
-    std::string strKernelPath(utilGetExecutablePath());
-
-    strKernelPath += strKernelFileName;
-
-    // Try loading kernel sources from working dir.
-    InFile.open(strKernelFileName, fstream::in);
-
-    if (!InFile.is_open())
-    {
-        // Try loading kernel sources from exe dir.
-        InFile.open(strKernelPath, fstream::in);
-    }
-
-    if (InFile.is_open())
-    {
-        // Kernel source file found -> read sources.
-        while (!InFile.eof())
-        {
-            getline(InFile, strLine);
-            strKernelSource += strLine;
-            strKernelSource += "\n";
-        }
-    }
-    else
-    {
-        std::stringstream oss;
-
-        oss << "Running debug build but did not find: " << strKernelFileName << " -> using built in kernel";
-        RF_Error(CL_SUCCESS, oss.str().c_str());
-
-        // No kernel source file found -> use built in sources.
-        strKernelSource = pSources;
-    }
-
-    char const* pKernelSrc = strKernelSource.c_str();
-
-    clProgram = clCreateProgramWithSource(m_clCtx, 1, &pKernelSrc, nullptr, &nStatus);
-    SAFE_CALL_CL(nStatus);
-
-    nStatus = clBuildProgram(clProgram, 1, &m_clDevId, options.c_str(), nullptr, nullptr);
-
-    if (nStatus != CL_SUCCESS)
-    {
-        if (nStatus == CL_BUILD_PROGRAM_FAILURE)
-        {
-            char* buildLog = nullptr;
-            size_t buildLogSize = 0;
-            SAFE_CALL_CL(clGetProgramBuildInfo(clProgram, m_clDevId, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, &buildLogSize));
-
-            buildLog = new (nothrow)char[buildLogSize];
-            RF_Assert(!buildLog);
-            memset(buildLog, 0, buildLogSize);
-
-            SAFE_CALL_CL(clGetProgramBuildInfo(clProgram, m_clDevId, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, nullptr));
-            RF_Error(RF_STATUS_OPENCL_FAIL, buildLog);
-            delete[] buildLog;
-        }
-
-        return RF_STATUS_OPENCL_FAIL;
-    }
-
-#endif
-
-    return RF_STATUS_OK;
 }

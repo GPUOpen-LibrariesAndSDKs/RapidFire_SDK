@@ -679,6 +679,7 @@
 #define ADL_DISPLAY_PIXELFORMAT_YCRCB422                 (1 << 2)    //Limited range
 #define ADL_DISPLAY_PIXELFORMAT_RGB_LIMITED_RANGE      (1 << 3)
 #define ADL_DISPLAY_PIXELFORMAT_RGB_FULL_RANGE    ADL_DISPLAY_PIXELFORMAT_RGB  //Full range
+#define ADL_DISPLAY_PIXELFORMAT_YCRCB420              (1 << 4)
 // @}
 
 /// \defgroup define_contype Connector Type Values
@@ -1250,7 +1251,8 @@ typedef enum _DceSettingsType {
 } DceSettingsType;
 
 typedef enum _DpLinkRate {
-    DPLinkRate_RBR,
+    DPLinkRate_Unknown,
+	DPLinkRate_RBR,
     DPLinkRate_HBR,
     DPLinkRate_HBR2,
     DPLinkRate_HBR3
@@ -1410,6 +1412,9 @@ typedef enum _ADLProfilePropertyType
 #define ADL_DISPLAY_DDCINFO_PIXEL_FORMAT_YCBCR422_8BPCC               0x00001000L
 #define ADL_DISPLAY_DDCINFO_PIXEL_FORMAT_YCBCR422_10BPCC              0x00002000L
 #define ADL_DISPLAY_DDCINFO_PIXEL_FORMAT_YCBCR422_12BPCC              0x00004000L
+#define ADL_DISPLAY_DDCINFO_PIXEL_FORMAT_YCBCR420_8BPCC               0x00008000L
+#define ADL_DISPLAY_DDCINFO_PIXEL_FORMAT_YCBCR420_10BPCC              0x00010000L
+#define ADL_DISPLAY_DDCINFO_PIXEL_FORMAT_YCBCR420_12BPCC              0x00020000L
 /// @}
 
 /// \defgroup define_source_content_TF ADLSourceContentAttributes transfer functions (gamma)
@@ -1422,6 +1427,7 @@ typedef enum _ADLProfilePropertyType
 #define ADL_TF_LINEAR_0_1		0x0010      ///< Linear 0 - 1
 #define ADL_TF_LINEAR_0_125		0x0020      ///< Linear 0 - 125
 #define ADL_TF_DOLBYVISION		0x0040      ///< DolbyVision
+#define ADL_TF_GAMMA_22         0x0080      ///< Plain 2.2 gamma curve
 /// @}
 
 /// \defgroup define_source_content_CS ADLSourceContentAttributes color spaces
@@ -1445,6 +1451,12 @@ typedef enum _ADLProfilePropertyType
 #define ADL_HDR_CEA861_3		0x0001      ///< HDR10/CEA861.3 HDR supported
 #define ADL_HDR_DOLBYVISION		0x0002      ///< DolbyVision HDR supported
 #define ADL_HDR_FREESYNC_HDR	0x0004      ///< FreeSync HDR supported
+/// @}
+
+/// \defgroup define_FreesyncFlags ADLDDCInfo2 Freesync HDR flags 
+/// @{
+/// defines for iFreesyncFlags in ADLDDCInfo2
+#define ADL_HDR_FREESYNC_BACKLIGHT_SUPPORT	0x0001      ///< Backlight supported
 /// @}
 
 /// \defgroup define_dbd_state Deep Bit Depth
@@ -1697,10 +1709,12 @@ enum ADLODNControlType
 /// \defgroup define_ecc_mode_states
 /// These defines the ECC(Error Correction Code) state. It is used by \ref ADL_Workstation_ECC_Get,ADL_Workstation_ECC_Set
 // @{
-/// Error Correction is disabled.
+/// Error Correction is OFF.
 #define ECC_MODE_OFF 0
-/// Error Correction is enabled.
+/// Error Correction is ECCV2.
 #define ECC_MODE_ON 2
+/// Error Correction is HBM.
+#define ECC_MODE_HBM 3
 // @}
 
 /// \defgroup define_board_layout_flags
@@ -1951,6 +1965,7 @@ enum ADLODNControlType
 #define ADL_FREESYNC_CAP_CURRENTMODESUPPORTED           (1 << 3)
 #define ADL_FREESYNC_CAP_NOCFXORCFXSUPPORTED            (1 << 4)
 #define ADL_FREESYNC_CAP_NOGENLOCKORGENLOCKSUPPORTED    (1 << 5)
+#define ADL_FREESYNC_CAP_BORDERLESSWINDOWSUPPORTED      (1 << 6)
 // @}
 
 

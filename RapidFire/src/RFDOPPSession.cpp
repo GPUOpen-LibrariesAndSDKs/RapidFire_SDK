@@ -47,6 +47,7 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder, HDC hDC, HGLRC hGlrc)
     , m_pDeskotpCapture(nullptr)
     , m_pDrvInterface(nullptr)
     , m_pMouseGrab(nullptr)
+    , m_uiDoppTextureReinits(5)
 {
     m_Properties.bEncoderCSC = false;
 
@@ -66,7 +67,7 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder, HDC hDC, HGLRC hGlrc)
         m_ParameterMap.addParameter(RF_DESKTOP_BLOCK_UNTIL_CHANGE, RFParameterAttr("RF_DESKTOP_BLOCK_UNTIL_CHANGE", RF_PARAMETER_BOOL, 0));
         m_ParameterMap.addParameter(RF_DESKTOP_UPDATE_ON_CHANGE, RFParameterAttr("RF_DESKTOP_UPDATE_ON_CHANGE", RF_PARAMETER_BOOL, 0));
         m_ParameterMap.addParameter(RF_MOUSE_DATA, RFParameterAttr("RF_MOUSE_DATA", RF_PARAMETER_BOOL, 0));
-        
+
         if (!m_bDeleteContexts)
         {
             m_ParameterMap.addParameter(RF_GL_GRAPHICS_CTX, RFParameterAttr("RF_GL_GRAPHICS_CTX", RF_PARAMETER_PTR, 0));
@@ -129,7 +130,7 @@ RFStatus RFDOPPSession::createContextFromGfx()
     unsigned int uiWinDisplayId = 0;
     unsigned int uiInternalDisplayId = UINT_MAX;
 
-    // The application can either specify a desktop or a display. The factory will make sure that only 
+    // The application can either specify a desktop or a display. The factory will make sure that only
     // one of the two values is set.
     m_ParameterMap.getParameterValue(RF_DESKTOP, uiCCCDesktopId);
     m_ParameterMap.getParameterValue(RF_DESKTOP_DSP_ID, uiWinDisplayId);
@@ -252,8 +253,10 @@ RFStatus RFDOPPSession::finalizeContext()
 
     m_ParameterMap.getParameterValue(RF_DESKTOP_BLOCK_UNTIL_CHANGE, m_bBlockUntilChange);
     m_ParameterMap.getParameterValue(RF_DESKTOP_UPDATE_ON_CHANGE, m_bUpdateOnlyOnChange);
-    
+
     RFStatus rfStatus = m_pDeskotpCapture->initDOPP(m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight(), m_pEncoderSettings->getInputFormat(), m_bUpdateOnlyOnChange, m_bBlockUntilChange);
+    m_uiDoppTextureReinits = 0;
+    m_doppTimer.reset();
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -297,6 +300,8 @@ RFStatus RFDOPPSession::resizeResources(unsigned int w, unsigned int h)
 
     // Resize the desktop texture to the dimension of the desktop.
     RFStatus rfStatus = m_pDeskotpCapture->resizeDesktopTexture();
+    m_uiDoppTextureReinits = 0;
+    m_doppTimer.reset();
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -386,6 +391,16 @@ RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx)
 {
     RFGLContextGuard glGuard(m_hDC, m_hGlrc);
 
+    if (m_uiDoppTextureReinits < 5)
+    {
+        if (m_doppTimer.getTime() > m_uiDoppTextureReinits + 1)
+        {
+            m_uiDoppTextureReinits++;
+
+            m_pDeskotpCapture->resizeDesktopTexture();
+        }
+    }
+
     // Render desktop to image.
     if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, m_uiIdx))
     {
@@ -437,7 +452,7 @@ bool RFDOPPSession::createGLContext()
         pfd.iLayerType   = PFD_MAIN_PLANE;
 
         // For now only one GPU inside a VM is supported so it is safe to open the ctx on the primary GPU.
-        // Opening the ctx on the actual display (m_strDisplayName) works as well but currently some 
+        // Opening the ctx on the actual display (m_strDisplayName) works as well but currently some
         // application will unmap a display while a session is still running. This causess problems since
         // the OpenGL ctx gets invalid. To avoid this we remain on the primary GPU until applications will
         // synchronize to unmap only once the session is deleted.
@@ -486,9 +501,9 @@ bool RFDOPPSession::createGLContext()
             int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
                               WGL_CONTEXT_MINOR_VERSION_ARB, 2,
                               WGL_CONTEXT_PROFILE_MASK_ARB , WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-#ifdef _DEBUG             
+#ifdef _DEBUG
                               WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
-#endif                    
+#endif
                               0 };
 
             m_hGlrc = wglCreateContextAttribsARB(m_hDC, NULL, attribs);

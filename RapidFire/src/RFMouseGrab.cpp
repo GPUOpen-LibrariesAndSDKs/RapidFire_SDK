@@ -31,7 +31,6 @@
 
 #define ONE_SECOND 1000
 
-
 RFMouseGrab::RFMouseGrab(DOPPDrvInterface* pDrv, unsigned int uiDisplayId)
     : m_pDrv(pDrv)
     , m_bRunning(false)
@@ -173,6 +172,17 @@ bool RFMouseGrab::getShapeData(int iBlocking, RFMouseData& md)
         {
             md = m_changedMouseData.mouseData;
         }
+        else if (!m_iVisible && m_changedMouseData.mouseData.mask.pPixels)
+        {
+            memset(m_changedMouseData.mouseData.mask.pPixels, 0, m_changedMouseData.mouseData.mask.uiPitch * m_changedMouseData.mouseData.mask.uiHeight);
+
+            if (m_changedMouseData.mouseData.color.pPixels)
+            {
+                memset(m_changedMouseData.mouseData.color.pPixels, 0, m_changedMouseData.mouseData.color.uiPitch * m_changedMouseData.mouseData.color.uiHeight);
+            }
+
+            md = m_changedMouseData.mouseData;
+        }
         else
         {
             memset(&md, 0, sizeof(RFMouseData));
@@ -220,6 +230,18 @@ bool RFMouseGrab::createEvents()
         return false;
     }
 
+    m_hShapeChangedEvents[CURSOR_SHAPE_SHOW] = m_pDrv->createDOPPEvent(DOPPEventType::DOPP_CURSORSHOW_EVENT);
+    if (!m_hShapeChangedEvents[CURSOR_SHAPE_SHOW])
+    {
+        return false;
+    }
+
+    m_hShapeChangedEvents[CURSOR_SHAPE_HIDE] = m_pDrv->createDOPPEvent(DOPPEventType::DOPP_CURSORHIDE_EVENT);
+    if (!m_hShapeChangedEvents[CURSOR_SHAPE_HIDE])
+    {
+        return false;
+    }
+
     // Create event to signal getShapeData it is called with blocking option.
     m_hNewCursorStateEvent = CreateEvent(NULL, TRUE, FALSE, "NewCursorStateEvent");
 
@@ -259,14 +281,36 @@ DWORD WINAPI RFMouseGrab::ShapeNotificationThread(void* pThreadData)
     return 0;
 }
 
-
 void RFMouseGrab::updateLoop()
 {
     while (m_bRunning)
     {
-        WaitForSingleObject(m_hShapeChangedEvents[0], INFINITE);
-        RFReadWriteAccess mutex(&m_MouseDataMutex);
-        updateMouseShapeData(true, false);
+        DWORD ret = WaitForMultipleObjects(MAX_CURSOR_SHAPECHANGE_TYPES, m_hShapeChangedEvents, FALSE, INFINITE) - WAIT_OBJECT_0;
+
+        if (ret == CURSOR_SHAPE_CHANGED)
+        {
+            RFReadWriteAccess mutex(&m_MouseDataMutex);
+            updateMouseShapeData(true, false);
+            m_iVisible = m_pDrv->getCursorVisibility();
+        }
+        else if (ret == CURSOR_SHAPE_SHOW)
+        {
+            RFReadWriteAccess mutex(&m_MouseDataMutex);
+
+            m_iVisible = m_pDrv->getCursorVisibility();
+            m_bVisibilityUpdated = true;
+
+            updateMouseShapeData(false, false);
+        }
+        else if (ret == CURSOR_SHAPE_HIDE)
+        {
+            RFReadWriteAccess mutex(&m_MouseDataMutex);
+
+            m_iVisible = m_pDrv->getCursorVisibility();
+            m_bVisibilityUpdated = true;
+
+            updateMouseShapeData(false, false);
+        }
 
         SetEvent(m_hNewCursorStateEvent);
         Sleep(0);
@@ -331,7 +375,7 @@ void RFMouseGrab::updateMouseShapeData(bool bIncrementAnimationIndex, bool bGetM
 
     if (bGetMouseVisibility)
     {
-        int iVisible = cursorInfo.flags == CURSOR_SHOWING;
+        int iVisible = (cursorInfo.flags == CURSOR_SHOWING);
         if (m_iVisible != iVisible)
         {
             m_bVisibilityUpdated = true;
@@ -388,9 +432,9 @@ void RFMouseGrab::updateMouseShapeData(bool bIncrementAnimationIndex, bool bGetM
 
 void RFMouseGrab::StoreBitmapBuffer(const BitmapBuffer& src, RFBitmapBuffer& dest)
 {
-    dest.uiWidth        = src.BitMap.bmWidth;
-    dest.uiHeight       = src.BitMap.bmHeight;
-    dest.uiPitch        = src.BitMap.bmWidthBytes;
+    dest.uiWidth = src.BitMap.bmWidth;
+    dest.uiHeight = src.BitMap.bmHeight;
+    dest.uiPitch = src.BitMap.bmWidthBytes;
     dest.uiBitsPerPixel = src.BitMap.bmBitsPixel;
-    dest.pPixels        = src.pBuffer;
+    dest.pPixels = src.pBuffer;
 }

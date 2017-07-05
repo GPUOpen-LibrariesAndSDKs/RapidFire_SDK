@@ -24,6 +24,7 @@
 
 #include "DisplayManager.h"
 #include "RFSession.h"
+#include "RFUtils.h"
 
 #define DOPP_NUM_RT     3
 
@@ -78,4 +79,7 @@ private:
     std::unique_ptr<GLDOPPCapture>          m_pDeskotpCapture;
     std::unique_ptr<DOPPDrvInterface>       m_pDrvInterface;
     std::unique_ptr<RFMouseGrab>            m_pMouseGrab;
+
+    Timer                                   m_doppTimer;
+    unsigned int                            m_uiDoppTextureReinits;
 };

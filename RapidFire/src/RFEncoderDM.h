@@ -94,7 +94,7 @@ private:
 
     cl_kernel                                   m_DiffMapImagekernel;
     cl_kernel                                   m_DiffMapBufferkernel;
-    cl_program                                  m_DiffMapProgram;
+    RFProgramCL                                 m_DiffMapProgram;
 
     const RFContextCL*                          m_pContext;
 

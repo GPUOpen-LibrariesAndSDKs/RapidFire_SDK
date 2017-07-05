@@ -27,7 +27,7 @@
 // First a RF session is created. The session is configured to capture the desktop only
 // if the desktop has changed and to use a difference encoder. Attitudinally it is requested
 // to asynchronously copy the source frame to system memory.
-// After having received a diff map and the source frame both are rendered into a window 
+// After having received a diff map and the source frame both are rendered into a window
 // and the diff regions are highlighted.
 //
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -69,16 +69,16 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         return -1;
     }
 
-    // Get dimension of primary display. 
+    // Get dimension of primary display.
     unsigned int uiStreamWidth  = GetSystemMetrics(SM_CXSCREEN);
     unsigned int uiStreamHeight = GetSystemMetrics(SM_CYSCREEN);
 
     int BlockX = 128;
     int BlockY = 128;
 
-    RFProperties  encoderProps[] = { RF_ENCODER_FORMAT,       RF_RGBA8, 
+    RFProperties  encoderProps[] = { RF_ENCODER_FORMAT,       RF_RGBA8,
                                      RF_DIFF_ENCODER_BLOCK_S, BlockX,
-                                     RF_DIFF_ENCODER_BLOCK_T, BlockY, 
+                                     RF_DIFF_ENCODER_BLOCK_T, BlockY,
                                      0};
 
     rfStatus = rfDll.rfFunc.rfCreateEncoder2(rfSession, uiStreamWidth, uiStreamHeight, encoderProps);
@@ -144,14 +144,17 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             continue;
         }
 
-        rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
+        RFStatus ret = rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
 
-        bool success = (RF_STATUS_OK == rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource));
-        success &= (RF_STATUS_OK == rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference));
-
-        if (success)
+        if (ret == RF_STATUS_OK)
         {
-            renderer.updateTexture(static_cast<char*>(pSource), static_cast<char*>(pDifference));
+            bool success = (RF_STATUS_OK == rfDll.rfFunc.rfGetSourceFrame(rfSession, &uiSourceSize, &pSource));
+            success &= (RF_STATUS_OK == rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDiffSize, &pDifference));
+
+            if (success)
+            {
+                renderer.updateTexture(static_cast<char*>(pSource), static_cast<char*>(pDifference));
+            }
         }
 
         renderer.draw();

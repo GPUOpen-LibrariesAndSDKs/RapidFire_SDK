@@ -23,6 +23,22 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
+
+class Timer
+{
+public:
+
+    Timer();
+
+    void reset();
+    float getTime();
+
+protected:
+
+    static float s_clockTime;
+    uint64_t m_startTime;
+};
 
 // Gets the path of the executable.
 std::string utilGetExecutablePath();
