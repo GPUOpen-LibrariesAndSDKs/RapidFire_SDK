@@ -79,7 +79,7 @@ RFSession::RFSession(RFEncoderID rfEncoder)
     m_Properties.bAsyncCopyToSysMem = false;
     m_Properties.bBlockingEncoderRead = false;
     m_Properties.bInvertInput = false;
-    m_Properties.bEncoderCSC = true;
+    m_Properties.sourceTextureFormat = RF_BGRA8;
     m_Properties.bMousedata = false;
 }
 
@@ -93,7 +93,7 @@ RFSession::~RFSession()
 
 RFStatus RFSession::createContext()
 {
-    // Global lock: Some encoders like AMF fail to initialize if the context 
+    // Global lock: Some encoders like AMF fail to initialize if the context
     // creation is interrupted by another thread.
     RFReadWriteAccess enabler(&g_GlobalSessionLock);
 
@@ -131,11 +131,11 @@ RFStatus RFSession::createContext()
 }
 
 
-RFStatus RFSession::createEncoder(unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset preset)
+RFStatus RFSession::createEncoder(unsigned int uiWidth, unsigned int uiHeight, const RFVideoCodec codec, const RFEncodePreset preset)
 {
     RFStatus rfStatus;
 
-    rfStatus = createEncoderConfig(uiWidth, uiHeight, preset);
+    rfStatus = createEncoderConfig(uiWidth, uiHeight, codec, preset);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -151,7 +151,7 @@ RFStatus RFSession::createEncoder(unsigned int uiWidth, unsigned int uiHeight, c
 {
     RFStatus rfStatus;
 
-    rfStatus = createEncoderConfig(uiWidth, uiHeight, RF_PRESET_NONE);
+    rfStatus = createEncoderConfig(uiWidth, uiHeight, RF_VIDEO_CODEC_NONE, RF_PRESET_NONE);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -247,7 +247,7 @@ RFStatus RFSession::getRenderTargetState(RFRenderTargetState* state, unsigned in
 // The application may register one or more render targets and will call encodeFrame with the id
 // of the registered RT. Internally more buffers are used e.g. to store frames needed for diff
 // encoding. The submitted buffer ids are stored in m_BufferQueue.
-// getEncodeFrame will remove the index from the queue once a frame is encoded and was read by 
+// getEncodeFrame will remove the index from the queue once a frame is encoded and was read by
 // the application.
 RFStatus RFSession::encodeFrame(unsigned int idx)
 {
@@ -293,10 +293,10 @@ RFStatus RFSession::encodeFrame(unsigned int idx)
     // for the encoders. During this process the CSC can be done and the image can get inverted.
     // If a sys mem buffer was requested when createBuffers was called, a transfer of the result to sys
     // mem is triggered.
-    SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.bEncoderCSC, m_Properties.bInvertInput, idx, m_uiResultBuffer));
+    SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.sourceTextureFormat, m_Properties.bInvertInput, idx, m_uiResultBuffer));
 
     // Encode frame
-    SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer, !m_Properties.bEncoderCSC));
+    SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer));
 
     // Store result buffer index in queue since processBuffer filled a new resultBuffer. The ResultBuffer
     // should only be considered as valid if the enode call succeeded. Only in this case a valid pair of
@@ -358,7 +358,7 @@ RFStatus RFSession::getSourceFrame(unsigned int& uiSize, void* &pBitStream)
         }
 
         // Get index of the oldest element in the queue. This is the index that will be used for the next call to
-        // get getEncodedFrame. If getSourceFrame is called prior to getEncoded frame the source frame is the one 
+        // get getEncodedFrame. If getSourceFrame is called prior to getEncoded frame the source frame is the one
         // that was used to generate the encoded frame.
         idx = m_BufferQueue.front();
     }
@@ -524,7 +524,7 @@ RFStatus RFSession::finalizeContext()
 }
 
 
-RFStatus RFSession::createEncoderConfig(unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset preset)
+RFStatus RFSession::createEncoderConfig(unsigned int uiWidth, unsigned int uiHeight, const RFVideoCodec codec, const RFEncodePreset preset)
 {
     if (!uiWidth || !uiHeight || uiWidth > 10000 || uiHeight > 10000)
     {
@@ -540,7 +540,7 @@ RFStatus RFSession::createEncoderConfig(unsigned int uiWidth, unsigned int uiHei
     // Create configuration to store all encoding parameters.
     m_pEncoderSettings.reset(new RFEncoderSettings);
 
-    if (!m_pEncoderSettings->createSettings(uiWidth, uiHeight, preset))
+    if (!m_pEncoderSettings->createSettings(uiWidth, uiHeight, codec, preset))
     {
         m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[rfCreateEncoder] Failed to create encoder settings");
         return RF_STATUS_INVALID_CONFIG;
@@ -647,6 +647,11 @@ RFStatus RFSession::createEncoder()
         m_pEncoderSettings->setFormat(m_pEncoder->getPreferredFormat());
     }
 
+    if (m_pEncoderSettings->getVideoCodec() == RF_VIDEO_CODEC_NONE)
+    {
+        m_pEncoderSettings->setVideoCodec(m_pEncoder->getPreferredVideoCodec());
+    }
+
     // Init encoder
     rfStatus = m_pEncoder->init(m_pContextCL.get(), m_pEncoderSettings.get());
 
@@ -662,7 +667,7 @@ RFStatus RFSession::createEncoder()
     // Update m_pEncoderSettings with the values actually useed by the encoder.
     validateEncoderSettings();
 
-    // The context was created when CreateSession was called. At that time the dimension of the 
+    // The context was created when CreateSession was called. At that time the dimension of the
     // encoder and the format are not yet known. Create the required buffers based on the dimension now.
     rfStatus = m_pContextCL->createBuffers(m_pEncoderSettings->getInputFormat(),
                                            m_pEncoderSettings->getEncoderWidth(),
@@ -865,7 +870,7 @@ RFStatus RFSession::getEncodeParameter(const int param, RFProperties& value) con
 }
 
 
-// The EncoderSettings in m_pEncoderSettings contain all parameters known by RF. Not all encoders will 
+// The EncoderSettings in m_pEncoderSettings contain all parameters known by RF. Not all encoders will
 // support them and some of the parameters might be blocked. validateEncoderSettings will query the value
 // and state from the encoder and update the m_pEncoderSettings.
 // This functiom should be called once after the encoder was created.
@@ -882,7 +887,7 @@ void RFSession::validateEncoderSettings()
 
             if (m_pEncoderSettings->getParameterName(i, uiParamName))
             {
-                rfParamState = m_pEncoder->getParameter(uiParamName, EncoderValue);
+                rfParamState = m_pEncoder->getParameter(uiParamName, m_pEncoderSettings->getVideoCodec(), EncoderValue);
 
                 m_pEncoderSettings->setParameter(uiParamName, EncoderValue, rfParamState);
 
@@ -990,18 +995,20 @@ RFStatus RFSession::parseEncoderProperties(const RFProperties* props)
         {
             int             name;
             RFProperties    ptr;
-        }; 
-        
+        };
+
         const Element* p = reinterpret_cast<const Element*>(props);
 
         while (p->name != 0)
         {
             if (p->name == RF_ENCODER_FORMAT)
             {
-                RFFormat rfFormat = static_cast<RFFormat>(p->ptr);
-
                 // Apply format. When the encoder is created it will check if the format is supported.
-                m_pEncoderSettings->setFormat(rfFormat);
+                m_pEncoderSettings->setFormat(static_cast<RFFormat>(p->ptr));
+            }
+            else if (p->name == RF_ENCODER_CODEC)
+            {
+                m_pEncoderSettings->setVideoCodec(static_cast<RFVideoCodec>(p->ptr));
             }
             // INVALID indicates that the parameter was not yet validated by an encoder.
             else if (!m_pEncoderSettings->setParameter(p->name, p->ptr, RF_PARAMETER_STATE_INVALID))

@@ -144,7 +144,7 @@ RFStatus RFEncoderIdentity::getEncodedFrame(unsigned int& uiSize, void* &pBitStr
 }
 
 
-RFStatus RFEncoderIdentity::encode(unsigned int uiBufferIdx, bool bUseInputImage)
+RFStatus RFEncoderIdentity::encode(unsigned int uiBufferIdx)
 {
     assert(m_pContext);
 

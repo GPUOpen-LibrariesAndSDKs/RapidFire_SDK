@@ -28,6 +28,7 @@
 
 #include <components/VideoConverter.h>
 #include <components/VideoEncoderVCE.h>
+#include <components/VideoEncoderHEVC.h>
 #include <core/Platform.h>
 #include <core/PropertyStorageEx.h>
 #include <core/Surface.h>
@@ -47,39 +48,65 @@ using namespace std;
 using namespace amf;
 
 
-struct MAPPING_ENTRY
-{
-    const unsigned int   RFPropertyName;
-    const wchar_t*       AMFPropertyName;
-};
-
-
 // Table that contains the mapping of RF names to AMF names
-// Since AMF 1.22 FRAMERATE and FRAMERATE_DEN are passed as AMFRate structure. 
-// The AMF Param name is AMF_VIDEO_ENCODER_FRAMERATE. 
+// Since AMF 1.22 FRAMERATE and FRAMERATE_DEN are passed as AMFRate structure.
+// The AMF Param name is AMF_VIDEO_ENCODER_FRAMERATE.
 // Therefore both entries point to AMF_VIDEO_ENCODER_FRAMERATE
-static struct MAPPING_ENTRY g_PropertyNameMap[] = { {RF_ENCODER_PROFILE,                     AMF_VIDEO_ENCODER_PROFILE},
-                                                    {RF_ENCODER_LEVEL,                       AMF_VIDEO_ENCODER_PROFILE_LEVEL},
-                                                    {RF_ENCODER_USAGE,                       AMF_VIDEO_ENCODER_USAGE},
-                                                    {RF_ENCODER_COMMON_LOW_LATENCY_INTERNAL, L"CommonLowLatencyInternal"},
-                                                    {RF_ENCODER_BITRATE,                     AMF_VIDEO_ENCODER_TARGET_BITRATE},
-                                                    {RF_ENCODER_PEAK_BITRATE,                AMF_VIDEO_ENCODER_PEAK_BITRATE},
-                                                    {RF_ENCODER_FRAME_RATE,                  AMF_VIDEO_ENCODER_FRAMERATE},
-                                                    {RF_ENCODER_FRAME_RATE_DEN,              AMF_VIDEO_ENCODER_FRAMERATE},
-                                                    {RF_ENCODER_RATE_CONTROL_METHOD,         AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD},
-                                                    {RF_ENCODER_MIN_QP,                      AMF_VIDEO_ENCODER_MIN_QP},
-                                                    {RF_ENCODER_MAX_QP,                      AMF_VIDEO_ENCODER_MAX_QP },
-                                                    {RF_ENCODER_VBV_BUFFER_SIZE,             AMF_VIDEO_ENCODER_VBV_BUFFER_SIZE},
-                                                    {RF_ENCODER_VBV_BUFFER_FULLNESS,         AMF_VIDEO_ENCODER_INITIAL_VBV_BUFFER_FULLNESS},
-                                                    {RF_ENCODER_ENFORCE_HRD,                 AMF_VIDEO_ENCODER_ENFORCE_HRD},
-                                                    {RF_ENCODER_IDR_PERIOD,                  AMF_VIDEO_ENCODER_IDR_PERIOD},
-                                                    {RF_ENCODER_INTRA_REFRESH_NUM_MB,        AMF_VIDEO_ENCODER_INTRA_REFRESH_NUM_MBS_PER_SLOT},
-                                                    {RF_ENCODER_DEBLOCKING_FILTER,           AMF_VIDEO_ENCODER_DE_BLOCKING_FILTER},
-                                                    {RF_ENCODER_NUM_SLICES_PER_FRAME,        AMF_VIDEO_ENCODER_SLICES_PER_FRAME},
-                                                    {RF_ENCODER_QUALITY_PRESET,              AMF_VIDEO_ENCODER_QUALITY_PRESET},
-                                                    {RF_ENCODER_HALF_PIXEL,                  AMF_VIDEO_ENCODER_MOTION_HALF_PIXEL},
-                                                    {RF_ENCODER_QUARTER_PIXEL,               AMF_VIDEO_ENCODER_MOTION_QUARTERPIXEL} };
+static const RFEncoderAMF::MAPPING_ENTRY g_AVCPropertyNameMap[] = { {RF_ENCODER_PROFILE,                     AMF_VIDEO_ENCODER_PROFILE},
+                                                                    {RF_ENCODER_LEVEL,                       AMF_VIDEO_ENCODER_PROFILE_LEVEL},
+                                                                    {RF_ENCODER_USAGE,                       AMF_VIDEO_ENCODER_USAGE},
+                                                                    {RF_ENCODER_COMMON_LOW_LATENCY_INTERNAL, L"CommonLowLatencyInternal"},
+                                                                    {RF_ENCODER_BITRATE,                     AMF_VIDEO_ENCODER_TARGET_BITRATE},
+                                                                    {RF_ENCODER_PEAK_BITRATE,                AMF_VIDEO_ENCODER_PEAK_BITRATE},
+                                                                    {RF_ENCODER_FRAME_RATE,                  AMF_VIDEO_ENCODER_FRAMERATE},
+                                                                    {RF_ENCODER_FRAME_RATE_DEN,              AMF_VIDEO_ENCODER_FRAMERATE},
+                                                                    {RF_ENCODER_RATE_CONTROL_METHOD,         AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD},
+                                                                    {RF_ENCODER_MIN_QP,                      AMF_VIDEO_ENCODER_MIN_QP},
+                                                                    {RF_ENCODER_MAX_QP,                      AMF_VIDEO_ENCODER_MAX_QP },
+                                                                    {RF_ENCODER_VBV_BUFFER_SIZE,             AMF_VIDEO_ENCODER_VBV_BUFFER_SIZE},
+                                                                    {RF_ENCODER_VBV_BUFFER_FULLNESS,         AMF_VIDEO_ENCODER_INITIAL_VBV_BUFFER_FULLNESS},
+                                                                    {RF_ENCODER_ENFORCE_HRD,                 AMF_VIDEO_ENCODER_ENFORCE_HRD},
+                                                                    {RF_ENCODER_ENABLE_VBAQ,                 AMF_VIDEO_ENCODER_ENABLE_VBAQ},
+                                                                    {RF_ENCODER_IDR_PERIOD,                  AMF_VIDEO_ENCODER_IDR_PERIOD},
+                                                                    {RF_ENCODER_INTRA_REFRESH_NUM_MB,        AMF_VIDEO_ENCODER_INTRA_REFRESH_NUM_MBS_PER_SLOT},
+                                                                    {RF_ENCODER_DEBLOCKING_FILTER,           AMF_VIDEO_ENCODER_DE_BLOCKING_FILTER},
+                                                                    {RF_ENCODER_NUM_SLICES_PER_FRAME,        AMF_VIDEO_ENCODER_SLICES_PER_FRAME},
+                                                                    {RF_ENCODER_QUALITY_PRESET,              AMF_VIDEO_ENCODER_QUALITY_PRESET},
+                                                                    {RF_ENCODER_HALF_PIXEL,                  AMF_VIDEO_ENCODER_MOTION_HALF_PIXEL},
+                                                                    {RF_ENCODER_QUARTER_PIXEL,               AMF_VIDEO_ENCODER_MOTION_QUARTERPIXEL}};
 
+
+static const RFEncoderAMF::MAPPING_ENTRY g_HEVCPropertyNameMap[] = { {RF_ENCODER_HEVC_USAGE,                           AMF_VIDEO_ENCODER_HEVC_USAGE},
+                                                                     {RF_ENCODER_HEVC_PROFILE,                         AMF_VIDEO_ENCODER_HEVC_PROFILE},
+                                                                     {RF_ENCODER_HEVC_LEVEL,                           AMF_VIDEO_ENCODER_HEVC_PROFILE_LEVEL},
+                                                                     {RF_ENCODER_HEVC_TIER,                            AMF_VIDEO_ENCODER_HEVC_TIER},
+                                                                     {RF_ENCODER_HEVC_RATE_CONTROL_METHOD,             AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD},
+                                                                     {RF_ENCODER_HEVC_FRAMERATE,                       AMF_VIDEO_ENCODER_HEVC_FRAMERATE},
+                                                                     {RF_ENCODER_HEVC_FRAMERATE_DEN,                   AMF_VIDEO_ENCODER_HEVC_FRAMERATE},
+                                                                     {RF_ENCODER_HEVC_VBV_BUFFER_SIZE,                 AMF_VIDEO_ENCODER_HEVC_VBV_BUFFER_SIZE},
+                                                                     {RF_ENCODER_HEVC_INITIAL_VBV_BUFFER_FULLNESS,     AMF_VIDEO_ENCODER_HEVC_INITIAL_VBV_BUFFER_FULLNESS},
+                                                                     {RF_ENCODER_HEVC_RATE_CONTROL_PREANALYSIS_ENABLE, AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_PREANALYSIS_ENABLE},
+                                                                     {RF_ENCODER_HEVC_ENABLE_VBAQ,                     AMF_VIDEO_ENCODER_HEVC_ENABLE_VBAQ},
+                                                                     {RF_ENCODER_HEVC_TARGET_BITRATE,                  AMF_VIDEO_ENCODER_HEVC_TARGET_BITRATE},
+                                                                     {RF_ENCODER_HEVC_PEAK_BITRATE,                    AMF_VIDEO_ENCODER_HEVC_PEAK_BITRATE},
+                                                                     {RF_ENCODER_HEVC_MIN_QP_I,                        AMF_VIDEO_ENCODER_HEVC_MIN_QP_I},
+                                                                     {RF_ENCODER_HEVC_MAX_QP_I,                        AMF_VIDEO_ENCODER_HEVC_MAX_QP_I},
+                                                                     {RF_ENCODER_HEVC_MIN_QP_P,                        AMF_VIDEO_ENCODER_HEVC_MIN_QP_P},
+                                                                     {RF_ENCODER_HEVC_MAX_QP_P,                        AMF_VIDEO_ENCODER_HEVC_MAX_QP_P},
+                                                                     {RF_ENCODER_HEVC_QP_I,                            AMF_VIDEO_ENCODER_HEVC_QP_I},
+                                                                     {RF_ENCODER_HEVC_QP_P,                            AMF_VIDEO_ENCODER_HEVC_QP_P},
+                                                                     {RF_ENCODER_HEVC_ENFORCE_HRD,                     AMF_VIDEO_ENCODER_HEVC_ENFORCE_HRD},
+                                                                     {RF_ENCODER_HEVC_MAX_AU_SIZE,                     AMF_VIDEO_ENCODER_HEVC_MAX_AU_SIZE},
+                                                                     {RF_ENCODER_HEVC_FILLER_DATA_ENABLE,              AMF_VIDEO_ENCODER_HEVC_FILLER_DATA_ENABLE},
+                                                                     {RF_ENCODER_HEVC_RATE_CONTROL_SKIP_FRAME_ENABLE,  AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_SKIP_FRAME_ENABLE},
+                                                                     {RF_ENCODER_HEVC_HEADER_INSERTION_MODE,           AMF_VIDEO_ENCODER_HEVC_HEADER_INSERTION_MODE},
+                                                                     {RF_ENCODER_HEVC_GOP_SIZE,                        AMF_VIDEO_ENCODER_HEVC_GOP_SIZE},
+                                                                     {RF_ENCODER_HEVC_NUM_GOPS_PER_IDR,                AMF_VIDEO_ENCODER_HEVC_NUM_GOPS_PER_IDR},
+                                                                     {RF_ENCODER_HEVC_DE_BLOCKING_FILTER_DISABLE,      AMF_VIDEO_ENCODER_HEVC_DE_BLOCKING_FILTER_DISABLE},
+                                                                     {RF_ENCODER_HEVC_SLICES_PER_FRAME,                AMF_VIDEO_ENCODER_HEVC_SLICES_PER_FRAME},
+                                                                     {RF_ENCODER_HEVC_QUALITY_PRESET,                  AMF_VIDEO_ENCODER_HEVC_QUALITY_PRESET},
+                                                                     {RF_ENCODER_HEVC_MOTION_HALF_PIXEL,               AMF_VIDEO_ENCODER_HEVC_MOTION_HALF_PIXEL},
+                                                                     {RF_ENCODER_HEVC_MOTION_QUARTERPIXEL,             AMF_VIDEO_ENCODER_HEVC_MOTION_QUARTERPIXEL} };
 
 RFEncoderAMF::RFEncoderAMF()
     : RFEncoder()
@@ -87,6 +114,8 @@ RFEncoderAMF::RFEncoderAMF()
     , m_uiPendingFrames(0)
     , m_amfEncodedFrame(NULL)
     , m_pContext(nullptr)
+    , m_pPropertyNameMap(nullptr)
+    , m_uiPropertyNameMapCount(0)
 {
     m_pPreSubmitSettings.clear();
 
@@ -160,7 +189,23 @@ RFStatus RFEncoderAMF::init(const RFContextCL* pContextCL, const RFEncoderSettin
         return RF_STATUS_AMF_FAIL;
     }
 
-    amfErr = AMFWrapper::CreateComponent(m_amfContext, AMFVideoEncoderVCE_AVC, &m_amfEncoder);
+    if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_AVC)
+    {
+        m_pPropertyNameMap = g_AVCPropertyNameMap;
+        m_uiPropertyNameMapCount = sizeof(g_AVCPropertyNameMap) / sizeof(MAPPING_ENTRY);
+        amfErr = AMFWrapper::CreateComponent(m_amfContext, AMFVideoEncoderVCE_AVC, &m_amfEncoder);
+    }
+    else if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_HEVC)
+    {
+        m_pPropertyNameMap = g_HEVCPropertyNameMap;
+        m_uiPropertyNameMapCount = sizeof(g_HEVCPropertyNameMap) / sizeof(MAPPING_ENTRY);
+        amfErr = AMFWrapper::CreateComponent(m_amfContext, AMFVideoEncoder_HEVC, &m_amfEncoder);
+    }
+    else
+    {
+        RF_Error(RF_STATUS_AMF_FAIL, "No video codec set for the HW encoder");
+        return RF_STATUS_AMF_FAIL;
+    }
 
     if (amfErr != AMF_OK)
     {
@@ -176,13 +221,19 @@ RFStatus RFEncoderAMF::init(const RFContextCL* pContextCL, const RFEncoderSettin
             return RF_STATUS_INVALID_CONFIG;
         }
 
-        // Disable B-Frames. We do not check for errors when applying this parameter since on some GPUs
+        // Disable B-Frames for avc codec. We do not check for errors when applying this parameter since on some GPUs
         // B Frames won't be available.
-        m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, 0);
+        if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_AVC)
+        {
+            m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, 0);
+        }
     }
     else
     {
-        m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, 0);
+        if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_AVC)
+        {
+            m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, 0);
+        }
 
         if (!applyConfiguration(pConfig))
         {
@@ -217,7 +268,7 @@ RFStatus RFEncoderAMF::resize(unsigned int uiWidth, unsigned int uiHeight)
 }
 
 
-RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx, bool bUseInputImage)
+RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx)
 {
     AMF_RESULT amfErr;
 
@@ -246,13 +297,13 @@ RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx, bool bUseInputImage)
     {
         amfErr = m_amfEncoder->SubmitInput(amfSurface);
 
-        // AMF_REPEAT is returned if the queue is full. We have too many pending frames and need 
+        // AMF_REPEAT is returned if the queue is full. We have too many pending frames and need
         // to free space by calling QueryOutput. If a separate thread reads the data we will wait
         // and retry. It might be the case that the read thread is too slow and data is encoded faster
         // than read.
         // In a non multithreaded app this should not happen unless the app does not call getEncodedFrame.
         // ATTENTION: The RFSession manages a queue as well that will prevent to submit too many frames without
-        // retreiving the result. The queue used by RFSession might be greater than the AMF queue and we still 
+        // retreiving the result. The queue used by RFSession might be greater than the AMF queue and we still
         // might run into the situation that we get an AMF_REPEAT.
         if (amfErr == AMF_REPEAT)
         {
@@ -373,22 +424,38 @@ RFStatus RFEncoderAMF::setParameter(const unsigned int uiParameterName, RFParame
     {
         m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_AUD, uiValue ? true : false));
     }
+    else if (uiValue && uiParameterName == RF_ENCODER_HEVC_FORCE_INTRA_REFRESH)
+    {
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_HEVC_PICTURE_TYPE_IDR));
+    }
+    else if (uiValue && uiParameterName == RF_ENCODER_HEVC_FORCE_I_FRAME)
+    {
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_HEVC_PICTURE_TYPE_I));
+    }
+    else if (uiValue && uiParameterName == RF_ENCODER_HEVC_FORCE_P_FRAME)
+    {
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_HEVC_PICTURE_TYPE_P));
+    }
+    else if (uiValue && uiParameterName == RF_ENCODER_HEVC_INSERT_HEADER)
+    {
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_INSERT_HEADER, true));
+    }
+    else if (uiParameterName == RF_ENCODER_HEVC_INSERT_AUD)
+    {
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_INSERT_AUD, uiValue ? true : false));
+    }
     else
     {
-        // Check if parameter is supported by encoder. Presubmit parameters are not part of the map.
-        unsigned int uiNumSupportedProperties = sizeof(g_PropertyNameMap) / sizeof(struct MAPPING_ENTRY);
-
         unsigned int uiParameterIdx = 0;
-
-        for (uiParameterIdx = 0; uiParameterIdx < uiNumSupportedProperties; ++uiParameterIdx)
+        for (uiParameterIdx = 0; uiParameterIdx < m_uiPropertyNameMapCount; ++uiParameterIdx)
         {
-            if (g_PropertyNameMap[uiParameterIdx].RFPropertyName == uiParameterName)
+            if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == uiParameterName)
             {
                 break;
             }
         }
 
-        if (uiParameterIdx == uiNumSupportedProperties)
+        if (uiParameterIdx == m_uiPropertyNameMapCount)
         {
             return RF_STATUS_INVALID_ENCODER_PARAMETER;
         }
@@ -400,40 +467,50 @@ RFStatus RFEncoderAMF::setParameter(const unsigned int uiParameterName, RFParame
 }
 
 
-RFParameterState RFEncoderAMF::getParameter(const unsigned int uiParameterName, RFProperties& value) const
+RFParameterState RFEncoderAMF::getParameter(const unsigned int uiParameterName, RFVideoCodec codec, RFProperties& value) const
 {
-    AMF_RESULT  amfErr;
+    if (codec == RF_VIDEO_CODEC_NONE)
+    {
+        return RF_PARAMETER_STATE_INVALID;
+    }
+
+    AMF_RESULT amfErr;
 
     value = 0;
 
-    if ((uiParameterName == RF_ENCODER_FORCE_INTRA_REFRESH) || (uiParameterName == RF_ENCODER_FORCE_I_FRAME) || (uiParameterName == RF_ENCODER_FORCE_P_FRAME) ||
-        (uiParameterName == RF_ENCODER_INSERT_SPS) || (uiParameterName == RF_ENCODER_INSERT_PPS) || (uiParameterName == RF_ENCODER_INSERT_AUD))
+    bool isAVCPreSubmissionParameter = (uiParameterName == RF_ENCODER_FORCE_INTRA_REFRESH) || (uiParameterName == RF_ENCODER_FORCE_I_FRAME) || (uiParameterName == RF_ENCODER_FORCE_P_FRAME) ||
+                                       (uiParameterName == RF_ENCODER_INSERT_SPS) || (uiParameterName == RF_ENCODER_INSERT_PPS) || (uiParameterName == RF_ENCODER_INSERT_AUD);
+    bool isHEVCPreSubmissionParameter = (uiParameterName == RF_ENCODER_HEVC_FORCE_INTRA_REFRESH) || (uiParameterName == RF_ENCODER_HEVC_FORCE_I_FRAME) ||
+                                        (uiParameterName == RF_ENCODER_HEVC_FORCE_P_FRAME) || (uiParameterName == RF_ENCODER_HEVC_INSERT_HEADER) || (uiParameterName == RF_ENCODER_HEVC_INSERT_AUD);
+
+    if (isAVCPreSubmissionParameter || isHEVCPreSubmissionParameter)
     {
-        // Presubmit var has no permanent value. Indicate that parameters are ready to use.
-        return RF_PARAMETER_STATE_READY;
+        if ((isAVCPreSubmissionParameter && (codec == RF_VIDEO_CODEC_AVC)) || (isHEVCPreSubmissionParameter && (codec == RF_VIDEO_CODEC_HEVC)))
+        {
+            // Presubmit var has no permanent value. Indicate that parameters are ready to use.
+            return RF_PARAMETER_STATE_READY;
+        }
+
+        return RF_PARAMETER_STATE_INVALID;
     }
     else
     {
-        // Check if parameter is supporetd by encoder. Presubmit parameters are not part of the map.
-        unsigned int uiNumSupportedProperties = sizeof(g_PropertyNameMap) / sizeof(struct MAPPING_ENTRY);
-
         unsigned int uiParameterIdx = 0;
-
-        for (uiParameterIdx = 0; uiParameterIdx < uiNumSupportedProperties; ++uiParameterIdx)
+        for (uiParameterIdx = 0; uiParameterIdx < m_uiPropertyNameMapCount; ++uiParameterIdx)
         {
-            if (g_PropertyNameMap[uiParameterIdx].RFPropertyName == uiParameterName)
+            if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == uiParameterName)
             {
                 break;
             }
         }
 
-        if (uiParameterIdx == uiNumSupportedProperties)
+        if (uiParameterIdx == m_uiPropertyNameMapCount)
         {
             return RF_PARAMETER_STATE_INVALID;
         }
 
         const AMFPropertyInfo* pParamInfo;
-        amfErr = m_amfEncoder->GetPropertyInfo(g_PropertyNameMap[uiParameterIdx].AMFPropertyName, &pParamInfo);
+        amfErr = m_amfEncoder->GetPropertyInfo(m_pPropertyNameMap[uiParameterIdx].AMFPropertyName, &pParamInfo);
 
         if (amfErr != AMF_OK)
         {
@@ -463,9 +540,24 @@ RFParameterState RFEncoderAMF::getParameter(const unsigned int uiParameterName, 
                 uiAmfValue = static_cast<unsigned int>(amfFrameRate.den);
             }
         }
+        else if (uiParameterName == RF_ENCODER_HEVC_FRAMERATE || uiParameterName == RF_ENCODER_HEVC_FRAMERATE_DEN)
+        {
+            AMFRate amfFrameRate = {30, 1};
+
+            amfErr = m_amfEncoder->GetProperty<AMFRate>(AMF_VIDEO_ENCODER_HEVC_FRAMERATE, &amfFrameRate);
+
+            if (uiParameterName == RF_ENCODER_HEVC_FRAMERATE)
+            {
+                uiAmfValue = static_cast<unsigned int>(amfFrameRate.num);
+            }
+            else
+            {
+                uiAmfValue = static_cast<unsigned int>(amfFrameRate.den);
+            }
+        }
         else
         {
-            amfErr = m_amfEncoder->GetProperty(g_PropertyNameMap[uiParameterIdx].AMFPropertyName, &uiAmfValue);
+            amfErr = m_amfEncoder->GetProperty(m_pPropertyNameMap[uiParameterIdx].AMFPropertyName, &uiAmfValue);
         }
 
         if (amfErr == AMF_OK)
@@ -489,30 +581,59 @@ bool RFEncoderAMF::applyPreset(const RFEncoderSettings* pConfig)
         return false;
     }
 
-    RFEncodePreset                  rfPreset = pConfig->getEncoderPreset();
-    AMF_VIDEO_ENCODER_USAGE_ENUM    amfUsage = AMF_VIDEO_ENCODER_USAGE_ULTRA_LOW_LATENCY;
-
-    switch (rfPreset)
+    RFEncodePreset rfPreset = pConfig->getEncoderPreset();
+    if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_AVC)
     {
-        case RF_PRESET_FAST:
-            amfUsage = AMF_VIDEO_ENCODER_USAGE_ULTRA_LOW_LATENCY;
-            break;
+        AMF_VIDEO_ENCODER_USAGE_ENUM amfUsage = AMF_VIDEO_ENCODER_USAGE_ULTRA_LOW_LATENCY;
+        switch (rfPreset)
+        {
+            case RF_PRESET_FAST:
+                amfUsage = AMF_VIDEO_ENCODER_USAGE_ULTRA_LOW_LATENCY;
+                break;
 
-        case RF_PRESET_BALANCED:
-            amfUsage = AMF_VIDEO_ENCODER_USAGE_LOW_LATENCY;
-            break;
+            case RF_PRESET_BALANCED:
+                amfUsage = AMF_VIDEO_ENCODER_USAGE_LOW_LATENCY;
+                break;
 
-        case RF_PRESET_QUALITY:
-            amfUsage = AMF_VIDEO_ENCODER_USAGE_TRANSCONDING;
-            break;
+            case RF_PRESET_QUALITY:
+                amfUsage = AMF_VIDEO_ENCODER_USAGE_TRANSCONDING;
+                break;
 
-        default:
-            return false;
+            default:
+                return false;
+        }
+
+        // Apply usage (preset that sets all parameters).
+        amfErr = m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_USAGE, amfUsage);
     }
+    else if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_HEVC)
+    {
+        AMF_VIDEO_ENCODER_HEVC_USAGE_ENUM amfUsage = AMF_VIDEO_ENCODER_HEVC_USAGE_ULTRA_LOW_LATENCY;
+        switch (rfPreset)
+        {
+            case RF_PRESET_FAST:
+                amfUsage = AMF_VIDEO_ENCODER_HEVC_USAGE_ULTRA_LOW_LATENCY;
+                break;
 
-    // Apply usage (preset that sets all parameters). 
-    amfErr = m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_USAGE, amfUsage);
+            case RF_PRESET_BALANCED:
+                amfUsage = AMF_VIDEO_ENCODER_HEVC_USAGE_LOW_LATENCY;
+                break;
 
+            case RF_PRESET_QUALITY:
+                amfUsage = AMF_VIDEO_ENCODER_HEVC_USAGE_TRANSCONDING;
+                break;
+
+            default:
+                return false;
+        }
+
+        // Apply usage (preset that sets all parameters).
+        amfErr = m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_USAGE, amfUsage);
+    }
+    else
+    {
+        return false;
+    }
 
     if (amfErr != AMF_OK)
     {
@@ -532,12 +653,11 @@ bool RFEncoderAMF::applyConfiguration(const RFEncoderSettings* pConfig)
         return false;
     }
 
-    unsigned int uiNumSupportedProperties = sizeof(g_PropertyNameMap) / sizeof(struct MAPPING_ENTRY);
     bool retValue = true;
 
-    for (unsigned int i = 0; i < uiNumSupportedProperties; ++i)
+    for (unsigned int i = 0; i < m_uiPropertyNameMapCount; ++i)
     {
-        RFStatus rfStatus = setAMFProperty(i, pConfig->getParameterType(g_PropertyNameMap[i].RFPropertyName), pConfig->getParameterValue<int>(g_PropertyNameMap[i].RFPropertyName));
+        RFStatus rfStatus = setAMFProperty(i, pConfig->getParameterType(m_pPropertyNameMap[i].RFPropertyName), pConfig->getParameterValue<int>(m_pPropertyNameMap[i].RFPropertyName));
         if (rfStatus != RF_STATUS_OK && rfStatus != RF_STATUS_PARAM_ACCESS_DENIED)
         {
             retValue = false;
@@ -552,29 +672,32 @@ RFStatus RFEncoderAMF::setAMFProperty(unsigned int uiParameterIdx, RFParameterTy
 {
     AMF_RESULT amfErr;
 
-    unsigned int uiNumSupportedProperties = sizeof(g_PropertyNameMap) / sizeof(struct MAPPING_ENTRY);
-
-    if (uiParameterIdx >= uiNumSupportedProperties)
+    if (uiParameterIdx >= m_uiPropertyNameMapCount)
     {
         return RF_STATUS_INVALID_ENCODER_PARAMETER;
     }
 
     const AMFPropertyInfo* pParamInfo;
-    amfErr = m_amfEncoder->GetPropertyInfo(g_PropertyNameMap[uiParameterIdx].AMFPropertyName, &pParamInfo);
+    amfErr = m_amfEncoder->GetPropertyInfo(m_pPropertyNameMap[uiParameterIdx].AMFPropertyName, &pParamInfo);
 
-    if (!pParamInfo->AllowedWrite())
+    if (!pParamInfo && amfErr != AMF_NOT_FOUND)
+    {
+        return RF_STATUS_AMF_FAIL;
+    }
+
+    if (amfErr == AMF_NOT_FOUND || !pParamInfo->AllowedWrite())
     {
         return RF_STATUS_PARAM_ACCESS_DENIED;
     }
 
     // Handle FRAMERATE as special case. Since 1.1.22 the framerate is passed as AMFRate.
-    if (g_PropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE || g_PropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE_DEN)
+    if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE || m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE_DEN)
     {
         AMFRate amfFrameRate = { 30, 1 };
 
         amfErr = m_amfEncoder->GetProperty<AMFRate>(AMF_VIDEO_ENCODER_FRAMERATE, &amfFrameRate);
 
-        if (g_PropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE)
+        if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE)
         {
             // Change framerate and leave DEN unchanged.
             amfFrameRate.num = static_cast<unsigned int>(value);
@@ -588,19 +711,46 @@ RFStatus RFEncoderAMF::setAMFProperty(unsigned int uiParameterIdx, RFParameterTy
         amfErr = m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_FRAMERATE, amfFrameRate);
 
     }
+    else if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_HEVC_FRAMERATE || m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_HEVC_FRAMERATE_DEN)
+    {
+        AMFRate amfFrameRate = {30, 1};
+
+        amfErr = m_amfEncoder->GetProperty<AMFRate>(AMF_VIDEO_ENCODER_HEVC_FRAMERATE, &amfFrameRate);
+
+        if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_HEVC_FRAMERATE)
+        {
+            // Change framerate and leave DEN unchanged.
+            amfFrameRate.num = static_cast<unsigned int>(value);
+        }
+        else
+        {
+            // Change DEN only
+            amfFrameRate.den = static_cast<unsigned int>(value);
+        }
+
+        amfErr = m_amfEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_FRAMERATE, amfFrameRate);
+    }
     // Handle USAGE as special case: Don't set this paramtere if it was not specified by the user
-    else if (g_PropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_USAGE && value == -1)
+    else if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_USAGE && value == -1)
+    {
+        return RF_STATUS_OK;
+    }
+    else if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_HEVC_USAGE && value == -1)
     {
         return RF_STATUS_OK;
     }
     else if (rfType == RF_PARAMETER_INT)
     {
-        amfErr = m_amfEncoder->SetProperty(g_PropertyNameMap[uiParameterIdx].AMFPropertyName, static_cast<int>(value));
+        amfErr = m_amfEncoder->SetProperty(m_pPropertyNameMap[uiParameterIdx].AMFPropertyName, static_cast<int>(value));
     }
-    else if (rfType == RF_PARAMETER_UINT || rfType == RF_PARAMETER_BOOL)
+    else if (rfType == RF_PARAMETER_UINT)
     {
         // Cast bool and uint to an unsigned int to avoid performance warning when casting to bool.
-        amfErr = m_amfEncoder->SetProperty(g_PropertyNameMap[uiParameterIdx].AMFPropertyName, static_cast<unsigned int>(value));
+        amfErr = m_amfEncoder->SetProperty(m_pPropertyNameMap[uiParameterIdx].AMFPropertyName, static_cast<unsigned int>(value));
+    }
+    else if (rfType == RF_PARAMETER_BOOL)
+    {
+        amfErr = m_amfEncoder->SetProperty(m_pPropertyNameMap[uiParameterIdx].AMFPropertyName, (value != 0));
     }
     else
     {

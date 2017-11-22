@@ -24,9 +24,9 @@
 //
 // Desktop encoding shows how to use RapidFire to grab the desktop and encode it to
 // a H264 stream. The stream is dumped to a file.
-// First a session is created which is configured to grab the desktop and to use 
+// First a session is created which is configured to grab the desktop and to use
 // the AMF encoder (HW encoder).
-// 
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -34,23 +34,26 @@
 
 #include <windows.h>
 
-#include "RapidFire.h"
+#include "RFWrapper.hpp"
+#include "../common/Timer.h"
+#include <..\..\external\AMF\include\components\VideoEncoderHEVC.h>
 
-#define NUM_FRAMES 500
+#define NUM_FRAMES 50000
 
 using namespace std;
-
 
 int main(int argc, char** argv)
 {
     RFStatus        rfStatus = RF_STATUS_OK;
     RFEncodeSession rfSession = nullptr;
 
+    const RFWrapper& rfDll = RFWrapper::getInstance();
+
     RFProperties props[] = { RF_ENCODER, static_cast<RFProperties>(RF_AMF),
                              RF_DESKTOP, static_cast<RFProperties>(1),
                              0 };
 
-    rfStatus = rfCreateEncodeSession(&rfSession, props);
+    rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -81,12 +84,14 @@ int main(int argc, char** argv)
 
     // Create encoder and define the size of the stream.
     // RF will scale the desktop to the screen size.
-    rfStatus = rfCreateEncoder(rfSession, uiStreamWidth, uiStreamHeight, RF_PRESET_BALANCED);
+
+    rfStatus = rfDll.rfFunc.rfCreateEncoder(rfSession, uiStreamWidth, uiStreamHeight, RF_PRESET_BALANCED);
+    float frameTime = 1.0f/30.0f;
 
     if (rfStatus != RF_STATUS_OK)
     {
         cerr << "Failed to create HW encoder!" << endl;
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -103,12 +108,17 @@ int main(int argc, char** argv)
 
     cout << "Starting to encode " << NUM_FRAMES << " frames" << endl;
 
+    Timer frameTimer;
+
     for (int i = 0; i < NUM_FRAMES; ++i)
     {
-        if (rfEncodeFrame(rfSession, 0) == RF_STATUS_OK)
+        while (frameTimer.getTime() < frameTime);
+        frameTimer.reset();
+
+        if (rfDll.rfFunc.rfEncodeFrame(rfSession, 0) == RF_STATUS_OK)
         {
             // Check if encoded frame is ready
-            if (rfGetEncodedFrame(rfSession, &uiBitStreamSize, &pBitStreamdata) == RF_STATUS_OK)
+            if (rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiBitStreamSize, &pBitStreamdata) == RF_STATUS_OK)
             {
                 if (uiBitStreamSize > 0)
                 {
@@ -118,7 +128,7 @@ int main(int argc, char** argv)
         }
     }
 
-    rfDeleteEncodeSession(&rfSession);
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
     outFile.close();
 

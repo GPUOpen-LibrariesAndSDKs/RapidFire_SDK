@@ -22,13 +22,13 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
-// DX9Encoding shows how to use RapidFire to create an H264 encoded stream from a 
+// DX9Encoding shows how to use RapidFire to create an H264 encoded stream from a
 // DX9 surface.
-// First a RF session is created passing the DirectX 9 device. The session is configured 
+// First a RF session is created passing the DirectX 9 device. The session is configured
 // to use the AMF encoder (HW encoding). The rendertargets that are used by the application are
 // registered, now the application can render to those rendertargets and encodeFrame will use
 // them as input for the encoder and return a H264 frame that is dumped to a file.
-// 
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -38,7 +38,7 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#include "RapidFire.h"
+#include "RFWrapper.hpp"
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(x) \
@@ -71,6 +71,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
 {
     RFStatus             rfStatus = RF_STATUS_OK;
     RFEncodeSession      rfSession = nullptr;
+
+    const RFWrapper& rfDll = RFWrapper::getInstance();
+
     LPCSTR cClassName  = "DX9WindowClass";
     LPCSTR cWindowName = "DX9 Encoding";
 
@@ -91,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
                              0 };
 
     // Create encoding session
-    rfStatus = rfCreateEncodeSession(&rfSession, props);
+    rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -99,24 +102,24 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
         return -1;
     }
 
-    rfStatus = rfCreateEncoder(rfSession, g_stream_width, g_stream_height, RF_PRESET_BALANCED);
+    rfStatus = rfDll.rfFunc.rfCreateEncoder(rfSession, g_stream_width, g_stream_height, RF_PRESET_BALANCED);
     if (rfStatus != RF_STATUS_OK)
     {
         MessageBox(NULL, "Failed to create RF encoder!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
     unsigned int rf_fbo_idx[2];
 
     // Register rendertargets to the RapidFire session
-    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRts[0]), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
-    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRts[1]), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
+    bool success = (RF_STATUS_OK == rfDll.rfFunc.rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRts[0]), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfDll.rfFunc.rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_pRts[1]), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
     if (!success)
     {
         MessageBox(NULL, "Failed to register rendertargets", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -127,7 +130,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
     out_file.open("DX9Stream.h264", std::fstream::out | std::fstream::trunc | std::fstream::binary);
     MSG msg = {};
 
-    rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
+    rfDll.rfFunc.rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
     uiIndex = 1 - uiIndex;
 
     for (;;)
@@ -143,9 +146,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
             break;
         }
 
-        rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
+        rfDll.rfFunc.rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
 
-        if (rfGetEncodedFrame(rfSession, &bitstream_size, &p_bit_stream) == RF_STATUS_OK)
+        if (rfDll.rfFunc.rfGetEncodedFrame(rfSession, &bitstream_size, &p_bit_stream) == RF_STATUS_OK)
         {
             out_file.write(static_cast<char*>(p_bit_stream), bitstream_size);
         }
@@ -158,7 +161,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
 
     out_file.close();
 
-    rfDeleteEncodeSession(&rfSession);
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
     ReleaseD3D9();
 
@@ -322,9 +325,9 @@ void Draw(unsigned int rtIdx)
     g_pD3DDevice->SetRenderTarget(0, g_pRts[rtIdx]);
 
     g_pD3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
-    
+
     g_pD3DDevice->BeginScene();
-    
+
     g_pD3DDevice->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
 
     g_pD3DDevice->SetStreamSource(0, g_pVBuffer, 0, sizeof(Vertex));

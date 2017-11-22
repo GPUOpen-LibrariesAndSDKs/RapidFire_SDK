@@ -41,22 +41,24 @@ public:
     RFEncoderDM();
     ~RFEncoderDM();
 
-    virtual RFStatus            init(const RFContextCL* pContextCL, const RFEncoderSettings* pConfig)                        override;
-                                                                                                                             
-    virtual RFStatus            resize(unsigned int uiWidth, unsigned int uiHeight)                                          override;
-                                                                                                                             
-    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages)                                       override;
-                                                                                                                             
-    virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream)                                     override;
-                                                                                                                             
-    virtual bool                isFormatSupported(RFFormat format) const                                                     override;
-                                                                                                                             
-    virtual RFStatus            setParameter(unsigned int const uiParameterName, RFParameterType rfType, RFProperties value) override;
-                                                                                                                             
-    virtual RFParameterState    getParameter(unsigned int const uiParameterName, RFProperties &value) const                  override;
+    virtual RFStatus            init(const RFContextCL* pContextCL, const RFEncoderSettings* pConfig)                          override;
+
+    virtual RFStatus            resize(unsigned int uiWidth, unsigned int uiHeight)                                            override;
+
+    virtual RFStatus            encode(unsigned int uiBufferIdx)                                                               override;
+
+    virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream)                                       override;
+
+    virtual bool                isFormatSupported(RFFormat format) const                                                       override;
+
+    virtual RFStatus            setParameter(unsigned int const uiParameterName, RFParameterType rfType, RFProperties value)   override;
+
+    virtual RFParameterState    getParameter(unsigned int const uiParameterName, RFVideoCodec codec, RFProperties &value) const override;
 
     // Returns preferred format of the encoder.
     virtual RFFormat            getPreferredFormat() const override { return RF_RGBA8; }
+
+    virtual RFVideoCodec        getPreferredVideoCodec() const override { return RF_VIDEO_CODEC_NONE; }
 
     virtual bool                isResizeSupported()  const override { return true; }
 
@@ -99,7 +101,7 @@ private:
     const RFContextCL*                          m_pContext;
 
     // vector of buffers into which the diff kernel can write.
-    std::vector<DMDiffMapBuffer>                m_TargetBuffers;     
+    std::vector<DMDiffMapBuffer>                m_TargetBuffers;
 
     // Queue that contains references to buffers that store a diff map which were not yet
     // read by calling getEncodedFrame

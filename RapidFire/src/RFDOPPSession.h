@@ -70,8 +70,7 @@ private:
 
     unsigned int                            m_uiDisplayId;
 
-    std::vector<unsigned int>               m_DesktopRTIndexList;
-    unsigned int                            m_uiIdx;
+    unsigned int                            m_DesktopRTIndex;
 
     std::string                             m_strDisplayName;
     std::string                             m_strPrimaryDisplayName;

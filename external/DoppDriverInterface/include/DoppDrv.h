@@ -27,6 +27,8 @@
 
 #include <Windows.h>
 
+#include "..\..\RapidFire\include\RapidFire.h"
+
 class  ADLWrapper;
 class  GPU_LIST_ENTRY;
 
@@ -67,7 +69,7 @@ public:
     // Disbales DOPP, should only be called if DOPP was enabled by calling enableDopp.
     bool disableDopp();
 
-    bool getPrimarySurfacePixelFormat(int* pATIFormat) const;
+    bool getPrimarySurfacePixelFormat(RFFormat& format) const;
 
     bool getCursorVisibility() const;
 
@@ -93,6 +95,8 @@ private:
     // The device context used for this intance.
     // The DC is required to register events.
     HDC m_hDC;
+
+    unsigned int m_uiDisplayOutputId;
 
     // List of user events that were registered with createDOPPEvent.
     std::vector<GPU_USER_EVENT> m_UserEventList;

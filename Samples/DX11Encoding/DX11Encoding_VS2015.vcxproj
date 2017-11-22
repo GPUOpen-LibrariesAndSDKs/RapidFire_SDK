@@ -100,8 +100,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RapidFire.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -120,8 +121,9 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.1\Redist\D3D\x86\d3dcompiler_47.dll"
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RapidFire64.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -144,8 +146,9 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.1\Redist\D3D\x64\d3dcompiler_47.dll"
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>RapidFire.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -168,8 +171,9 @@ xcopy /Y /D "$(ProgramFiles)\Windows Kits\8.1\Redist\D3D\x86\d3dcompiler_47.dll"
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>RapidFire64.lib;D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D3D11.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)

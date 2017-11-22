@@ -31,13 +31,13 @@ public:
     RFEncoderIdentity();
 
     virtual RFStatus    init(const RFContextCL* pContextCL, const RFEncoderSettings* pConfig) override;
-                                                                                              
+
     virtual RFStatus    resize(unsigned int uiWidth, unsigned int uiHeight)                   override;
-                                                                                              
+
     virtual bool        isFormatSupported(RFFormat format) const                              override;
-                                                                                              
-    virtual RFStatus    encode(unsigned int uiBufferIdx, bool bUseInputImage)                 override;
-                                                                                              
+
+    virtual RFStatus    encode(unsigned int uiBufferIdx)                                      override;
+
     virtual RFStatus    getEncodedFrame(unsigned int& uiSize, void* &pBitStream)              override;
 
     // Returns preferred format of the encoder.

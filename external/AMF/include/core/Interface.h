@@ -1,4 +1,4 @@
-//
+// 
 // Notice Regarding Standards.  AMD does not provide a license or sublicense to
 // any Intellectual Property Rights relating to any standards, including but not
 // limited to any audio and/or video codec technologies such as MPEG-2, MPEG-4;
@@ -6,9 +6,9 @@
 // (collectively, the "Media Technologies"). For clarity, you will pay any
 // royalties due for such third party technologies, which may include the Media
 // Technologies that are owed as a result of AMD providing the Software to you.
-//
-// MIT license
-//
+// 
+// MIT license 
+// 
 // Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,7 +44,8 @@ namespace amf
     #define AMF_DECLARE_IID(_data1, _data2, _data3, _data41, _data42, _data43, _data44, _data45, _data46, _data47, _data48) \
         AMF_INLINE static const amf::AMFGuid IID() \
         { \
-            return amf::AMFGuid(_data1, _data2, _data3, _data41, _data42, _data43, _data44, _data45, _data46, _data47, _data48); \
+            amf::AMFGuid uid = {_data1, _data2, _data3, _data41, _data42, _data43, _data44, _data45, _data46, _data47, _data48}; \
+            return uid; \
         }
 #else
 #define AMF_DECLARE_IID(name, _data1, _data2, _data3, _data41, _data42, _data43, _data44, _data45, _data46, _data47, _data48) \

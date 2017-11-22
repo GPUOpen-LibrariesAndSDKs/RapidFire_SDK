@@ -134,20 +134,20 @@ public:
     virtual RFStatus    createContext(IDirect3DDevice9Ex* pD3DDeviceEx);
 
     // Creates OpenCL Output buffers. Those buffers will contain the results of the CSC.
-    virtual RFStatus    createBuffers(RFFormat format, unsigned int uiWidth, unsigned int uiHeight, unsigned int uiAlignedWidth, unsigned int uiAlignedHeight, bool bUseAsyncCopy = false);
+    virtual RFStatus    createBuffers(RFFormat format, unsigned int uiOutputWidth, unsigned int uiOutputHeight, unsigned int uiAlignedOutputWidth, unsigned int uiAlignedOutputHeight, bool bUseAsyncCopy = false);
 
     // Deletes all buffers including registered textures.
     virtual RFStatus    deleteBuffers();
 
     // Registers OpenGL texture.
-    virtual RFStatus    setInputTexture(const unsigned int uiTextureName, const unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx);
+    virtual RFStatus    setInputTexture(const unsigned int uiTextureName, const unsigned int uiInputWidth, unsigned int uiInputHeight, unsigned int& idx);
     // Registers DX 11 texture.
-    virtual RFStatus    setInputTexture(ID3D11Texture2D* pD3D11Texture, const unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx);
+    virtual RFStatus    setInputTexture(ID3D11Texture2D* pD3D11Texture, const unsigned int uiInputWidth, unsigned int uiInputHeight, unsigned int& idx);
     // registers DX 9 texture.
-    virtual RFStatus    setInputTexture(IDirect3DSurface9* pD3D9Texture, const unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx);
+    virtual RFStatus    setInputTexture(IDirect3DSurface9* pD3D9Texture, const unsigned int uiInputWidth, unsigned int uiInputHeight, unsigned int& idx);
 
     // Converts color space. The input buffer is m_clBuffer[uiSorceIdx], the output is stored in m_clResultBuffer[uiDestIdx].
-    virtual RFStatus    processBuffer(bool bRunCSC, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx);
+    virtual RFStatus    processBuffer(RFFormat inputFormat, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx);
 
     // Removes an OpenCL object that has been created from a GL/D3D object.
     RFStatus            removeCLInputMemObj(unsigned int idx);
@@ -159,14 +159,6 @@ public:
     void                getResultBuffer(unsigned int idx, cl_mem* pBuffer) const;
     // Blocks until all results are written into the m_clResultBuffer[idx] and returns the pointer to the buffer in sys mem.
     void                getResultBuffer(unsigned int idx, void* &pBuffer) const;
-
-    // Acquires an OpenCL object that has been created from a GL/D3D object.
-    RFStatus            acquireCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
-
-    // Releases an OpenCL object that has been created from a GL/D3D object.
-    RFStatus            releaseCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
-
-    void                getInputImage(unsigned int idx, cl_mem* pBuffer) const;
 
     bool                isValid()       const { return m_bValid; }
 
@@ -218,8 +210,14 @@ protected:
 
     RFStatus            setupKernel();
 
-    // Checks if the texture and the buffer dimension match.
+    // Checks if the input texture dimensions match.
     bool                validateDimensions(unsigned int uiWidth, unsigned int uiHeight);
+
+    // Acquires an OpenCL object that has been created from a GL/D3D object.
+    RFStatus            acquireCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
+
+    // Releases an OpenCL object that has been created from a GL/D3D object.
+    RFStatus            releaseCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
 
     bool                        m_bValid;
 
@@ -252,6 +250,7 @@ protected:
     RFFormat                    m_TargetFormat;
     csc_kernel                  m_uiCSCKernelIdx;
 
+    bool                        m_bInitializedKernelParams;
     CSC_KERNEL                  m_CSCKernels[RF_KERNEL_NUMBER];
 
     // m_clInputBuffer is set by the application when calling setInputTexture.

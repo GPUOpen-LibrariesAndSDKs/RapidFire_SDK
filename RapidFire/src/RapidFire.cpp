@@ -74,7 +74,27 @@ RFStatus RAPIDFIRE_API rfCreateEncoder(RFEncodeSession s, const unsigned int uiW
         return RF_STATUS_INVALID_SESSION;
     }
 
-    return pSession->createEncoder(uiWidth, uiHeight, p);
+    RFVideoCodec codec = RF_VIDEO_CODEC_AVC;
+    RFEncodePreset preset = p;
+    switch(preset)
+    {
+        case RF_PRESET_HEVC_FAST:
+            codec = RF_VIDEO_CODEC_HEVC;
+            preset = RF_PRESET_FAST;
+            break;
+
+        case RF_PRESET_HEVC_BALANCED:
+            codec = RF_VIDEO_CODEC_HEVC;
+            preset = RF_PRESET_BALANCED;
+            break;
+
+        case RF_PRESET_HEVC_QUALITY:
+            codec = RF_VIDEO_CODEC_HEVC;
+            preset = RF_PRESET_QUALITY;
+            break;
+    }
+
+    return pSession->createEncoder(uiWidth, uiHeight, codec, preset);
 }
 
 

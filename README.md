@@ -1,12 +1,13 @@
 # RapidFire SDK
 
-The RapidFire SDK provides an interface for cloud gaming and virtual desktop applications to reduce the encoding latency by utilizing AMD FirePro&trade; GPUs. OpenGL&reg; 4.2, DirectX&reg; 9 and DirectX&reg; 11 textures as well as screen capturing can be used as input to generate an H.264 or uncompressed stream output. While the encoding is handled entirely by RapidFire, the developer keeps full control over the configuration of the stream with the ability to adjust key encoding parameters such as resolution, frame rate and bit rate control throughout the streaming process.
+The RapidFire SDK provides an interface for cloud gaming and virtual desktop applications to reduce the encoding latency by utilizing AMD Radeon&trade; Pro and FirePro&trade; GPUs. OpenGL&reg; 4.2, DirectX&reg; 9 and DirectX&reg; 11 textures as well as desktop capturing can be used as input to generate H.264, H265 or uncompressed stream output. While the encoding is handled entirely by RapidFire, the developer keeps full control over the configuration of the stream with the ability to adjust key encoding parameters such as resolution, frame rate and bit rate control throughout the streaming process.
 
 ### Prerequisites
-* AMD FirePro&trade; GCN-based GPU
-* AMD FirePro&trade; Driver Release 16.30 and later
-* Windows&reg; 7, Windows&reg; 8.1, or Windows&reg; 10
-* Building the SDK and samples requires Visual Studio&reg; 2012, Visual Studio&reg; 2013 or Visual Studio&reg; 2015
+* AMD Radeon&trade; Pro or FirePro&trade; GCN-based GPU
+* AMD Radeon&trade; Pro GPU for H.265 encoding
+* AMD Radeon&trade; Pro driver version 17.30.1041 or newer
+* Windows&reg; 7 or Windows&reg; 10
+* Building the SDK and samples requires Visual Studio&reg; 2013, Visual Studio&reg; 2015 or Visual Studio&reg; 2017
 * Building the SDK requires the AMD APP SDK
 
 ### Getting Started

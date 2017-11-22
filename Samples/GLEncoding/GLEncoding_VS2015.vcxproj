@@ -101,8 +101,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;RapidFire.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -122,8 +122,8 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;RapidFire64.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -147,8 +147,8 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32s.lib;RapidFire.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)
@@ -172,8 +172,8 @@ xcopy /Y /D AMD_FirePro.rgb $(OutDir)</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32s.lib;RapidFire64.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../RapidFire/lib/VS2015/$(PlatformName)/$(Configuration);../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../external/GLEW/lib/Release/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D ..\..\RapidFire\bin\VS2015\$(PlatformName)\$(Configuration)\*.dll $(OutDir)

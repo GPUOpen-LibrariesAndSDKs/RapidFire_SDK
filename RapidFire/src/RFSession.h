@@ -46,7 +46,7 @@ public:
     RFStatus              createContext();
 
     // Creates an encoder and initializes buffers of the OpenCL context.
-    RFStatus              createEncoder(unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset preset);
+    RFStatus              createEncoder(unsigned int uiWidth, unsigned int uiHeight, const RFVideoCodec codec, const RFEncodePreset preset);
     RFStatus              createEncoder(unsigned int uiWidth, unsigned int uiHeight, const RFProperties* properties);
 
     RFStatus              registerRenderTarget(RFTexture rt, unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx);
@@ -86,7 +86,7 @@ protected:
     {
         RFEncoderID     EncoderId;
         unsigned int    uiInputDim[2];
-        bool            bEncoderCSC;
+        RFFormat        sourceTextureFormat;
         bool            bInvertInput;
         bool            bAsyncCopyToSysMem;
         bool            bBlockingEncoderRead;
@@ -97,7 +97,7 @@ protected:
 
     RFParameterMap                        m_ParameterMap;
 
-    // OpenCL Context used for CSC        
+    // OpenCL Context used for CSC
     std::unique_ptr<RFContextCL>          m_pContextCL;
 
     // List of all encoder settings that are known by the session
@@ -124,11 +124,11 @@ private:
     // This function might be implemented by a derived class to resize internally created resources.
     virtual RFStatus            resizeResources(unsigned int uiWidth, unsigned int uiHeight);
 
-    // This function might be implemented by a derived class to release events, semaphores etc that were used and 
+    // This function might be implemented by a derived class to release events, semaphores etc that were used and
     // might block an application.
     virtual RFStatus            releaseSessionEvents(const RFNotification rfEvent);
 
-    RFStatus                    createEncoderConfig(unsigned int uiWidth, unsigned int uiHeight, const RFEncodePreset preset);
+    RFStatus                    createEncoderConfig(unsigned int uiWidth, unsigned int uiHeight, const RFVideoCodec codec, const RFEncodePreset preset);
 
     void                        createSessionLog();
 

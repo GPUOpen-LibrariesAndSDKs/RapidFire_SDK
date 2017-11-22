@@ -251,11 +251,9 @@ typedef struct ADLDDCInfo2
     int iSpecularScreenReflectance;
 /// Bit vector of supported color spaces \ref define_HDR_support
     int iSupportedHDR;
-/// Bit vector for freesync flags
-    int iFreesyncFlags;
 
     // Reserved for future use
-    int iReserved[9];
+    int iReserved[10];
 } ADLDDCInfo2, *LPADLDDCInfo2;
 
 

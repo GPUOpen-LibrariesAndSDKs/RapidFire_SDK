@@ -193,7 +193,7 @@ RFEncoderDM::~RFEncoderDM()
         clReleaseKernel(m_DiffMapBufferkernel);
     }
 
-	m_DiffMapProgram.Release();
+    m_DiffMapProgram.Release();
 
     deleteBuffers();
 }
@@ -258,8 +258,8 @@ RFStatus RFEncoderDM::init(const RFContextCL* pContextCL, const RFEncoderSetting
         return RF_STATUS_OPENCL_FAIL;
     }
 
-    // m_uiPreviousBuffer will strore the index of the previously encoded buffer. For the first frame we set it to the maximum. 
-    // RFSession will use as first buffer the ResultBuffer with index 0. It is expected that the first encoded frame shows a 
+    // m_uiPreviousBuffer will strore the index of the previously encoded buffer. For the first frame we set it to the maximum.
+    // RFSession will use as first buffer the ResultBuffer with index 0. It is expected that the first encoded frame shows a
     // difference on all blocks.
     m_uiPreviousBuffer = m_pContext->getNumResultBuffers() - 1;
 
@@ -324,7 +324,7 @@ bool RFEncoderDM::createBuffers()
         }
 
         // Get address of pinned OpenCL buffers.
-        TargetBuffer.pSysmemBuffer = static_cast<char*>(clEnqueueMapBuffer(m_pContext->getCmdQueue(), TargetBuffer.clPageLockedBuffer, CL_TRUE, CL_MAP_READ, 0, m_uiDiffMapSize, 
+        TargetBuffer.pSysmemBuffer = static_cast<char*>(clEnqueueMapBuffer(m_pContext->getCmdQueue(), TargetBuffer.clPageLockedBuffer, CL_TRUE, CL_MAP_READ, 0, m_uiDiffMapSize,
                                                         0, nullptr, nullptr, &nStatus));
         if (nStatus != CL_SUCCESS)
         {
@@ -418,7 +418,7 @@ bool RFEncoderDM::deleteBuffers()
 }
 
 
-RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
+RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx)
 {
     cl_mem          clCurrentImage;
     cl_mem          clPrevImage;
@@ -426,7 +426,7 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
 
     DMDiffMapBuffer* pCurrentBuffer = &m_TargetBuffers[m_uiCurrentTargetBuffer];
 
-    // m_bLockMappedBuffer should only be set if a separate reader thread is used. In this case a call to RFEncoderDM::encode 
+    // m_bLockMappedBuffer should only be set if a separate reader thread is used. In this case a call to RFEncoderDM::encode
     // is possible while the reader thread is still working on the buffer returned by RFEncoderDM::getEncodedFrame.
     // In the single threading case RFEncoderDM::encode is only called after the procession on the buffer returned by RFEncoderDM::getEncodedFrame
     // has finished.
@@ -446,18 +446,9 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
     }
 
     cl_kernel diffMapKernel;
-    if (bUseInputImages)
-    {
-        m_pContext->getInputImage(uiBufferIdx, &clCurrentImage);
-        m_pContext->getInputImage(m_uiPreviousBuffer, &clPrevImage);
-        diffMapKernel = m_DiffMapImagekernel;
-    }
-    else
-    {
-        m_pContext->getResultBuffer(uiBufferIdx, &clCurrentImage);
-        m_pContext->getResultBuffer(m_uiPreviousBuffer, &clPrevImage);
-        diffMapKernel = m_DiffMapBufferkernel;
-    }
+    m_pContext->getResultBuffer(uiBufferIdx, &clCurrentImage);
+    m_pContext->getResultBuffer(m_uiPreviousBuffer, &clPrevImage);
+    diffMapKernel = m_DiffMapBufferkernel;
 
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 0, sizeof(cl_mem),       &clCurrentImage));
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 1, sizeof(cl_mem),       &clPrevImage));
@@ -476,11 +467,6 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
     m_ResultQueue.push(pCurrentBuffer);
 
     clFlush(m_pContext->getCmdQueue());
-
-    if (bUseInputImages)
-    {
-        const_cast<RFContextCL*>(m_pContext)->releaseCLMemObj(m_pContext->getDMAQueue(), m_uiPreviousBuffer, 1, &(pCurrentBuffer->clDiffFinished));
-    }
 
     m_uiPreviousBuffer = uiBufferIdx;
 
@@ -531,8 +517,13 @@ RFStatus RFEncoderDM::setParameter(const unsigned int uiParameterName, RFParamet
 }
 
 
-RFParameterState RFEncoderDM::getParameter(const unsigned int uiParameterName, RFProperties& value) const
+RFParameterState RFEncoderDM::getParameter(const unsigned int uiParameterName, RFVideoCodec codec, RFProperties& value) const
 {
+    if (codec != RF_VIDEO_CODEC_NONE)
+    {
+        return RF_PARAMETER_STATE_INVALID;
+    }
+
     value = 0;
 
     if (uiParameterName == RF_DIFF_ENCODER_BLOCK_S)
@@ -561,22 +552,22 @@ RFStatus RFEncoderDM::GenerateCLProgramAndKernel()
 {
     assert(m_pContext);
 
-	m_DiffMapProgram.Create(m_pContext->getContext(), m_pContext->getDeviceId(), DIFF_KERNEL_NAME, str_cl_DiffMapkernels);
+    m_DiffMapProgram.Create(m_pContext->getContext(), m_pContext->getDeviceId(), DIFF_KERNEL_NAME, str_cl_DiffMapkernels);
 
     if (m_DiffMapProgram)
     {
         cl_int nStatus;
         m_DiffMapImagekernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Image", &nStatus);
-		SAFE_CALL_CL(nStatus);
+        SAFE_CALL_CL(nStatus);
         m_DiffMapBufferkernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Buffer", &nStatus);
         SAFE_CALL_CL(nStatus);
 
         return RF_STATUS_OK;
     }
-	else
-	{
-		RF_Error(RF_STATUS_OPENCL_FAIL, m_DiffMapProgram.GetBuildLog().c_str());
-	}
+    else
+    {
+        RF_Error(RF_STATUS_OPENCL_FAIL, m_DiffMapProgram.GetBuildLog().c_str());
+    }
 
     return RF_STATUS_OPENCL_FAIL;
 }

@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //
-// GLEncoding shows how to use RapidFire to create an H264 encoded stream from a 
+// GLEncoding shows how to use RapidFire to create an H264 encoded stream from a
 // GL Frame-buffer.
-// First a RF session is created passing the rendering context. the session is configure 
+// First a RF session is created passing the rendering context. the session is configure
 // to use the AMF encoder (HW encoding). The FBOs that are used by the application are
 // registered, now the application can render to those FBOs and encodeFrame will use
 // them as input for the encoder and return a H264 frame that is dumped to a file.
-// 
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -18,12 +18,14 @@
 #include "FireCube.h"
 #include "GLRenderTarget.h"
 #include "GLWindow.h"
-#include "RapidFire.h"
+#include "RFWrapper.hpp"
 
 bool            g_running = true;
 
 unsigned int    g_stream_width  = 1280;
 unsigned int    g_stream_height =  720;
+
+const RFWrapper& rfDll = RFWrapper::getInstance();
 
 void ReaderThread(const RFEncodeSession& session, const std::string& file_name)
 {
@@ -39,7 +41,7 @@ void ReaderThread(const RFEncodeSession& session, const std::string& file_name)
 
     while (g_running)
     {
-        rf_status = rfGetEncodedFrame(session, &bitstream_size, &p_bit_stream);
+        rf_status = rfDll.rfFunc.rfGetEncodedFrame(session, &bitstream_size, &p_bit_stream);
 
         if (rf_status == RF_STATUS_OK)
         {
@@ -76,26 +78,26 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
                              RF_GL_DEVICE_CTX,   reinterpret_cast<RFProperties>(win.getDC()),        // pass DC and GLRC to RF
                              RF_GL_GRAPHICS_CTX, reinterpret_cast<RFProperties>(win.getGLRC()),
                              0 };
-    
+
     // Create encoding session
-    rfStatus = rfCreateEncodeSession(&rfSession, props);
-    
-    if (rfStatus != RF_STATUS_OK)
-    {
-        MessageBox(NULL, "Failed to create RF Session!", "RF Error", MB_ICONERROR | MB_OK);        
-        return -1;
-    }
-      
-    // Create encoder using the quality preset
-    rfStatus = rfCreateEncoder(rfSession, g_stream_width, g_stream_height, RF_PRESET_BALANCED);
+    rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
 
     if (rfStatus != RF_STATUS_OK)
     {
         MessageBox(NULL, "Failed to create RF Session!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
         return -1;
     }
-    
+
+    // Create encoder using the quality preset
+    rfStatus = rfDll.rfFunc.rfCreateEncoder(rfSession, g_stream_width, g_stream_height, RF_PRESET_BALANCED);
+
+    if (rfStatus != RF_STATUS_OK)
+    {
+        MessageBox(NULL, "Failed to create RF Session!", "RF Error", MB_ICONERROR | MB_OK);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
+        return -1;
+    }
+
     GLRenderTarget  fbo[2];
     unsigned int    rf_fbo_idx[2];
 
@@ -105,19 +107,19 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         if (!fbo[i].createBuffer(g_stream_width, g_stream_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE))
         {
             MessageBox(NULL, "Failed to create FBO", "RF Error", MB_ICONERROR | MB_OK);
-            rfDeleteEncodeSession(&rfSession);
+            rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
             return -1;
         }
     }
 
     // Register FBOs to RapidFire session
-    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(static_cast<uintptr_t>(fbo[0].getColorTex())), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
-    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(static_cast<uintptr_t>(fbo[1].getColorTex())), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
+    bool success = (RF_STATUS_OK == rfDll.rfFunc.rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(static_cast<uintptr_t>(fbo[0].getColorTex())), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfDll.rfFunc.rfRegisterRenderTarget(rfSession, reinterpret_cast<RFRenderTarget>(static_cast<uintptr_t>(fbo[1].getColorTex())), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
     if (!success)
     {
         MessageBox(NULL, "Failed to register FBO", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -129,10 +131,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     if (!gl_cube.init())
     {
         MessageBox(NULL, "Failed to create cube", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
-        
+
     unsigned int uiIndex = 0;
     float        angle   = 0.0f;
 
@@ -147,7 +149,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     MSG msg = {};
 
     for (;;)
-    {        
+    {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && msg.message != WM_QUIT)
         {
             TranslateMessage(&msg);
@@ -164,7 +166,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         {
             // rfEncode might fail if the queue is full.
             // In this case we need to wait until the reader thread has called rfGetEncodedFrame and removed a frame from the queue.
-            rfStatus = rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
+            rfStatus = rfDll.rfFunc.rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
 
             if (rfStatus == RF_STATUS_QUEUE_FULL)
             {
@@ -178,7 +180,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         fbo[uiIndex].bind();
 
         glViewport(0, 0, g_stream_width, g_stream_height);
-        
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glPushMatrix();
@@ -202,11 +204,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         uiIndex = 1 - uiIndex;
 
         angle += 0.1f;
-    } 
+    }
 
     reader.join();
 
-    rfDeleteEncodeSession(&rfSession);
-    
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
+
     return static_cast<int>(msg.wParam);
 }

@@ -21,9 +21,9 @@
 //
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 // Desktop Capture shows how to use RapidFire to grab the desktop.
-// 
+//
 // First a desktop session is created. The session is configured to use blocking calls.
 // In this case the encode function will block until the desktop has changed.
 // Since we do not want to compress the desktop, the identity encoder is used which
@@ -38,7 +38,7 @@
 
 #include <windows.h>
 
-#include "RapidFire.h"
+#include "RFWrapper.hpp"
 
 #define NUM_FRAMES 3
 
@@ -52,13 +52,15 @@ int main(int argc, char** argv)
     RFStatus        rfStatus = RF_STATUS_OK;
     RFEncodeSession rfSession = nullptr;
 
+    const RFWrapper& rfDll = RFWrapper::getInstance();
+
     RFProperties props[] = { RF_ENCODER,                    static_cast<RFProperties>(RF_IDENTITY),
                              RF_DESKTOP,                    static_cast<RFProperties>(1),
                              RF_DESKTOP_BLOCK_UNTIL_CHANGE, static_cast<RFProperties>(1),
                              RF_FLIP_SOURCE,                static_cast<RFProperties>(1),
                              0 };
 
-    rfStatus = rfCreateEncodeSession(&rfSession, props);
+    rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -81,12 +83,12 @@ int main(int argc, char** argv)
     // create identity encoder and set format to RGBA8.
     RFProperties encoderProps[] = { RF_ENCODER_FORMAT, RF_RGBA8, 0 };
 
-    rfStatus = rfCreateEncoder2(rfSession, uiStreamWidth, uiStreamHeight, encoderProps);
+    rfStatus = rfDll.rfFunc.rfCreateEncoder2(rfSession, uiStreamWidth, uiStreamHeight, encoderProps);
 
     if (rfStatus != RF_STATUS_OK)
     {
         cerr << "Failed to create identity encoder!" << endl;
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -99,10 +101,10 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < NUM_FRAMES; ++i)
     {
-        if (rfEncodeFrame(rfSession, 0) == RF_STATUS_OK)
+        if (rfDll.rfFunc.rfEncodeFrame(rfSession, 0) == RF_STATUS_OK)
         {
             // Check if encoded frame is ready
-            if (rfGetEncodedFrame(rfSession, &uiBitStreamSize, &pBitStreamdata) == RF_STATUS_OK)
+            if (rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiBitStreamSize, &pBitStreamdata) == RF_STATUS_OK)
             {
                 if (uiBitStreamSize > 0)
                 {
@@ -119,7 +121,7 @@ int main(int argc, char** argv)
         }
     }
 
-    rfDeleteEncodeSession(&rfSession);
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
     cout << "Dumped frames to file" << endl;
 

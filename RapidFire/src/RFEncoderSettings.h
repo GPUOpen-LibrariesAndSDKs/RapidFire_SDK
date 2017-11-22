@@ -39,7 +39,9 @@ public:
     // Creates default settings.
     bool    createSettings(unsigned int uiWidth, unsigned int uiHeight);
     // Creates settings based on preset.
-    bool    createSettings(unsigned int uiWidth, unsigned int uiHeight, RFEncodePreset preset);
+    bool    createSettings(unsigned int uiWidth, unsigned int uiHeight, RFVideoCodec codec, RFEncodePreset preset);
+    // Sets the video codec for the encoder.
+    bool    setVideoCodec(RFVideoCodec codec);
     // Stores the input format for the encoder.
     bool    setFormat(RFFormat format);
     // Stores dimension of the encoder frames.
@@ -73,11 +75,12 @@ public:
     // Checks if the parameter name uiParameterName is valid.
     bool    checkParameter(const unsigned int uiParameterName);
 
-    unsigned int    getEncoderWidth()       const { return m_uiEncoderWidth; };
-    unsigned int    getEncoderHeight()      const { return m_uiEncoderHeight; };
-    unsigned int    getNumSettings()        const { return static_cast<unsigned int>(m_ParameterNames.size()); };
-    RFFormat        getInputFormat()        const { return m_rfFormat; };
-    RFEncodePreset  getEncoderPreset()      const { return m_rfPreset; };
+    unsigned int    getEncoderWidth()       const { return m_uiEncoderWidth; }
+    unsigned int    getEncoderHeight()      const { return m_uiEncoderHeight; }
+    unsigned int    getNumSettings()        const { return static_cast<unsigned int>(m_ParameterNames.size()); }
+    RFVideoCodec    getVideoCodec()         const { return m_rfVideoCodec; }
+    RFFormat        getInputFormat()        const { return m_rfFormat; }
+    RFEncodePreset  getEncoderPreset()      const { return m_rfPreset; }
 
 private:
 
@@ -113,10 +116,11 @@ private:
 
     unsigned int                            m_uiEncoderWidth;
     unsigned int                            m_uiEncoderHeight;
+    RFVideoCodec                            m_rfVideoCodec;
     RFFormat                                m_rfFormat;
     RFEncodePreset                          m_rfPreset;
 
-    std::map<unsigned int, MapEntry >       m_ParameterMap;
+    std::map<unsigned int, MapEntry>        m_ParameterMap;
     std::vector<unsigned int>               m_ParameterNames;
 };
 

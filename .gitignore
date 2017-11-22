@@ -1,4 +1,5 @@
 ## Ignore Visual Studio temporary files, build results, etc.
+*.pdb
 
 # User-specific files
 *.suo
@@ -32,3 +33,14 @@ ipch/
 *.log
 RGBA8_frame_*.rgb
 *.h264
+*.obj
+*.tlog
+*.idb
+*.dll
+*.clbin
+*.ilk
+*.iobj
+*.opendb
+*.ipdb
+*.clbin
+*.clbin64

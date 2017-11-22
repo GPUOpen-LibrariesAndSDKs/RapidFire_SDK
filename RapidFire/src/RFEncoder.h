@@ -50,34 +50,36 @@ public:
 
     virtual RFStatus            setParameter(unsigned int const uiParameterName, RFParameterType rfType, RFProperties value) { return RF_STATUS_FAIL; }
 
-    virtual RFParameterState    getParameter(unsigned int const uiParameterName, RFProperties &value) const { return RF_PARAMETER_STATE_INVALID; }
+    virtual RFParameterState    getParameter(unsigned int const uiParameterName, RFVideoCodec codec, RFProperties &value) const { return RF_PARAMETER_STATE_INVALID; }
 
     // Encode a frame
-    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages) { return RF_STATUS_FAIL; }
+    virtual RFStatus            encode(unsigned int uiBufferIdx) { return RF_STATUS_FAIL; }
 
     virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream)  { return RF_STATUS_FAIL; }
 
     // Returns true if the format is supporetd as input by the encoder.
-    virtual bool                isFormatSupported(RFFormat format)  const { return false; };
+    virtual bool                isFormatSupported(RFFormat format)  const { return false; }
 
-    virtual bool                isResizeSupported()                 const { return false; };        
+    virtual bool                isResizeSupported()                 const { return false; }
 
     // Returns the preferred input format of the encoder.
-    virtual RFFormat    getPreferredFormat()    const           { return RF_FORMAT_UNKNOWN; };
+    virtual RFFormat     getPreferredFormat()    const          { return RF_FORMAT_UNKNOWN;   }
 
-    unsigned int        getWidth()              const           { return m_uiWidth;         }
+    virtual RFVideoCodec getPreferredVideoCodec() const         { return RF_VIDEO_CODEC_NONE; }
 
-    unsigned int        getHeight()             const           { return m_uiHeight;        }
+    unsigned int         getWidth()              const          { return m_uiWidth;           }
 
-    unsigned int        getAlignedWidth()       const           { return m_uiAlignedWidth;  }
+    unsigned int         getHeight()             const          { return m_uiHeight;          }
 
-    unsigned int        getAlignedHeight()      const           { return m_uiAlignedHeight; }
+    unsigned int         getAlignedWidth()       const          { return m_uiAlignedWidth;    }
 
-    unsigned int        getOutputWidth()        const           { return m_uiOutputWidth;   }
+    unsigned int         getAlignedHeight()      const          { return m_uiAlignedHeight;   }
 
-    unsigned int        getOutputHeight()       const           { return m_uiOutputHeight;  }
+    unsigned int         getOutputWidth()        const          { return m_uiOutputWidth;     }
 
-    std::string         getName()               const           { return m_strEncoderName;  }
+    unsigned int         getOutputHeight()       const          { return m_uiOutputHeight;    }
+
+    std::string          getName()               const          { return m_strEncoderName;    }
 
 protected:
 
@@ -93,7 +95,7 @@ protected:
     std::string                     m_strEncoderName;
 
 private:
-  
+
     RFEncoder(const RFEncoder&);
     RFEncoder& operator=(const RFEncoder& rhs);
 };

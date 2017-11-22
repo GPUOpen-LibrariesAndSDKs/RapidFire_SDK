@@ -22,13 +22,13 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
-// DX11Encoding shows how to use RapidFire to create an H264 encoded stream from a 
+// DX11Encoding shows how to use RapidFire to create an H264 encoded stream from a
 // DX11 texture.
-// First a RF session is created passing the DirectX 11 device. The session is configured 
+// First a RF session is created passing the DirectX 11 device. The session is configured
 // to use the AMF encoder (HW encoding). The rendertargets that are used by the application are
-// registered, the application then renders into an offscreen render target and 
+// registered, the application then renders into an offscreen render target and
 // uses that to composite the render target used for encoding.
-// 
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <fstream>
@@ -43,7 +43,7 @@
 #include "..\common\Timer.h"
 #include "StretchRectShader.h"
 #include "Cube.h"
-#include "RapidFire.h"
+#include "RFWrapper.hpp"
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(x) \
@@ -70,6 +70,7 @@ void DestroyDX11Resources();
 void Update();
 void Draw(unsigned int rtIdx);
 
+const RFWrapper& rfDll = RFWrapper::getInstance();
 
 void ReaderThread(const RFEncodeSession& session, const std::string& file_name)
 {
@@ -85,7 +86,7 @@ void ReaderThread(const RFEncodeSession& session, const std::string& file_name)
 
     while (g_running)
     {
-        rf_status = rfGetEncodedFrame(session, &bitstream_size, &p_bit_stream);
+        rf_status = rfDll.rfFunc.rfGetEncodedFrame(session, &bitstream_size, &p_bit_stream);
 
         if (rf_status == RF_STATUS_OK)
         {
@@ -127,7 +128,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
                              0 };
 
     // Create encoding session
-    rfStatus = rfCreateEncodeSession(&rfSession, props);
+    rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -146,25 +147,25 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
                                      RF_ENCODER_VBV_BUFFER_SIZE,      static_cast<RFProperties>(1000000),
                                      0 };
 
-    rfStatus = rfCreateEncoder2(rfSession, g_stream_width, g_stream_height, encoder_props);
+    rfStatus = rfDll.rfFunc.rfCreateEncoder2(rfSession, g_stream_width, g_stream_height, encoder_props);
 
     if (rfStatus != RF_STATUS_OK)
     {
         MessageBox(NULL, "Failed to create RF Session!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
     unsigned int rf_fbo_idx[2];
 
     // Register rendertargets to the RapidFire session
-    bool success = (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_RTEncoding[0].getRenderTargetTexture()), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
-    success &= (RF_STATUS_OK == rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_RTEncoding[1].getRenderTargetTexture()), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
+    bool success = (RF_STATUS_OK == rfDll.rfFunc.rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_RTEncoding[0].getRenderTargetTexture()), g_stream_width, g_stream_height, &rf_fbo_idx[0]));
+    success &= (RF_STATUS_OK == rfDll.rfFunc.rfRegisterRenderTarget(rfSession, static_cast<RFRenderTarget>(g_RTEncoding[1].getRenderTargetTexture()), g_stream_width, g_stream_height, &rf_fbo_idx[1]));
 
     if (!success)
     {
         MessageBox(NULL, "Failed to register rendertargets", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -192,7 +193,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         {
             // rfEncode might fail if the queue is full.
             // In this case we need to wait until the reader thread has called rfGetEncodedFrame and removed a frame from the encoding queue.
-            rfStatus = rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
+            rfStatus = rfDll.rfFunc.rfEncodeFrame(rfSession, rf_fbo_idx[uiIndex]);
 
             if (rfStatus == RF_STATUS_QUEUE_FULL)
             {
@@ -210,7 +211,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 
     reader.join();
 
-    rfDeleteEncodeSession(&rfSession);
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
     DestroyDX11Resources();
 

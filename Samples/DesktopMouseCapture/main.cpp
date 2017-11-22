@@ -24,9 +24,9 @@
 //
 // DesktopMouse shows how to use RapidFire to grab the desktop and mouse shape data.
 //
-// A RF Session is created that is configured to capture the desktop and to provide 
+// A RF Session is created that is configured to capture the desktop and to provide
 // mouse shape data. Since no encoding is required, the identity encoder is used.
-// 
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <GL/glew.h>
@@ -35,7 +35,7 @@
 
 #include "GLDesktopRenderer.h"
 #include "GLWindow.h"
-#include "RapidFire.h"
+#include "RFWrapper.hpp"
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd)
@@ -43,12 +43,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     RFStatus        rfStatus = RF_STATUS_OK;
     RFEncodeSession rfSession = nullptr;
 
+    const RFWrapper& rfDll = RFWrapper::getInstance();
+
     GLWindow win("Desktop and Mouse Capture", 800, 600, CW_USEDEFAULT, CW_USEDEFAULT, false);
 
     if (!win)
     {
         MessageBox(NULL, "Failed to create output window!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -58,7 +60,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
                              RF_MOUSE_DATA,               static_cast<RFProperties>(1),
                              0 };
 
-    rfStatus = rfCreateEncodeSession(&rfSession, props);
+    rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -66,18 +68,18 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         return -1;
     }
 
-    // Get dimension of primary display. 
+    // Get dimension of primary display.
     unsigned int uiStreamWidth  = GetSystemMetrics(SM_CXSCREEN);
     unsigned int uiStreamHeight = GetSystemMetrics(SM_CYSCREEN);
 
     RFProperties encoderProps[] = { RF_ENCODER_FORMAT, RF_RGBA8, 0};
 
-    rfStatus = rfCreateEncoder2(rfSession, uiStreamWidth, uiStreamHeight, encoderProps);
+    rfStatus = rfDll.rfFunc.rfCreateEncoder2(rfSession, uiStreamWidth, uiStreamHeight, encoderProps);
 
     if (rfStatus != RF_STATUS_OK)
     {
         MessageBox(NULL, "Failed to create RF Session!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -88,7 +90,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     if (!renderer.init())
     {
         MessageBox(NULL, "Failed to init GLDesktopRenderer!", "RF Error", MB_ICONERROR | MB_OK);
-        rfDeleteEncodeSession(&rfSession);
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
         return -1;
     }
 
@@ -116,17 +118,17 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
             continue;
         }
 
-        if (rfGetMouseData(rfSession, 0, &md) == RF_STATUS_OK)
+        if (rfDll.rfFunc.rfGetMouseData(rfSession, 0, &md) == RF_STATUS_OK)
         {
             // Typically the mouse pointer is 32x32. The texture that was created is 32x32 as well.
             // Some shapes have a larger dimensions, those will not be drawn by this sample
-            renderer.updateMouseTexture(static_cast<const unsigned char*>(md.color.pPixels), md.color.uiWidth, md.color.uiHeight, 
+            renderer.updateMouseTexture(static_cast<const unsigned char*>(md.color.pPixels), md.color.uiWidth, md.color.uiHeight,
                                         static_cast<const unsigned char*>(md.mask.pPixels), md.mask.uiWidth, md.mask.uiHeight, md.mask.uiPitch);
         }
 
-        rfEncodeFrame(rfSession, 0);
+        rfDll.rfFunc.rfEncodeFrame(rfSession, 0);
 
-        rfStatus = rfGetEncodedFrame(rfSession, &uiDesktopTextureSize, &pDesktopTexture);
+        rfStatus = rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiDesktopTextureSize, &pDesktopTexture);
 
         if (rfStatus == RF_STATUS_OK)
         {
@@ -137,7 +139,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
         SwapBuffers(win.getDC());
     }
 
-    rfDeleteEncodeSession(&rfSession);
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
     return static_cast<int>(msg.wParam);
 }

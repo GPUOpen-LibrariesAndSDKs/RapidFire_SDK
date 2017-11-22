@@ -21,11 +21,12 @@
 //
 
 /*****************************************************************************
-* RapidFire.h 
+* RapidFire.h
 * * File Version 1.0.0 (CL 36199) Feb 12th 2015
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
 * * File Version 1.1.0.19         September 26th 2016
+* * File Version 1.2.0.0          November 3rd 2017
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -125,7 +126,10 @@ typedef enum RFSessionParams
 **************************************************************************/
 typedef enum RFEncoderParams
 {
+    RF_ENCODER_CODEC                        = 0x1101,
     RF_ENCODER_FORMAT                       = 0x1111,
+
+    // AVC encoding parameters
     RF_ENCODER_PROFILE                      = 0x1112,
     RF_ENCODER_LEVEL                        = 0x1113,
     RF_ENCODER_USAGE                        = 0x1114,
@@ -139,6 +143,7 @@ typedef enum RFEncoderParams
     RF_ENCODER_VBV_BUFFER_SIZE              = 0x1127,
     RF_ENCODER_VBV_BUFFER_FULLNESS          = 0x1128,
     RF_ENCODER_ENFORCE_HRD                  = 0x1129,
+    RF_ENCODER_ENABLE_VBAQ                  = 0x1132,
     RF_ENCODER_FRAME_RATE                   = 0x1130,
     RF_ENCODER_FRAME_RATE_DEN               = 0x1131,
 
@@ -155,13 +160,58 @@ typedef enum RFEncoderParams
     RF_DIFF_ENCODER_BLOCK_T                	= 0x1155,
     RF_DIFF_ENCODER_LOCK_BUFFER             = 0x1156,
 
-    // Pre Submit parameters
+    // AVC Pre Submit parameters
     RF_ENCODER_FORCE_INTRA_REFRESH          = 0x1061,
     RF_ENCODER_FORCE_I_FRAME                = 0x1062,
     RF_ENCODER_FORCE_P_FRAME                = 0x1063,
     RF_ENCODER_INSERT_SPS                   = 0x1064,
     RF_ENCODER_INSERT_PPS                   = 0x1065,
     RF_ENCODER_INSERT_AUD                   = 0x1066,
+
+    // HEVC encoding parameters
+    RF_ENCODER_HEVC_USAGE                           = 0x1300,
+    RF_ENCODER_HEVC_PROFILE                         = 0x1301,
+    RF_ENCODER_HEVC_LEVEL                           = 0x1302,
+    RF_ENCODER_HEVC_TIER                            = 0x1303,
+
+    RF_ENCODER_HEVC_RATE_CONTROL_METHOD             = 0x1305,
+    RF_ENCODER_HEVC_FRAMERATE                       = 0x1306,
+    RF_ENCODER_HEVC_FRAMERATE_DEN                   = 0x1307,
+    RF_ENCODER_HEVC_VBV_BUFFER_SIZE                 = 0x1308,
+    RF_ENCODER_HEVC_INITIAL_VBV_BUFFER_FULLNESS     = 0x1309,
+    RF_ENCODER_HEVC_RATE_CONTROL_PREANALYSIS_ENABLE = 0x1310,
+    RF_ENCODER_HEVC_ENABLE_VBAQ                     = 0x1311,
+
+    RF_ENCODER_HEVC_TARGET_BITRATE                  = 0x1312,
+    RF_ENCODER_HEVC_PEAK_BITRATE                    = 0x1313,
+    RF_ENCODER_HEVC_MIN_QP_I                        = 0x1314,
+    RF_ENCODER_HEVC_MAX_QP_I                        = 0x1315,
+    RF_ENCODER_HEVC_MIN_QP_P                        = 0x1316,
+    RF_ENCODER_HEVC_MAX_QP_P                        = 0x1317,
+    RF_ENCODER_HEVC_QP_I                            = 0x1318,
+    RF_ENCODER_HEVC_QP_P                            = 0x1319,
+    RF_ENCODER_HEVC_ENFORCE_HRD                     = 0x1320,
+    RF_ENCODER_HEVC_MAX_AU_SIZE                     = 0x1321,
+    RF_ENCODER_HEVC_FILLER_DATA_ENABLE              = 0x1322,
+    RF_ENCODER_HEVC_RATE_CONTROL_SKIP_FRAME_ENABLE  = 0x1323,
+
+    RF_ENCODER_HEVC_HEADER_INSERTION_MODE           = 0x1324,
+    RF_ENCODER_HEVC_GOP_SIZE                        = 0x1325,
+    RF_ENCODER_HEVC_NUM_GOPS_PER_IDR                = 0x1326,
+    RF_ENCODER_HEVC_DE_BLOCKING_FILTER_DISABLE      = 0x1327,
+    RF_ENCODER_HEVC_SLICES_PER_FRAME                = 0x1328,
+
+    RF_ENCODER_HEVC_QUALITY_PRESET                  = 0x1329,
+
+    RF_ENCODER_HEVC_MOTION_HALF_PIXEL               = 0x1330,
+    RF_ENCODER_HEVC_MOTION_QUARTERPIXEL             = 0x1331,
+
+    // HEVC Pre Submit parameters
+    RF_ENCODER_HEVC_FORCE_INTRA_REFRESH             = 0x1201,
+    RF_ENCODER_HEVC_FORCE_I_FRAME                   = 0x1202,
+    RF_ENCODER_HEVC_FORCE_P_FRAME                   = 0x1203,
+    RF_ENCODER_HEVC_INSERT_HEADER                   = 0x1204,
+    RF_ENCODER_HEVC_INSERT_AUD                      = 0x1205,
 
     // Read only parameter
     RF_ENCODER_WIDTH                        = 0x1081,
@@ -235,7 +285,7 @@ typedef struct
 *******************************************************************************
 */
 typedef enum RFFormat
-{ 
+{
     RF_FORMAT_UNKNOWN = -1,
     RF_RGBA8          =  0,
     RF_ARGB8          =  1,
@@ -245,23 +295,46 @@ typedef enum RFFormat
 
 /**
 *******************************************************************************
+* @enum RFVideoEncoder
+* @brief This is the codec of the video encoder.
+*
+* @RF_VIDEO_CODEC_AVC:         The AVC / H.264 codec is used.
+* @RF_VIDEO_CODEC_HEVC:        The HEVC / H.265 codec is used.
+*
+*******************************************************************************
+*/
+typedef enum RFVideoCodec
+{
+    RF_VIDEO_CODEC_NONE    = -1,
+    RF_VIDEO_CODEC_AVC     =  0,
+    RF_VIDEO_CODEC_HEVC    =  1
+} RFVideoCodec;
+
+/**
+*******************************************************************************
 * @enum RFEncodePreset
-* @brief This is the preset of the encoder: trade off compression efficiency
+* @brief This is the preset of the video encoder: trade off compression efficiency
 *        against encoding speed.
 *
-* @RF_PRESET_NONE:     No preset is used. 
-* @RF_PRESET_FAST:     Fast encoding.
-* @RF_PRESET_BALANCED: Balanced between quality and speed.
-* @RF_PRESET_QUALITY:  High video quality.
+* @RF_PRESET_NONE:          No preset is used.
+* @RF_PRESET_FAST:          Fast encoding with AVC.
+* @RF_PRESET_BALANCED:      Balanced encoding between quality and speed with AVC.
+* @RF_PRESET_QUALITY:       High video encoding quality with AVC.
+* @RF_PRESET_HEVC_FAST:     Fast encoding with HEVC.
+* @RF_PRESET_HEVC_BALANCED: Balanced encoding between quality and speed with HEVC.
+* @RF_PRESET_HEVC_QUALITY:  High video encoding quality with HEVC.
 *
 *******************************************************************************
 */
 typedef enum RFEncodePreset
 {
-    RF_PRESET_NONE     = -1,
-    RF_PRESET_FAST     =  0,
-    RF_PRESET_BALANCED =  1,
-    RF_PRESET_QUALITY  =  2
+    RF_PRESET_NONE          = -1,
+    RF_PRESET_FAST          =  0,
+    RF_PRESET_BALANCED      =  1,
+    RF_PRESET_QUALITY       =  2,
+    RF_PRESET_HEVC_FAST     =  3,
+    RF_PRESET_HEVC_BALANCED =  4,
+    RF_PRESET_HEVC_QUALITY  =  5
 } RFEncodePreset;
 
 /**
@@ -299,8 +372,8 @@ typedef enum RFEncoderID
 typedef enum RFRenderTargetState
 {
     RF_STATE_INVALID = -1,
-    RF_STATE_FREE    = 0,
-    RF_STATE_BLOCKED = 1
+    RF_STATE_FREE    =  0,
+    RF_STATE_BLOCKED =  1
 } RFRenderTargetState;
 
 /**
@@ -312,9 +385,9 @@ typedef enum RFRenderTargetState
 *
 * @RFDesktopNotification: Desktop notification event. The event is only present
 *                         if the session was created with the flag RF_DESKTOP_UPDATE_ON_CHANGE
-*                         or RF_DESKTOP_BLOCK_UNTIL_CHANGE  
+*                         or RF_DESKTOP_BLOCK_UNTIL_CHANGE
 *
-* @RFMouseShapeNotification: Mouse shape notification event.The event is only 
+* @RFMouseShapeNotification: Mouse shape notification event.The event is only
 *                            present if the session was created using the flag
 *                            RF_MOUSE_DATA.
 *
@@ -447,10 +520,10 @@ extern "C" {
     /**
     *******************************************************************************
     * @fn rfResizeSession
-    * @brief Resizes the session and the encoder if the encoder supports resizing. 
-    * Before calling rfResizeSession the encoding queue must be empty. 
-    * Otherwise submitting additional frames to the encoding queue might fail. 
-    * Render targets that are registered by the application will be removed 
+    * @brief Resizes the session and the encoder if the encoder supports resizing.
+    * Before calling rfResizeSession the encoding queue must be empty.
+    * Otherwise submitting additional frames to the encoding queue might fail.
+    * Render targets that are registered by the application will be removed
     * and have to be registered again with the new size.
     *
     * @param[in] session: The encoding session.
@@ -496,7 +569,7 @@ extern "C" {
     *******************************************************************************
     * @fn  rfGetSourceFrame
     * @brief  The function return the image that was used as input for the encoder.
-    *         If a color space conversion is required for the encoder, the returned 
+    *         If a color space conversion is required for the encoder, the returned
     *         image contains the result of the color space conversion.
     *         The function needs to be called prior to rfGetEncodedFrame to guarantee
     *         that the returned image is the source of the encoded image returned by
@@ -546,7 +619,7 @@ extern "C" {
     /**
     *******************************************************************************
     * @fn rfGetMouseData
-    * @brief This function returns mouse shape data. To use it the session needs to 
+    * @brief This function returns mouse shape data. To use it the session needs to
     * be created with the RF_MOUSE_DATA set to true.
     *
     * @param[in] session:             The encoding session.
