@@ -43,11 +43,14 @@ RFDOPPSession::RFDOPPSession(RFEncoderID rfEncoder, HDC hDC, HGLRC hGlrc)
     , m_bBlockUntilChange(false)
     , m_bUpdateOnlyOnChange(false)
     , m_uiDisplayId(0)
+    , m_uiIdx(0)
     , m_pDeskotpCapture(nullptr)
     , m_pDrvInterface(nullptr)
     , m_pMouseGrab(nullptr)
     , m_uiDoppTextureReinits(5)
 {
+    m_Properties.bEncoderCSC = false;
+
     if (hDC != NULL && hGlrc != NULL)
     {
         m_hDC = hDC;
@@ -196,7 +199,7 @@ RFStatus RFDOPPSession::createContextFromGfx()
     {
         std::unique_ptr<DOPPDrvInterface> pDoppDrv = std::unique_ptr<DOPPDrvInterface>(new DOPPDrvInterface(m_strDisplayName, uiBusNumber));
 
-        std::unique_ptr<GLDOPPCapture>    pDoppCapture = std::unique_ptr<GLDOPPCapture>(new GLDOPPCapture(dpManager.getDesktopId(m_uiDisplayId), pDoppDrv.get()));
+        std::unique_ptr<GLDOPPCapture>    pDoppCapture = std::unique_ptr<GLDOPPCapture>(new GLDOPPCapture(dpManager.getDesktopId(m_uiDisplayId), m_pContextCL->getNumResultBuffers(), pDoppDrv.get()));
 
         if (m_bMouseShapeData)
         {
@@ -251,7 +254,7 @@ RFStatus RFDOPPSession::finalizeContext()
     m_ParameterMap.getParameterValue(RF_DESKTOP_BLOCK_UNTIL_CHANGE, m_bBlockUntilChange);
     m_ParameterMap.getParameterValue(RF_DESKTOP_UPDATE_ON_CHANGE, m_bUpdateOnlyOnChange);
 
-    RFStatus rfStatus = m_pDeskotpCapture->initDOPP(m_bUpdateOnlyOnChange, m_bBlockUntilChange);
+    RFStatus rfStatus = m_pDeskotpCapture->initDOPP(m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight(), m_pEncoderSettings->getInputFormat(), m_bUpdateOnlyOnChange, m_bBlockUntilChange);
     m_uiDoppTextureReinits = 0;
     m_doppTimer.reset();
 
@@ -262,17 +265,22 @@ RFStatus RFDOPPSession::finalizeContext()
         return rfStatus;
     }
 
-    // RFGLDOPPCapture will create a render target of the size m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight()
-    m_Properties.uiInputDim[0] = m_pEncoderSettings->getEncoderWidth();
-    m_Properties.uiInputDim[1] = m_pEncoderSettings->getEncoderHeight();
+    m_DesktopRTIndexList.resize(m_pDeskotpCapture->getNumFramebufferTex());
 
-    rfStatus = m_pContextCL->setInputTexture(m_pDeskotpCapture->getDesktopTexture(), m_pDeskotpCapture->getDesktopWidth(), m_pDeskotpCapture->getDesktopHeight(), m_DesktopRTIndex);
-
-    if (rfStatus != RF_STATUS_OK)
+    for (unsigned int i = 0, iEnd = m_pDeskotpCapture->getNumFramebufferTex(); i < iEnd; ++i)
     {
-        m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[DOPP context] Failed to add input texture to CL context", rfStatus);
+        // RFGLDOPPCapture will create a render target of the size m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight()
+        m_Properties.uiInputDim[0] = m_pEncoderSettings->getEncoderWidth();
+        m_Properties.uiInputDim[1] = m_pEncoderSettings->getEncoderHeight();
 
-        return rfStatus;
+        rfStatus = m_pContextCL->setInputTexture(m_pDeskotpCapture->getFramebufferTex(i), m_Properties.uiInputDim[0], m_Properties.uiInputDim[1], m_DesktopRTIndexList[i]);
+
+        if (rfStatus != RF_STATUS_OK)
+        {
+            m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[DOPP context] Failed to add input texture to CL context", rfStatus);
+
+            return rfStatus;
+        }
     }
 
     return RF_STATUS_OK;
@@ -302,6 +310,9 @@ RFStatus RFDOPPSession::resizeResources(unsigned int w, unsigned int h)
         return rfStatus;
     }
 
+    // Resize the present texture to the new dimension.
+    rfStatus = m_pDeskotpCapture->resizePresentTexture(w, h);
+
     if (rfStatus != RF_STATUS_OK)
     {
         m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "[DOPP resize] Failed to resize present texture", rfStatus);
@@ -309,16 +320,23 @@ RFStatus RFDOPPSession::resizeResources(unsigned int w, unsigned int h)
         return rfStatus;
     }
 
-    m_Properties.uiInputDim[0] = m_pEncoderSettings->getEncoderWidth();
-    m_Properties.uiInputDim[1] = m_pEncoderSettings->getEncoderHeight();
+    m_DesktopRTIndexList.resize(m_pDeskotpCapture->getNumFramebufferTex());
 
-    rfStatus = m_pContextCL->setInputTexture(m_pDeskotpCapture->getDesktopTexture(), m_pDeskotpCapture->getDesktopWidth(), m_pDeskotpCapture->getDesktopHeight(), m_DesktopRTIndex);
-
-    if (rfStatus != RF_STATUS_OK)
+    // Register new render targets
+    for (unsigned int i = 0, iEnd = m_pDeskotpCapture->getNumFramebufferTex(); i < iEnd; ++i)
     {
-        m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "Failed to add input texture to CL context on Resize", rfStatus);
+        // RFGLDOPPCapture will create a render target of the size m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight()
+        m_Properties.uiInputDim[0] = m_pEncoderSettings->getEncoderWidth();
+        m_Properties.uiInputDim[1] = m_pEncoderSettings->getEncoderHeight();
 
-        return rfStatus;
+        rfStatus = m_pContextCL->setInputTexture(m_pDeskotpCapture->getFramebufferTex(i), m_Properties.uiInputDim[0], m_Properties.uiInputDim[1], m_DesktopRTIndexList[i]);
+
+        if (rfStatus != RF_STATUS_OK)
+        {
+            m_pSessionLog->logMessage(RFLogFile::MessageType::RF_LOG_ERROR, "Failed to add input texture to CL context on Resize", rfStatus);
+
+            return rfStatus;
+        }
     }
 
     return RF_STATUS_OK;
@@ -384,20 +402,14 @@ RFStatus RFDOPPSession::preprocessFrame(unsigned int& idx)
     }
 
     // Render desktop to image.
-    if (!m_pDeskotpCapture->processDesktop())
+    if (!m_pDeskotpCapture->processDesktop(m_Properties.bInvertInput, m_uiIdx))
     {
         return RF_STATUS_DOPP_NO_UPDATE;
     }
 
-    RFFormat desktopColorFormat = m_pDeskotpCapture->getDesktopTextureFormat();
-    if (desktopColorFormat == RF_FORMAT_UNKNOWN)
-    {
-        desktopColorFormat = RF_BGRA8;
-    }
+    idx = m_DesktopRTIndexList[m_uiIdx];
 
-    m_Properties.sourceTextureFormat = desktopColorFormat;
-
-    idx = m_DesktopRTIndex;
+    m_uiIdx = (m_uiIdx + 1) % m_pDeskotpCapture->getNumFramebufferTex();
 
     return RF_STATUS_OK;
 }

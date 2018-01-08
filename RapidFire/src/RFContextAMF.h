@@ -47,11 +47,11 @@ public:
     virtual RFStatus    createContext(IDirect3DDevice9Ex* pD3DDeviceEx) override;
 
     // Registers DX9 texture. DX9 is only supported with AMF.
-    virtual RFStatus    setInputTexture(IDirect3DSurface9* pD3D9Texture, const unsigned int uiInputWidth, unsigned int uiInputHeight, unsigned int& idx) override;
+    virtual RFStatus    setInputTexture(IDirect3DSurface9* pD3D9Texture, const unsigned int uiWidth, unsigned int uiHeight, unsigned int& idx) override;
 
-    virtual RFStatus    createBuffers(RFFormat format, unsigned int uiOutputWidth, unsigned int uiOutputHeight, unsigned int uiAlignedOutputWidth, unsigned int uiAlignedOutputHeight, bool bUseAsyncCopy) override;
+    virtual RFStatus    createBuffers(RFFormat format, unsigned int uiWidth, unsigned int uiHeight, unsigned int uiAlignedWidth, unsigned int uiAlignedHeight, bool bUseAsyncCopy) override;
 
-    virtual RFStatus    processBuffer(RFFormat inputFormat, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx) override;
+    virtual RFStatus    processBuffer(bool bRunCSC, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx) override;
 
     amf::AMFContextPtr  getAMFContext() const { return m_amfContext; };
 

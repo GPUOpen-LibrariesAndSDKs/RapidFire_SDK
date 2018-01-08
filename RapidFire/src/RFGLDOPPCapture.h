@@ -30,44 +30,72 @@
 
 #include "RapidFire.h"
 
+class GLShader;
+
 class GLDOPPCapture
 {
 public:
 
-    GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv);
+    GLDOPPCapture(unsigned int uiDesktop, unsigned int uiNumFrameBuffers, DOPPDrvInterface* pDrv);
     virtual ~GLDOPPCapture();
 
-    RFStatus            initDOPP(bool bTrackDesktopChanges, bool bBlocking);
+    RFStatus            initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, RFFormat outputFormat, bool bTrackDesktopChanges, bool bBlocking);
 
     RFStatus            resizeDesktopTexture();
+    RFStatus            resizePresentTexture(unsigned int uiPresentWidth, unsigned int uiPresentHeight);
 
     bool                releaseEvent();
 
     // Render desktop to rendertarget with id idx.
-    bool                processDesktop();
+    bool                processDesktop(bool bInvert, unsigned int idx);
 
-    GLuint              getDesktopTexture() const { return m_uiDesktopTexture; };
+    // Returns the texture name of the texture that is used with render targt idx.
+    unsigned int        getFramebufferTex(unsigned int idx) const;
 
-    unsigned int        getDesktopWidth()   const { return m_uiDesktopWidth;   };
+    GLuint              getDesktopTexture()     const   { return m_uiDesktopTexture;    };
 
-    unsigned int        getDesktopHeight()  const { return m_uiDesktopHeight;  };
+    unsigned int        getNumFramebufferTex()  const   { return m_uiNumTargets;        };
 
-    RFFormat            getDesktopTextureFormat() const;
+    unsigned int        getDesktopWidth()       const   { return m_uiDesktopWidth;      };
+
+    unsigned int        getDesktopHeight()      const   { return m_uiDesktopHeight;     };
+
+    unsigned int        getPresentWidth()       const   { return m_uiPresentWidth;      };
+
+    unsigned int        getPresentHeight()      const   { return m_uiPresentHeight;     };
 
 private:
 
     bool                setupDOPPExtension();
-    void                notificationLoop();
+    bool                createRenderTargets();
+    bool                initEffect();
+
+    void                notificationLoop();   
 
     GLuint                      m_uiDesktopTexture;
-    mutable RFFormat            m_rfDesktopFormat;
+    GLuint						m_uiBackupDesktopTexture;
+
     const unsigned int          m_uiDesktopId;
+    const unsigned int          m_uiNumTargets;
+
     unsigned int                m_uiDesktopWidth;
     unsigned int                m_uiDesktopHeight;
+    unsigned int                m_uiPresentWidth;
+    unsigned int                m_uiPresentHeight;
+    GLint                       m_iSamplerSwizzle[4];
+    GLint                       m_iResetSwizzle[4];
+    
+    GLShader*                   m_pShader;
+    GLShader*                   m_pShaderInvert;
+    GLuint                      m_uiBaseMap;
+
+    GLuint                      m_uiVertexArray;
+    
+    GLuint*                     m_pFBO;
+    GLuint*                     m_pTexture;
 
     bool                        m_bTrackDesktopChanges;
     bool                        m_bBlocking;
-    static const int            m_iNumContinuedFrames = 3;
     int                         m_iNumRemainingFrames;
 
     std::atomic_bool            m_bDesktopChanged;

@@ -86,7 +86,7 @@ protected:
     {
         RFEncoderID     EncoderId;
         unsigned int    uiInputDim[2];
-        RFFormat        sourceTextureFormat;
+        bool            bEncoderCSC;
         bool            bInvertInput;
         bool            bAsyncCopyToSysMem;
         bool            bBlockingEncoderRead;

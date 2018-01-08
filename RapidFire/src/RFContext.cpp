@@ -690,7 +690,6 @@ RFContextCL::RFContextCL()
     , m_CtxType(RF_CTX_UNKNOWN)
     , m_TargetFormat(RF_FORMAT_UNKNOWN)
     , m_uiCSCKernelIdx(RF_KERNEL_UNKNOWN)
-    , m_bInitializedKernelParams(false)
     , m_fnAcquireMemObj(NULL)
     , m_fnReleaseMemObj(NULL)
 {
@@ -1261,6 +1260,9 @@ RFStatus RFContextCL::setInputTexture(IDirect3DSurface9* pD3D9Texture, const uns
         return RF_STATUS_INVALID_DIMENSION;
     }
 
+    m_uiInputWidth = uiWidth;
+    m_uiInputHeight = uiHeight;
+
     m_rtState[index] = RF_STATE_FREE;
 
     idx = index;
@@ -1281,6 +1283,12 @@ RFStatus RFContextCL::createBuffers(RFFormat format, unsigned int uiWidth, unsig
     if (!m_bValid)
     {
         return RF_STATUS_INVALID_OPENCL_CONTEXT;
+    }
+
+    if (!validateDimensions(uiWidth, uiHeight))
+    {
+        // Scaling is not supported.
+        return RF_STATUS_INVALID_DIMENSION;
     }
 
     m_uiOutputWidth         = uiWidth;
@@ -1350,7 +1358,10 @@ RFStatus RFContextCL::createBuffers(RFFormat format, unsigned int uiWidth, unsig
 
     SAFE_CALL_CL(nStatus);
 
-    m_bInitializedKernelParams = false;
+    if (!configureKernels())
+    {
+        return RF_STATUS_OPENCL_FAIL;
+    }
 
     return RF_STATUS_OK;
 }
@@ -1422,8 +1433,6 @@ RFStatus RFContextCL::deleteBuffers()
 
     m_uiNumRegisteredRT = 0;
 
-    m_bInitializedKernelParams = false;
-
     return RF_STATUS_OK;
 }
 
@@ -1438,6 +1447,16 @@ bool RFContextCL::validateDimensions(unsigned int uiWidth, unsigned int uiHeight
     if (m_uiInputWidth > 0)
     {
         if (uiWidth != m_uiInputWidth || uiHeight != m_uiInputHeight)
+        {
+            return false;
+        }
+    }
+
+    // If a result buffer was already created the size of any new input texture
+    // must match those dimensions.
+    if (m_uiOutputWidth > 0)
+    {
+        if ((uiWidth != m_uiOutputWidth) || uiHeight != m_uiOutputHeight)
         {
             return false;
         }
@@ -1492,15 +1511,8 @@ bool RFContextCL::configureKernels()
             return false;
         }
 
-        cl_float2 scaling = {m_uiOutputWidth == m_uiInputWidth ? 1.0f : static_cast<float>(m_uiInputWidth) / m_uiOutputWidth,
-                             m_uiOutputHeight == m_uiInputHeight ? 1.0f : static_cast<float>(m_uiInputHeight) / m_uiOutputHeight};
-        if (clSetKernelArg(m_CSCKernels[i].kernel, 3, sizeof(cl_float2), &scaling) != CL_SUCCESS)
-        {
-            return false;
-        }
-
         // 4. Flipping (default off)
-        if (clSetKernelArg(m_CSCKernels[i].kernel, 4, sizeof(cl_int), &doFlip) != CL_SUCCESS)
+        if (clSetKernelArg(m_CSCKernels[i].kernel, 3, sizeof(cl_int), &doFlip) != CL_SUCCESS)
         {
             return false;
         }
@@ -1515,14 +1527,12 @@ bool RFContextCL::configureKernels()
         // ATTENTION: The copy_rgba_image2d kernel expects the above values. If the enum RFFormat changes, the kernel
         // might need to be updated as well.
 
-        // Set Argumnet 6: Output Ordering
-        if (clSetKernelArg(m_CSCKernels[RF_KERNEL_RGBA_COPY].kernel, 6, sizeof(cl_int), &m_TargetFormat) != CL_SUCCESS)
+        // Set Argumnet 5: Output Ordering
+        if (clSetKernelArg(m_CSCKernels[RF_KERNEL_RGBA_COPY].kernel, 4, sizeof(cl_int), &m_TargetFormat) != CL_SUCCESS)
         {
             return false;
         }
     }
-
-    m_bInitializedKernelParams = true;
 
     return true;
 }
@@ -1630,7 +1640,13 @@ void RFContextCL::getResultBuffer(unsigned int idx, void* &pBuffer) const
 }
 
 
-RFStatus RFContextCL::processBuffer(RFFormat inputFormat, bool bInvert, unsigned int uiSrcIdx, unsigned int uiDestIdx)
+void RFContextCL::getInputImage(unsigned int idx, cl_mem* pBuffer) const
+{
+    *pBuffer = m_clInputImage[idx];
+}
+
+
+RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiSrcIdx, unsigned int uiDestIdx)
 {
     if (!m_bValid)
     {
@@ -1640,11 +1656,6 @@ RFStatus RFContextCL::processBuffer(RFFormat inputFormat, bool bInvert, unsigned
     if (m_TargetFormat == RF_FORMAT_UNKNOWN || m_uiCSCKernelIdx <= RF_KERNEL_UNKNOWN || m_uiCSCKernelIdx >= RF_KERNEL_NUMBER)
     {
         return RF_STATUS_INVALID_FORMAT;
-    }
-
-    if (!m_bInitializedKernelParams && !configureKernels())
-    {
-        return RF_STATUS_OPENCL_FAIL;
     }
 
     // Make sure events get released. CSC and DMA will create an event per result buffer to be able to check for completion.
@@ -1669,28 +1680,45 @@ RFStatus RFContextCL::processBuffer(RFFormat inputFormat, bool bInvert, unsigned
         return rfStatus;
     }
 
-    // RGBA input buffer (src)
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 0, sizeof(cl_mem), static_cast<void*>(&(m_clInputImage[uiSrcIdx]))));
-
-    // output buffer (dst)
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 1, sizeof(cl_mem), static_cast<void*>(&(m_clResultBuffer[uiDestIdx]))));
-
-    int nInvert = (bInvert) ? 1 : 0;
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 4, sizeof(cl_int), static_cast<void*>(&nInvert)));
-
-    cl_int nFormat = (inputFormat == RF_RGBA8 ? 0 : (inputFormat == RF_ARGB8 ? 1 : 2));
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 5, sizeof(cl_int), &nFormat));
-
-    SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
-                 m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
-                 nullptr, &m_clCSCFinished[uiDestIdx]));
-
-    clFlush(m_clCmdQueue);
-
-    if (m_bUseAsyncCopy)
+    if (bRunCSC || m_uiCSCKernelIdx != RF_KERNEL_RGBA_COPY)
     {
-        clEnqueueCopyBuffer(m_clDMAQueue, m_clResultBuffer[uiDestIdx], m_clPageLockedBuffer[uiDestIdx], 0, 0, m_nOutputBufferSize, 1, &m_clCSCFinished[uiDestIdx], &m_clDMAFinished[uiDestIdx]);
-        clFlush(m_clDMAQueue);
+        // RGBA input buffer (src)
+        SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 0, sizeof(cl_mem), static_cast<void*>(&(m_clInputImage[uiSrcIdx]))));
+
+        // output buffer (dst)
+        SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 1, sizeof(cl_mem), static_cast<void*>(&(m_clResultBuffer[uiDestIdx]))));
+
+        int nInvert = (bInvert) ? 1 : 0;
+        SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
+
+        SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
+                     m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
+                     nullptr, &m_clCSCFinished[uiDestIdx]));
+
+        clFlush(m_clCmdQueue);
+
+        if (m_bUseAsyncCopy)
+        {
+            clEnqueueCopyBuffer(m_clDMAQueue, m_clResultBuffer[uiDestIdx], m_clPageLockedBuffer[uiDestIdx], 0, 0, m_nOutputBufferSize, 1, &m_clCSCFinished[uiDestIdx], &m_clDMAFinished[uiDestIdx]);
+            clFlush(m_clDMAQueue);
+        }
+    }
+    else
+    {
+        const size_t src_origin[3] = { 0, 0, 0 };
+        const size_t region[3] = { m_uiOutputWidth, m_uiOutputHeight, 1 };
+        if (m_bUseAsyncCopy)
+        {
+            SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clDMAQueue, m_clInputImage[uiSrcIdx], m_clPageLockedBuffer[uiDestIdx], src_origin, region, 0, 1, &clAcquireImageEvent, &m_clDMAFinished[uiDestIdx]));
+            clFlush(m_clDMAQueue);
+            // Return without releasing the OpenCL MemObj as it will be used as input for the diffmap kernel.
+            return RF_STATUS_OK;
+        }
+        else
+        {
+            SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clCmdQueue, m_clInputImage[uiSrcIdx], m_clResultBuffer[uiDestIdx], src_origin, region, 0, 0, nullptr, &m_clCSCFinished[uiDestIdx]));
+            clFlush(m_clCmdQueue);
+        }
     }
 
     // Release OpenCL object from OpenGL/D3D objec.

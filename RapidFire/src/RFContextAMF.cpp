@@ -241,6 +241,12 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
         return RF_STATUS_INVALID_CONTEXT;
     }
 
+    if (!validateDimensions(uiWidth, uiHeight))
+    {
+        // Scaling is not supported.
+        return RF_STATUS_INVALID_DIMENSION;
+    }
+
     m_amfFormat = AMF_SURFACE_NV12;
     m_amfMemory = AMF_MEMORY_OPENCL;
 
@@ -288,15 +294,18 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
         return RF_STATUS_OK;
     }
 
-    m_uiPlaneCount = static_cast<unsigned int>(m_pSurfaceList[0]->GetPlanesCount());
+    if (!configureKernels())
+    {
+        return RF_STATUS_OPENCL_FAIL;
+    }
 
-    m_bInitializedKernelParams = false;
+    m_uiPlaneCount = static_cast<unsigned int>(m_pSurfaceList[0]->GetPlanesCount());
 
     return RF_STATUS_OK;
 }
 
 
-RFStatus RFContextAMF::processBuffer(RFFormat inputFormat, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx)
+RFStatus RFContextAMF::processBuffer(bool /*bRunCSC*/, bool bInvert, unsigned int uiSorceIdx, unsigned int uiDestIdx)
 {
     if (!m_bValid)
     {
@@ -327,11 +336,6 @@ RFStatus RFContextAMF::processBuffer(RFFormat inputFormat, bool bInvert, unsigne
         return RF_STATUS_INVALID_FORMAT;
     }
 
-    if (!m_bInitializedKernelParams && !configureKernels())
-    {
-        return RF_STATUS_OPENCL_FAIL;
-    }
-
     // Make sure OpenCL events get released. This is usually done when getAMFSurface is called. In case getAMFSurface
     // was not called for some reason, the event is released here.
     // No need to wait since the session will not allow to encode frames if no free surface is available.
@@ -354,15 +358,13 @@ RFStatus RFContextAMF::processBuffer(RFFormat inputFormat, bool bInvert, unsigne
     // Y output buffer (dst)
     SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 1, sizeof(cl_mem), static_cast<void*>(&clEncodeBufferY)));
 
-    cl_int nFormat = (inputFormat == RF_RGBA8 ? 0 : (inputFormat == RF_ARGB8 ? 1 : 2));
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 5, sizeof(cl_int), &nFormat));
-
     // UV output buffer (dst)
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 6, sizeof(cl_mem), static_cast<void*>(&clEncodeBufferUV)));
+    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 4, sizeof(cl_mem), static_cast<void*>(&clEncodeBufferUV)));
+
+    cl_int nInvert = (bInvert) ? 1 : 0;
 
     // Indicate if flipping is required
-    cl_int nInvert = (bInvert) ? 1 : 0;
-    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 4, sizeof(cl_int), static_cast<void*>(&nInvert)));
+    SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
 
     SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
                  m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,

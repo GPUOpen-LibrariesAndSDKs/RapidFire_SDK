@@ -55,17 +55,27 @@ WGLGENPRESENTTEXTUREAMD         wglGenPresentTextureAMD;
     }
 
 // Global lock that is used to make sure the GL operations after wglDesktopTarget don't get interrupted.
+// A second thread could call wglDesktopTarget and this would lead to artifacts. The desktop texture
+// needs to be rendered into the FBO without beeing interrupted by another desktop session.
 static RFLock g_GlobalDOPPLock;
 
-GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv)
+GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, unsigned int uiNumFrameBuffers, DOPPDrvInterface* pDrv)
     : m_uiDesktopTexture(0)
-    , m_rfDesktopFormat(RF_FORMAT_UNKNOWN)
     , m_uiDesktopId(uiDesktop)
+    , m_uiNumTargets(uiNumFrameBuffers)
     , m_uiDesktopWidth(0)
     , m_uiDesktopHeight(0)
+    , m_uiPresentWidth(0)
+    , m_uiPresentHeight(0)
+    , m_pShader(nullptr)
+    , m_pShaderInvert(nullptr)
+    , m_uiBaseMap(0)
+    , m_uiVertexArray(0)
+    , m_pFBO(nullptr)
+    , m_pTexture(nullptr)
     , m_bTrackDesktopChanges(false)
     , m_bBlocking(false)
-    , m_iNumRemainingFrames(3)
+    , m_iNumRemainingFrames(uiNumFrameBuffers)
     , m_pDOPPDrvInterface(pDrv)
 {
     if (!m_pDOPPDrvInterface)
@@ -90,6 +100,9 @@ GLDOPPCapture::GLDOPPCapture(unsigned int uiDesktop, DOPPDrvInterface* pDrv)
     m_hDesktopEvent[1] = NULL;
 
     m_bDesktopChanged = false;
+
+    m_iSamplerSwizzle[0] = GL_RED; m_iSamplerSwizzle[1] = GL_GREEN; m_iSamplerSwizzle[2] = GL_BLUE; m_iSamplerSwizzle[3] = GL_ALPHA;
+    m_iResetSwizzle[0] = GL_RED; m_iResetSwizzle[1] = GL_GREEN; m_iResetSwizzle[2] = GL_BLUE; m_iResetSwizzle[3] = GL_ALPHA;
 }
 
 
@@ -97,20 +110,60 @@ GLDOPPCapture::~GLDOPPCapture()
 {
     HGLRC glrc = wglGetCurrentContext();
 
+    // Make sure we still have a valid context.
     if (glrc)
     {
+        if (m_pShader)
+        {
+            delete m_pShader;
+        }
+
+        if (m_pShaderInvert)
+        {
+            delete m_pShaderInvert;
+        }
+
         if (m_uiDesktopTexture)
         {
             glDeleteTextures(1, &m_uiDesktopTexture);
         }
+
+        if (m_pFBO)
+        {
+            glDeleteFramebuffers(m_uiNumTargets, m_pFBO);
+        }
+
+        if (m_pTexture)
+        {
+            glDeleteTextures(m_uiNumTargets, m_pTexture);
+        }
+
+        if (m_uiVertexArray)
+        {
+            glDeleteVertexArrays(1, &m_uiVertexArray);
+        }
     }
     else
     {
-        RF_Error(RF_STATUS_OPENGL_FAIL, "No more valid context when deleting DOPP Capture");
+        RF_Error(RF_STATUS_OPENGL_FAIL, "No more valid context whe ndeleting DOPP Capture");
     }
 
+    if (m_pFBO)
+    {
+        delete[] m_pFBO;
+        m_pFBO = nullptr;
+    }
+
+    if (m_pTexture)
+    {
+        delete[] m_pTexture;
+        m_pTexture = nullptr;
+    }
+
+    // Set changes tracking to false. This will cause the notifcation thread to stop.
     m_bTrackDesktopChanges = false;
 
+    // Release desktop change notification event to unblock the notification thread.
     if (m_hDesktopEvent[0])
     {
         SetEvent(m_hDesktopEvent[0]);
@@ -123,11 +176,13 @@ GLDOPPCapture::~GLDOPPCapture()
         m_hDesktopEvent[1] = NULL;
     }
 
+    // Terminate the notification thread.
     if (m_NotificationThread.joinable())
     {
         m_NotificationThread.join();
     }
 
+    // Delete the desktop notification event.
     if (m_hDesktopEvent[0])
     {
         m_pDOPPDrvInterface->deleteDOPPEvent(m_hDesktopEvent[0]);
@@ -137,7 +192,7 @@ GLDOPPCapture::~GLDOPPCapture()
 }
 
 
-RFStatus GLDOPPCapture::initDOPP(bool bTrackDesktopChanges, bool bBlocking)
+RFStatus GLDOPPCapture::initDOPP(unsigned int uiPresentWidth, unsigned int uiPresentHeight, RFFormat outputFormat, bool bTrackDesktopChanges, bool bBlocking)
 {
     RFReadWriteAccess doppLock(&g_GlobalDOPPLock);
 
@@ -147,6 +202,14 @@ RFStatus GLDOPPCapture::initDOPP(bool bTrackDesktopChanges, bool bBlocking)
     {
         return RF_STATUS_OPENGL_FAIL;
     }
+
+    if (uiPresentWidth <= 0 || uiPresentHeight <= 0)
+    {
+        return RF_STATUS_INVALID_DIMENSION;
+    }
+
+    m_uiPresentWidth = uiPresentWidth;
+    m_uiPresentHeight = uiPresentHeight;
 
     if (!setupDOPPExtension())
     {
@@ -165,7 +228,39 @@ RFStatus GLDOPPCapture::initDOPP(bool bTrackDesktopChanges, bool bBlocking)
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, reinterpret_cast<GLint*>(&m_uiDesktopWidth));
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, reinterpret_cast<GLint*>(&m_uiDesktopHeight));
 
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (!initEffect())
+    {
+        return RF_STATUS_DOPP_FAIL;
+    }
+
+    if (!createRenderTargets())
+    {
+        return RF_STATUS_DOPP_FAIL;
+    }
+
+    glGenVertexArrays(1, &m_uiVertexArray);
+
+    m_iResetSwizzle[0] = GL_RED; m_iResetSwizzle[1] = GL_GREEN; m_iResetSwizzle[2] = GL_BLUE; m_iResetSwizzle[3] = GL_ALPHA;
+
+    if (outputFormat == RF_ARGB8)
+    {
+        m_iSamplerSwizzle[0] = GL_ALPHA; m_iSamplerSwizzle[1] = GL_RED; m_iSamplerSwizzle[2] = GL_GREEN; m_iSamplerSwizzle[3] = GL_BLUE;
+    }
+    else if (outputFormat == RF_BGRA8)
+    {
+        m_iSamplerSwizzle[0] = GL_BLUE; m_iSamplerSwizzle[1] = GL_GREEN; m_iSamplerSwizzle[2] = GL_RED; m_iSamplerSwizzle[3] = GL_ALPHA;
+    }
+    else if (outputFormat == RF_RGBA8)
+    {
+        m_iSamplerSwizzle[0] = GL_RED; m_iSamplerSwizzle[1] = GL_GREEN; m_iSamplerSwizzle[2] = GL_BLUE; m_iSamplerSwizzle[3] = GL_ALPHA;
+    }
 
     m_bTrackDesktopChanges = bTrackDesktopChanges;
     m_bBlocking = bBlocking;
@@ -173,6 +268,7 @@ RFStatus GLDOPPCapture::initDOPP(bool bTrackDesktopChanges, bool bBlocking)
 
     if (m_bBlocking && !m_bTrackDesktopChanges)
     {
+        // If a blocking call is requested, we need to track desktop changes.
         m_bTrackDesktopChanges = true;
     }
 
@@ -206,6 +302,50 @@ RFStatus GLDOPPCapture::initDOPP(bool bTrackDesktopChanges, bool bBlocking)
 }
 
 
+bool GLDOPPCapture::createRenderTargets()
+{
+    if (m_pFBO != nullptr || m_pTexture != nullptr)
+    {
+        return false;
+    }
+
+    m_pFBO = new GLuint[m_uiNumTargets];
+    m_pTexture = new GLuint[m_uiNumTargets];
+
+    glGenFramebuffers(m_uiNumTargets, m_pFBO);
+    glGenTextures(m_uiNumTargets, m_pTexture);
+
+    bool bFBStatus = true;
+
+    for (unsigned int i = 0; i < m_uiNumTargets; ++i)
+    {
+        glBindTexture(GL_TEXTURE_2D, m_pTexture[i]);
+
+        // WORKAROUND to avoid conflicst with AMF avoid using GL_RGBA8.
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_uiPresentWidth, m_uiPresentHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_pFBO[i]);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_pTexture[i], 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            bFBStatus = false;
+        }
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return bFBStatus;
+}
+
+
 RFStatus GLDOPPCapture::resizeDesktopTexture()
 {
     if (m_uiDesktopId > 0)
@@ -225,18 +365,56 @@ RFStatus GLDOPPCapture::resizeDesktopTexture()
         }
 
         m_uiDesktopTexture = wglGetDesktopTextureAMD();
+
         glBindTexture(GL_TEXTURE_2D, m_uiDesktopTexture);
 
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+        // Get the size of the desktop. Usually these are the same values as returned by GetSystemMetrics(SM_CXSCREEN)
+        // and GetSystemMetrics(SM_CYSCREEN). In some cases they might differ, e.g. if a rotated desktop is used.
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, reinterpret_cast<GLint*>(&m_uiDesktopWidth));
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, reinterpret_cast<GLint*>(&m_uiDesktopHeight));
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
-
         return RF_STATUS_OK;
     }
 
     return RF_STATUS_INVALID_DESKTOP_ID;
+}
+
+
+RFStatus GLDOPPCapture::resizePresentTexture(unsigned int uiPresentWidth, unsigned int uiPresentHeight)
+{
+    if (m_pTexture)
+    {
+        glDeleteTextures(m_uiNumTargets, m_pTexture);
+
+        delete[] m_pTexture;
+        m_pTexture = nullptr;
+    }
+
+    if (m_pFBO)
+    {
+        glDeleteFramebuffers(m_uiNumTargets, m_pFBO);
+
+        delete[] m_pFBO;
+        m_pFBO = nullptr;
+    }
+
+
+    m_uiPresentWidth = uiPresentWidth;
+    m_uiPresentHeight = uiPresentHeight;
+
+    if (!createRenderTargets())
+    {
+        return RF_STATUS_OPENGL_FAIL;
+    }
+
+    return RF_STATUS_OK;
 }
 
 
@@ -254,8 +432,136 @@ bool GLDOPPCapture::releaseEvent()
 }
 
 
-bool GLDOPPCapture::processDesktop()
+bool GLDOPPCapture::initEffect()
 {
+    if (m_pShader)
+    {
+        delete m_pShader;
+    }
+
+    if (m_pShaderInvert)
+    {
+        delete m_pShaderInvert;
+    }
+
+    const char* strVertexShader =
+    {
+        "#version 420                                                                     \n"
+        "                                                                                 \n"
+        "out vec2 Texcoord;                                                               \n"
+        "                                                                                 \n"
+        "void main( void )                                                                \n"
+        "{                                                                                \n"
+        "   switch(gl_VertexID)                                                           \n"
+        "   {                                                                             \n"
+        "      case 0: gl_Position = vec4(-1, -1, 0, 1); Texcoord = vec2(0, 0); break;    \n"
+        "      case 1: gl_Position = vec4(-1, 3, 0, 1); Texcoord = vec2(0, 2); break;     \n"
+        "      case 2: gl_Position = vec4(3, -1, 0, 1); Texcoord = vec2(2, 0); break;     \n"
+        "   }                                                                             \n"
+        "}                                                                                \n"
+    };
+
+    const char* strVertexShaderInvert =
+    {
+        "#version 420                                                                     \n"
+        "                                                                                 \n"
+        "out vec2 Texcoord;                                                               \n"
+        "                                                                                 \n"
+        "void main( void )                                                                \n"
+        "{                                                                                \n"
+        "   switch(gl_VertexID)                                                           \n"
+        "   {                                                                             \n"
+        "      case 0: gl_Position = vec4(-1, -1, 0, 1); Texcoord = vec2(0, 1); break;    \n"
+        "      case 1: gl_Position = vec4(-1, 3, 0, 1); Texcoord = vec2(0, -1); break;     \n"
+        "      case 2: gl_Position = vec4(3, -1, 0, 1); Texcoord = vec2(2, 1); break;     \n"
+        "   }                                                                             \n"
+        "}                                                                                \n"
+    };
+
+    const char* strFragmentShader =
+    {
+        "#version 420                                                        \n"
+        "                                                                    \n"
+        "uniform sampler2D baseMap;                                          \n"
+        "                                                                    \n"
+        "varying vec2 Texcoord;                                              \n"
+        "                                                                    \n"
+        "void main(void)                                                     \n"
+        "{                                                                   \n"
+        "    vec4 texColor = texture2D(baseMap, Texcoord);                   \n"
+        "                                                                    \n"
+        "    gl_FragColor = vec4(texColor.r, texColor.g, texColor.b, 1.0f);  \n"
+        "}                                                                   \n"
+    };
+
+    m_pShader = new (std::nothrow)GLShader;
+
+    if (!m_pShader)
+    {
+        return false;
+    }
+
+    if (!m_pShader->createShaderFromString(strVertexShader, GL_VERTEX_SHADER))
+    {
+        return false;
+    }
+
+    if (!m_pShader->createShaderFromString(strFragmentShader, GL_FRAGMENT_SHADER))
+    {
+        return false;
+    }
+
+    if (!m_pShader->buildProgram())
+    {
+        return false;
+    }
+
+    m_pShader->bind();
+
+    m_uiBaseMap = glGetUniformLocation(m_pShader->getProgram(), "baseMap");
+
+    m_pShader->unbind();
+
+    m_pShaderInvert = new (std::nothrow)GLShader;
+
+    if (!m_pShaderInvert)
+    {
+        return false;
+    }
+
+    if (!m_pShaderInvert->createShaderFromString(strVertexShaderInvert, GL_VERTEX_SHADER))
+    {
+        return false;
+    }
+
+    if (!m_pShaderInvert->createShaderFromString(strFragmentShader, GL_FRAGMENT_SHADER))
+    {
+        return false;
+    }
+
+    if (!m_pShaderInvert->buildProgram())
+    {
+        return false;
+    }
+
+    m_pShaderInvert->bind();
+
+    m_uiBaseMap = glGetUniformLocation(m_pShaderInvert->getProgram(), "baseMap");
+
+    m_pShaderInvert->unbind();
+
+
+    return true;
+}
+
+
+bool GLDOPPCapture::processDesktop(bool bInvert, unsigned int idx)
+{
+    if (idx >= m_uiNumTargets)
+    {
+        idx = 0;
+    }
+
     if (m_bTrackDesktopChanges)
     {
         if (m_iNumRemainingFrames <= 0)
@@ -275,30 +581,87 @@ bool GLDOPPCapture::processDesktop()
                 return false;
             }
 
-            m_iNumRemainingFrames = m_iNumContinuedFrames;
+            m_iNumRemainingFrames = m_uiNumTargets;
         }
 
         --m_iNumRemainingFrames;
     }
 
-    m_bDesktopChanged = false;
+    {
+        // GLOBAL LOCK: The operations of selecting the desktop and rendering the desktop texture
+        // into the FBO must not be interrupted. Otherwise another thread may select another
+        // Desktop by calling wglDesktopTarget while the previous one was not completely processed.
+        RFReadWriteAccess doppLock(&g_GlobalDOPPLock);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_pFBO[idx]);
+
+        int pVP[4];
+
+        // Store old VP just in case the calling app used OpenGL as well.
+        glGetIntegerv(GL_VIEWPORT, pVP);
+
+        glViewport(0, 0, m_uiPresentWidth, m_uiPresentHeight);
+
+        wglDesktopTargetAMD(m_uiDesktopId);
+
+        if (bInvert)
+        {
+            m_pShaderInvert->bind();
+        }
+        else
+        {
+            m_pShader->bind();
+        }
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_uiDesktopTexture);
+
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, m_iSamplerSwizzle);
+
+        glUniform1i(m_uiBaseMap, 1);
+
+        glBindVertexArray(m_uiVertexArray);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        if (bInvert)
+        {
+            m_pShaderInvert->unbind();
+        }
+        else
+        {
+            m_pShader->unbind();
+        }
+
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, m_iResetSwizzle);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // Restore original viewport.
+        glViewport(pVP[0], pVP[1], pVP[2], pVP[3]);
+
+        m_bDesktopChanged = false;
+
+        glFinish();
+    }
 
     return true;
 }
 
 
-RFFormat GLDOPPCapture::getDesktopTextureFormat() const
+unsigned int GLDOPPCapture::getFramebufferTex(unsigned int idx) const
 {
-    RFFormat format;
-    bool ret = m_pDOPPDrvInterface->getPrimarySurfacePixelFormat(format);
-
-    if (ret && format != RF_FORMAT_UNKNOWN)
+    if (m_uiNumTargets > 0 && idx < m_uiNumTargets && m_pTexture)
     {
-        m_rfDesktopFormat = format;
+        return m_pTexture[idx];
     }
 
-    return m_rfDesktopFormat;
+    return 0;
 }
+
 
 bool GLDOPPCapture::setupDOPPExtension()
 {

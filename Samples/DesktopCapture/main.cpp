@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 
     rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
-    cout << "Dumped frames to file" << endl;
+    cout << "\nDumped frames to file" << endl;
 
     return 0;
 }

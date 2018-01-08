@@ -108,6 +108,7 @@ static const RFEncoderAMF::MAPPING_ENTRY g_HEVCPropertyNameMap[] = { {RF_ENCODER
                                                                      {RF_ENCODER_HEVC_MOTION_HALF_PIXEL,               AMF_VIDEO_ENCODER_HEVC_MOTION_HALF_PIXEL},
                                                                      {RF_ENCODER_HEVC_MOTION_QUARTERPIXEL,             AMF_VIDEO_ENCODER_HEVC_MOTION_QUARTERPIXEL} };
 
+
 RFEncoderAMF::RFEncoderAMF()
     : RFEncoder()
     , m_bBlock(false)
@@ -268,7 +269,7 @@ RFStatus RFEncoderAMF::resize(unsigned int uiWidth, unsigned int uiHeight)
 }
 
 
-RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx)
+RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx, bool bUseInputImage)
 {
     AMF_RESULT amfErr;
 
@@ -527,7 +528,7 @@ RFParameterState RFEncoderAMF::getParameter(const unsigned int uiParameterName, 
         // Handle FRAMERATE as special case. Since 1.1.22 the framerate is passed as AMFRate.
         if (uiParameterName == RF_ENCODER_FRAME_RATE || uiParameterName == RF_ENCODER_FRAME_RATE_DEN)
         {
-            AMFRate amfFrameRate = { 30, 1 };
+            AMFRate amfFrameRate = {30, 1};
 
             amfErr = m_amfEncoder->GetProperty<AMFRate>(AMF_VIDEO_ENCODER_FRAMERATE, &amfFrameRate);
 
@@ -644,6 +645,7 @@ bool RFEncoderAMF::applyPreset(const RFEncoderSettings* pConfig)
 }
 
 
+
 bool RFEncoderAMF::applyConfiguration(const RFEncoderSettings* pConfig)
 {
     RFStatus rfStatus = RF_STATUS_OK;
@@ -693,7 +695,7 @@ RFStatus RFEncoderAMF::setAMFProperty(unsigned int uiParameterIdx, RFParameterTy
     // Handle FRAMERATE as special case. Since 1.1.22 the framerate is passed as AMFRate.
     if (m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE || m_pPropertyNameMap[uiParameterIdx].RFPropertyName == RF_ENCODER_FRAME_RATE_DEN)
     {
-        AMFRate amfFrameRate = { 30, 1 };
+        AMFRate amfFrameRate = {30, 1};
 
         amfErr = m_amfEncoder->GetProperty<AMFRate>(AMF_VIDEO_ENCODER_FRAMERATE, &amfFrameRate);
 

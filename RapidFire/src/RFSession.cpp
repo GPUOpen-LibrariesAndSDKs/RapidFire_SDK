@@ -79,7 +79,7 @@ RFSession::RFSession(RFEncoderID rfEncoder)
     m_Properties.bAsyncCopyToSysMem = false;
     m_Properties.bBlockingEncoderRead = false;
     m_Properties.bInvertInput = false;
-    m_Properties.sourceTextureFormat = RF_BGRA8;
+    m_Properties.bEncoderCSC = true;
     m_Properties.bMousedata = false;
 }
 
@@ -293,10 +293,10 @@ RFStatus RFSession::encodeFrame(unsigned int idx)
     // for the encoders. During this process the CSC can be done and the image can get inverted.
     // If a sys mem buffer was requested when createBuffers was called, a transfer of the result to sys
     // mem is triggered.
-    SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.sourceTextureFormat, m_Properties.bInvertInput, idx, m_uiResultBuffer));
+    SAFE_CALL_RF(m_pContextCL->processBuffer(m_Properties.bEncoderCSC, m_Properties.bInvertInput, idx, m_uiResultBuffer));
 
     // Encode frame
-    SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer));
+    SAFE_CALL_RF(m_pEncoder->encode(m_uiResultBuffer, !m_Properties.bEncoderCSC));
 
     // Store result buffer index in queue since processBuffer filled a new resultBuffer. The ResultBuffer
     // should only be considered as valid if the enode call succeeded. Only in this case a valid pair of
@@ -1003,7 +1003,6 @@ RFStatus RFSession::parseEncoderProperties(const RFProperties* props)
         {
             if (p->name == RF_ENCODER_FORMAT)
             {
-                // Apply format. When the encoder is created it will check if the format is supported.
                 m_pEncoderSettings->setFormat(static_cast<RFFormat>(p->ptr));
             }
             else if (p->name == RF_ENCODER_CODEC)

@@ -38,7 +38,7 @@
 #include "../common/Timer.h"
 #include <..\..\external\AMF\include\components\VideoEncoderHEVC.h>
 
-#define NUM_FRAMES 50000
+#define NUM_FRAMES 1800 // record desktop for one minute
 
 using namespace std;
 
@@ -49,8 +49,9 @@ int main(int argc, char** argv)
 
     const RFWrapper& rfDll = RFWrapper::getInstance();
 
-    RFProperties props[] = { RF_ENCODER, static_cast<RFProperties>(RF_AMF),
-                             RF_DESKTOP, static_cast<RFProperties>(1),
+    RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_AMF),
+                             RF_DESKTOP,                  static_cast<RFProperties>(1),
+                             RF_DESKTOP_UPDATE_ON_CHANGE, static_cast<RFProperties>(1),
                              0 };
 
     rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
@@ -84,7 +85,6 @@ int main(int argc, char** argv)
 
     // Create encoder and define the size of the stream.
     // RF will scale the desktop to the screen size.
-
     rfStatus = rfDll.rfFunc.rfCreateEncoder(rfSession, uiStreamWidth, uiStreamHeight, RF_PRESET_BALANCED);
     float frameTime = 1.0f/30.0f;
 

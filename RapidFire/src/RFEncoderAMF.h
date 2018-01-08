@@ -43,7 +43,7 @@ public:
 
     virtual RFStatus            resize(unsigned int uiWidth, unsigned int uiHeight) override;
 
-    virtual RFStatus            encode(unsigned int uiBufferIdx) override;
+    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages) override;
 
     // Sets single parameter to encoder.
     virtual RFStatus            setParameter(const unsigned int uiParameterName, RFParameterType rfType, RFProperties value) override;

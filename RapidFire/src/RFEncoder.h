@@ -53,33 +53,33 @@ public:
     virtual RFParameterState    getParameter(unsigned int const uiParameterName, RFVideoCodec codec, RFProperties &value) const { return RF_PARAMETER_STATE_INVALID; }
 
     // Encode a frame
-    virtual RFStatus            encode(unsigned int uiBufferIdx) { return RF_STATUS_FAIL; }
+    virtual RFStatus            encode(unsigned int uiBufferIdx, bool bUseInputImages) { return RF_STATUS_FAIL; }
 
     virtual RFStatus            getEncodedFrame(unsigned int& uiSize, void* &pBitStream)  { return RF_STATUS_FAIL; }
 
     // Returns true if the format is supporetd as input by the encoder.
-    virtual bool                isFormatSupported(RFFormat format)  const { return false; }
+    virtual bool                isFormatSupported(RFFormat format)  const { return false; };
 
-    virtual bool                isResizeSupported()                 const { return false; }
+    virtual bool                isResizeSupported()                 const { return false; };
 
     // Returns the preferred input format of the encoder.
-    virtual RFFormat     getPreferredFormat()    const          { return RF_FORMAT_UNKNOWN;   }
+    virtual RFFormat    getPreferredFormat()      const           { return RF_FORMAT_UNKNOWN; };
 
-    virtual RFVideoCodec getPreferredVideoCodec() const         { return RF_VIDEO_CODEC_NONE; }
+    virtual RFVideoCodec getPreferredVideoCodec() const           { return RF_VIDEO_CODEC_NONE; }
 
-    unsigned int         getWidth()              const          { return m_uiWidth;           }
+    unsigned int        getWidth()                const           { return m_uiWidth;         }
 
-    unsigned int         getHeight()             const          { return m_uiHeight;          }
+    unsigned int        getHeight()               const           { return m_uiHeight;        }
 
-    unsigned int         getAlignedWidth()       const          { return m_uiAlignedWidth;    }
+    unsigned int        getAlignedWidth()         const           { return m_uiAlignedWidth;  }
 
-    unsigned int         getAlignedHeight()      const          { return m_uiAlignedHeight;   }
+    unsigned int        getAlignedHeight()        const           { return m_uiAlignedHeight; }
 
-    unsigned int         getOutputWidth()        const          { return m_uiOutputWidth;     }
+    unsigned int        getOutputWidth()          const           { return m_uiOutputWidth;   }
 
-    unsigned int         getOutputHeight()       const          { return m_uiOutputHeight;    }
+    unsigned int        getOutputHeight()         const           { return m_uiOutputHeight;  }
 
-    std::string          getName()               const          { return m_strEncoderName;    }
+    std::string         getName()                 const           { return m_strEncoderName;  }
 
 protected:
 

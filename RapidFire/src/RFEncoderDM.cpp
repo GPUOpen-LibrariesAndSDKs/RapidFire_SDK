@@ -193,7 +193,7 @@ RFEncoderDM::~RFEncoderDM()
         clReleaseKernel(m_DiffMapBufferkernel);
     }
 
-    m_DiffMapProgram.Release();
+	m_DiffMapProgram.Release();
 
     deleteBuffers();
 }
@@ -418,7 +418,7 @@ bool RFEncoderDM::deleteBuffers()
 }
 
 
-RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx)
+RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx, bool bUseInputImages)
 {
     cl_mem          clCurrentImage;
     cl_mem          clPrevImage;
@@ -446,9 +446,18 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx)
     }
 
     cl_kernel diffMapKernel;
-    m_pContext->getResultBuffer(uiBufferIdx, &clCurrentImage);
-    m_pContext->getResultBuffer(m_uiPreviousBuffer, &clPrevImage);
-    diffMapKernel = m_DiffMapBufferkernel;
+    if (bUseInputImages)
+    {
+        m_pContext->getInputImage(uiBufferIdx, &clCurrentImage);
+        m_pContext->getInputImage(m_uiPreviousBuffer, &clPrevImage);
+        diffMapKernel = m_DiffMapImagekernel;
+    }
+    else
+    {
+        m_pContext->getResultBuffer(uiBufferIdx, &clCurrentImage);
+        m_pContext->getResultBuffer(m_uiPreviousBuffer, &clPrevImage);
+        diffMapKernel = m_DiffMapBufferkernel;
+    }
 
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 0, sizeof(cl_mem),       &clCurrentImage));
     SAFE_CALL_CL(clSetKernelArg(diffMapKernel, 1, sizeof(cl_mem),       &clPrevImage));
@@ -467,6 +476,11 @@ RFStatus RFEncoderDM::encode(unsigned int uiBufferIdx)
     m_ResultQueue.push(pCurrentBuffer);
 
     clFlush(m_pContext->getCmdQueue());
+
+    if (bUseInputImages)
+    {
+        const_cast<RFContextCL*>(m_pContext)->releaseCLMemObj(m_pContext->getDMAQueue(), m_uiPreviousBuffer, 1, &(pCurrentBuffer->clDiffFinished));
+    }
 
     m_uiPreviousBuffer = uiBufferIdx;
 
@@ -552,22 +566,22 @@ RFStatus RFEncoderDM::GenerateCLProgramAndKernel()
 {
     assert(m_pContext);
 
-    m_DiffMapProgram.Create(m_pContext->getContext(), m_pContext->getDeviceId(), DIFF_KERNEL_NAME, str_cl_DiffMapkernels);
+	m_DiffMapProgram.Create(m_pContext->getContext(), m_pContext->getDeviceId(), DIFF_KERNEL_NAME, str_cl_DiffMapkernels);
 
     if (m_DiffMapProgram)
     {
         cl_int nStatus;
         m_DiffMapImagekernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Image", &nStatus);
-        SAFE_CALL_CL(nStatus);
+		SAFE_CALL_CL(nStatus);
         m_DiffMapBufferkernel = clCreateKernel(m_DiffMapProgram, "DiffMap_Buffer", &nStatus);
         SAFE_CALL_CL(nStatus);
 
         return RF_STATUS_OK;
     }
-    else
-    {
-        RF_Error(RF_STATUS_OPENCL_FAIL, m_DiffMapProgram.GetBuildLog().c_str());
-    }
+	else
+	{
+		RF_Error(RF_STATUS_OPENCL_FAIL, m_DiffMapProgram.GetBuildLog().c_str());
+	}
 
     return RF_STATUS_OPENCL_FAIL;
 }
