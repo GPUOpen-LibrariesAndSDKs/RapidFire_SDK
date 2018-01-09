@@ -51,7 +51,6 @@ int main(int argc, char** argv)
 
     RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_AMF),
                              RF_DESKTOP,                  static_cast<RFProperties>(1),
-                             RF_DESKTOP_UPDATE_ON_CHANGE, static_cast<RFProperties>(1),
                              0 };
 
     rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
