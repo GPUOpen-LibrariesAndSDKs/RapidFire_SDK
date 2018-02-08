@@ -61,11 +61,16 @@ public:
 
 private:
 
-    // Performs common actions like compiling kernels, creating dma queue to finish context creation.
-    RFStatus             finalizeContext();
+    cl_mem              getImageBuffer(unsigned int uiBuffer, unsigned int uiPlaneId);
 
-    // Returns a pointer to the native image plane of an AMF surface.
-    void*                getImageBuffer(unsigned int uiBuffer, unsigned int uiPlaneId);
+    RFStatus            createNV12InteropFromDX11(unsigned int idx);
+    RFStatus            createNV12InteropFromDX9(unsigned int idx);
+    RFStatus            acquireNV12Planes(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
+    RFStatus            releaseNV12Planes(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents = 0, cl_event* eventsWait = nullptr, cl_event* eventReturned = nullptr);
+    void                releaseNV12Interop(unsigned int idx);
+
+    // Performs common actions like compiling kernels, creating dma queue to finish context creation.
+    RFStatus            finalizeContext();
 
     unsigned int                    m_uiPlaneCount;
 
@@ -73,6 +78,8 @@ private:
     amf::AMF_SURFACE_FORMAT         m_amfFormat;
     amf::AMFSurfacePtr*             m_pSurfaceList;
     amf::AMF_MEMORY_TYPE            m_amfMemory;
+    cl_mem                          m_clNV12Planes[MAX_NUM_RENDER_TARGETS * 2];
+    amf::AMF_MEMORY_TYPE            m_clNV12Memory[MAX_NUM_RENDER_TARGETS];
 
     IDirect3DSurface9*              m_pD3D9Surfaces[MAX_NUM_RENDER_TARGETS];
 };

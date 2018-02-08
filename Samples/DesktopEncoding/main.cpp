@@ -31,26 +31,60 @@
 
 #include <fstream>
 #include <iostream>
+#include <thread>
 
 #include <windows.h>
+#include <dxgi.h>
 
 #include "RFWrapper.hpp"
 #include "../common/Timer.h"
 #include <..\..\external\AMF\include\components\VideoEncoderHEVC.h>
 
-#define NUM_FRAMES 1800 // record desktop for one minute
+#define NUM_FRAMES 3600 // record desktop for one minute
 
 using namespace std;
+
+bool                    g_running = true;
+const RFWrapper& rfDll = RFWrapper::getInstance();
+
+void ReaderThread(const RFEncodeSession& session, const std::string& file_name)
+{
+    void*         p_bit_stream = nullptr;
+    unsigned int  bitstream_size = 0;
+    RFStatus      rf_status = RF_STATUS_OK;
+    std::ofstream out_file;
+
+    if (file_name.length() > 0)
+    {
+        out_file.open(file_name, std::fstream::out | std::fstream::trunc | std::fstream::binary);
+    }
+
+    while (g_running)
+    {
+        rf_status = rfDll.rfFunc.rfGetEncodedFrame(session, &bitstream_size, &p_bit_stream);
+
+        if (rf_status == RF_STATUS_OK)
+        {
+            if (out_file.is_open())
+            {
+                out_file.write(static_cast<char*>(p_bit_stream), bitstream_size);
+            }
+        }
+        else
+        {
+            // Give the other thread a chance
+            Sleep(0);
+        }
+    }
+}
 
 int main(int argc, char** argv)
 {
     RFStatus        rfStatus = RF_STATUS_OK;
     RFEncodeSession rfSession = nullptr;
 
-    const RFWrapper& rfDll = RFWrapper::getInstance();
-
     RFProperties props[] = { RF_ENCODER,                  static_cast<RFProperties>(RF_AMF),
-                             RF_DESKTOP,                  static_cast<RFProperties>(1),
+                             RF_DESKTOP_DSP_ID,           static_cast<RFProperties>(1),
                              0 };
 
     rfStatus = rfDll.rfFunc.rfCreateEncodeSession(&rfSession, props);
@@ -85,7 +119,6 @@ int main(int argc, char** argv)
     // Create encoder and define the size of the stream.
     // RF will scale the desktop to the screen size.
     rfStatus = rfDll.rfFunc.rfCreateEncoder(rfSession, uiStreamWidth, uiStreamHeight, RF_PRESET_BALANCED);
-    float frameTime = 1.0f/30.0f;
 
     if (rfStatus != RF_STATUS_OK)
     {
@@ -96,40 +129,60 @@ int main(int argc, char** argv)
 
     cout << "Created encoder" << endl;
 
-    fstream outFile;
+    IDXGIFactory* dxgiFactory;
+    auto hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&dxgiFactory);
+    if (hr != S_OK)
+    {
+        cerr << "Failed to create dxgi factory!" << endl;
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
+        return -1;
+    }
 
-    // Open a file to which the H.264 frames are dumped.
-    // The file can be displayed using ffplay.
-    outFile.open("./Desktop.h264", fstream::out | fstream::trunc | fstream::binary);
+    IDXGIAdapter* pAdapter;
+    hr = dxgiFactory->EnumAdapters(0, &pAdapter);
+    if (hr != S_OK)
+    {
+        cerr << "Failed to get dxgi adapter!" << endl;
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
+        return -1;
+    }
+
+    IDXGIOutput* output;
+    hr = pAdapter->EnumOutputs(0, &output);
+    if (hr != S_OK)
+    {
+        cerr << "Failed to get display output!" << endl;
+        rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
+        return -1;
+    }
+
+    std::thread reader(ReaderThread, rfSession, "Desktop.h264");
 
     unsigned int uiBitStreamSize = 0;
-    void*        pBitStreamdata  = nullptr;
+    void*        pBitStreamdata = nullptr;
 
     cout << "Starting to encode " << NUM_FRAMES << " frames" << endl;
 
-    Timer frameTimer;
-
     for (int i = 0; i < NUM_FRAMES; ++i)
     {
-        while (frameTimer.getTime() < frameTime);
-        frameTimer.reset();
+        // Wait for the VSync so we are capturing the desktop right after it
+        output->WaitForVBlank();
 
-        if (rfDll.rfFunc.rfEncodeFrame(rfSession, 0) == RF_STATUS_OK)
+        // Wait 1ms to give the DWM time to flip
+        Sleep(1);
+
+        while(rfDll.rfFunc.rfEncodeFrame(rfSession, 0) == RF_STATUS_QUEUE_FULL)
         {
-            // Check if encoded frame is ready
-            if (rfDll.rfFunc.rfGetEncodedFrame(rfSession, &uiBitStreamSize, &pBitStreamdata) == RF_STATUS_OK)
-            {
-                if (uiBitStreamSize > 0)
-                {
-                    outFile.write(static_cast<char*>(pBitStreamdata), uiBitStreamSize);
-                }
-            }
+            // Encoding queue is full,
+            // Give the consumer thread time to process output
+            Sleep(0);
         }
     }
 
-    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
+    g_running = false;
+    reader.join();
 
-    outFile.close();
+    rfDll.rfFunc.rfDeleteEncodeSession(&rfSession);
 
     cout << "Dumped frames to file" << endl;
 

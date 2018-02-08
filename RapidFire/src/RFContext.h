@@ -26,11 +26,7 @@
 #include <string>
 #include <vector>
 
-#if defined(__APPLE__) || defined(__MACOSX)
-#include <OpenCL/cl.h>
-#else
 #include <CL/cl.h>
-#endif
 
 #include "RapidFire.h"
 #include "RFPlatform.h"
@@ -112,6 +108,8 @@ private:
     static uint64_t		s_uiModuleVer;
     static uint64_t		s_uiOpenCLVer;
     static std::mutex	s_lock;
+
+
 };
 
 
@@ -209,6 +207,11 @@ protected:
 
     typedef cl_int(CL_API_CALL *CL_MEM_ACCESS_FUNCTION) (cl_command_queue, cl_uint, const cl_mem*, cl_uint, const cl_event*, cl_event*);
 
+    cl_mem              createFromDX9MediaSurface(cl_mem_flags flags, IDirect3DSurface9 *resource, UINT subresource, cl_int  *errcode_ret) const;
+    cl_mem              createFromD3D11Texture2DKHR(cl_mem_flags flags, ID3D11Texture2D *resource, UINT subresource, cl_int  *errcode_ret) const;
+    cl_mem              convertImageAmd(cl_mem image, cl_image_format* dstFormat, cl_int* errcode_ret) const;
+    cl_mem              getPlaneFromImageAmd(cl_mem image, cl_uint plane, cl_int* errcode_ret) const;
+
     RFStatus            finalizeContext(const cl_context_properties*);
 
     void                setMemAccessFunction();
@@ -274,8 +277,13 @@ protected:
 
     ctx_type                    m_CtxType;
 
-    CL_MEM_ACCESS_FUNCTION      m_fnAcquireMemObj;
-    CL_MEM_ACCESS_FUNCTION      m_fnReleaseMemObj;
+    CL_MEM_ACCESS_FUNCTION      m_fnAcquireInputMemObj;
+    CL_MEM_ACCESS_FUNCTION      m_fnReleaseInputMemObj;
+
+    CL_MEM_ACCESS_FUNCTION      m_fnAcquireDX9Obj;
+    CL_MEM_ACCESS_FUNCTION      m_fnReleaseDX9Obj;
+    CL_MEM_ACCESS_FUNCTION      m_fnAcquireDX11Obj;
+    CL_MEM_ACCESS_FUNCTION      m_fnReleaseDX11Obj;
 
     DWORD						m_dwVersion[4];
 

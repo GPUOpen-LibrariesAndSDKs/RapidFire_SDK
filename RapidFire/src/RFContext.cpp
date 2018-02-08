@@ -55,6 +55,10 @@ static clCreateFromDX9MediaSurfaceKHR_fn       pfn_clCreateFromDX9MediaSurfaceKH
 static clEnqueueAcquireDX9MediaSurfacesKHR_fn  pfn_clEnqueueAcquireDX9MediaSurfacesKHR = NULL;
 static clEnqueueReleaseDX9MediaSurfacesKHR_fn  pfn_clEnqueueReleaseDX9MediaSurfacesKHR = NULL;
 
+typedef cl_mem(CL_API_CALL *clConvertImageAMD_fn) (cl_context, cl_mem, cl_image_format*, cl_int*);
+static clConvertImageAMD_fn                    pfn_clConvertImageAMD = NULL;
+typedef cl_mem(CL_API_CALL *clGetPlaneFromImageAMD_fn) (cl_context, cl_mem, cl_uint, cl_int*);
+static clGetPlaneFromImageAMD_fn               pfn_clGetPlaneFromImageAMD = NULL;
 
 #define INIT_CL_EXT_FCN_PTR(platform_id, name) \
     if (!pfn_ ## name) { \
@@ -180,6 +184,8 @@ private:
         INIT_CL_EXT_FCN_PTR(pSelectedPlatform, clCreateFromDX9MediaSurfaceKHR);
         INIT_CL_EXT_FCN_PTR(pSelectedPlatform, clEnqueueAcquireDX9MediaSurfacesKHR);
         INIT_CL_EXT_FCN_PTR(pSelectedPlatform, clEnqueueReleaseDX9MediaSurfacesKHR);
+        INIT_CL_EXT_FCN_PTR(pSelectedPlatform, clConvertImageAMD);
+        INIT_CL_EXT_FCN_PTR(pSelectedPlatform, clGetPlaneFromImageAMD);
 
         return pSelectedPlatform;
     }
@@ -690,8 +696,12 @@ RFContextCL::RFContextCL()
     , m_CtxType(RF_CTX_UNKNOWN)
     , m_TargetFormat(RF_FORMAT_UNKNOWN)
     , m_uiCSCKernelIdx(RF_KERNEL_UNKNOWN)
-    , m_fnAcquireMemObj(NULL)
-    , m_fnReleaseMemObj(NULL)
+    , m_fnAcquireInputMemObj(NULL)
+    , m_fnReleaseInputMemObj(NULL)
+    , m_fnAcquireDX9Obj(NULL)
+    , m_fnReleaseDX9Obj(NULL)
+    , m_fnAcquireDX11Obj(NULL)
+    , m_fnReleaseDX11Obj(NULL)
 {
     memset(m_CSCKernels, 0, RF_KERNEL_NUMBER * sizeof(CSC_KERNEL));
 
@@ -829,8 +839,8 @@ RFStatus RFContextCL::createContext()
 
     delete[] pDevices;
 
-    cl_context_properties pProperties[] = { CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(m_clPlatformId),
-                                            0 };
+    cl_context_properties pProperties[] = {CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(m_clPlatformId),
+        0};
 
     return finalizeContext(pProperties);
 }
@@ -866,10 +876,10 @@ RFStatus RFContextCL::createContext(DeviceCtx hDC, GraphicsCtx hGLRC)
         }
     }
 
-    cl_context_properties pProperties[] = { CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(m_clPlatformId),
-                                            CL_GL_CONTEXT_KHR,   reinterpret_cast<cl_context_properties>(hGLRC),
-                                            CL_WGL_HDC_KHR,      reinterpret_cast<cl_context_properties>(hDC),
-                                            0 };
+    cl_context_properties pProperties[] = {CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(m_clPlatformId),
+        CL_GL_CONTEXT_KHR,   reinterpret_cast<cl_context_properties>(hGLRC),
+        CL_WGL_HDC_KHR,      reinterpret_cast<cl_context_properties>(hDC),
+        0};
 
     size_t uiNumDevices = 0;
     SAFE_CALL_CL(clGetGLContextInfoKHR(pProperties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, 0, nullptr, &uiNumDevices));
@@ -904,7 +914,7 @@ RFStatus RFContextCL::createContext(ID3D11Device* pD3D11Device)
     cl_uint numDevices;
 
     SAFE_CALL_CL(pfn_clGetDeviceIDsFromD3D11KHR(m_clPlatformId, CL_D3D11_DEVICE_KHR, static_cast<void*>(pD3D11Device), CL_PREFERRED_DEVICES_FOR_D3D11_KHR,
-                 0, nullptr, &numDevices));
+                                                0, nullptr, &numDevices));
 
     if (numDevices == 0)
     {
@@ -920,16 +930,16 @@ RFStatus RFContextCL::createContext(ID3D11Device* pD3D11Device)
     }
 
     SAFE_CALL_CL(pfn_clGetDeviceIDsFromD3D11KHR(m_clPlatformId, CL_D3D11_DEVICE_KHR, static_cast<void*>(pD3D11Device), CL_PREFERRED_DEVICES_FOR_D3D11_KHR,
-                 numDevices, openCLInteropDevices, nullptr));
+                                                numDevices, openCLInteropDevices, nullptr));
 
     m_clDevId = openCLInteropDevices[0];
 
     delete[] openCLInteropDevices;
 
     // Create OpenCL context from ID3D11Device.
-    cl_context_properties cps[] = { CL_CONTEXT_PLATFORM,         reinterpret_cast<cl_context_properties>(m_clPlatformId),
-                                    CL_CONTEXT_D3D11_DEVICE_KHR, reinterpret_cast<cl_context_properties>(pD3D11Device),
-                                    0 };
+    cl_context_properties cps[] = {CL_CONTEXT_PLATFORM,         reinterpret_cast<cl_context_properties>(m_clPlatformId),
+        CL_CONTEXT_D3D11_DEVICE_KHR, reinterpret_cast<cl_context_properties>(pD3D11Device),
+        0};
 
     m_CtxType = RF_CTX_FROM_DX11;
 
@@ -952,7 +962,7 @@ RFStatus RFContextCL::createContext(IDirect3DDevice9* pD3D9Device)
     cl_dx9_media_adapter_type_khr tpAdapter = CL_ADAPTER_D3D9_KHR;
 
     SAFE_CALL_CL(pfn_clGetDeviceIDsFromDX9MediaAdapterKHR(m_clPlatformId, 3, &tpAdapter, static_cast<void*>(pD3D9Device), CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR,
-                 0, nullptr, &numDevices));
+                                                          0, nullptr, &numDevices));
 
     if (numDevices == 0)
     {
@@ -968,16 +978,16 @@ RFStatus RFContextCL::createContext(IDirect3DDevice9* pD3D9Device)
     }
 
     SAFE_CALL_CL(pfn_clGetDeviceIDsFromDX9MediaAdapterKHR(m_clPlatformId, 3, &tpAdapter, static_cast<void*>(pD3D9Device), CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR,
-                 numDevices, openCLInteropDevices, nullptr));
+                                                          numDevices, openCLInteropDevices, nullptr));
 
     m_clDevId = openCLInteropDevices[0];
 
     delete[] openCLInteropDevices;
 
     // Create OpenCL context from ID3D9 Device.
-    cl_context_properties cps[] = { CL_CONTEXT_PLATFORM,         reinterpret_cast<cl_context_properties>(m_clPlatformId),
-                                    CL_CONTEXT_ADAPTER_D3D9_KHR, reinterpret_cast<cl_context_properties>(pD3D9Device),
-                                    0 };
+    cl_context_properties cps[] = {CL_CONTEXT_PLATFORM,         reinterpret_cast<cl_context_properties>(m_clPlatformId),
+        CL_CONTEXT_ADAPTER_D3D9_KHR, reinterpret_cast<cl_context_properties>(pD3D9Device),
+        0};
 
     m_CtxType = RF_CTX_FROM_DX9;
 
@@ -1000,7 +1010,7 @@ RFStatus RFContextCL::createContext(IDirect3DDevice9Ex* pD3D9ExDevice)
     cl_dx9_media_adapter_type_khr tpAdapter = CL_ADAPTER_D3D9EX_KHR;
 
     SAFE_CALL_CL(pfn_clGetDeviceIDsFromDX9MediaAdapterKHR(m_clPlatformId, 3, &tpAdapter, static_cast<void*>(pD3D9ExDevice), CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR,
-                 0, nullptr, &numDevices));
+                                                          0, nullptr, &numDevices));
 
     if (numDevices == 0)
     {
@@ -1016,16 +1026,16 @@ RFStatus RFContextCL::createContext(IDirect3DDevice9Ex* pD3D9ExDevice)
     }
 
     SAFE_CALL_CL(pfn_clGetDeviceIDsFromDX9MediaAdapterKHR(m_clPlatformId, 3, &tpAdapter, static_cast<void*>(pD3D9ExDevice), CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR,
-                 numDevices, openCLInteropDevices, nullptr));
+                                                          numDevices, openCLInteropDevices, nullptr));
 
     m_clDevId = openCLInteropDevices[0];
 
     delete[] openCLInteropDevices;
 
     // Create OpenCL context from ID3D9 Device.
-    cl_context_properties cps[] = { CL_CONTEXT_PLATFORM,           reinterpret_cast<cl_context_properties>(m_clPlatformId),
-                                    CL_CONTEXT_ADAPTER_D3D9EX_KHR, reinterpret_cast<cl_context_properties>(pD3D9ExDevice),
-                                    0 };
+    cl_context_properties cps[] = {CL_CONTEXT_PLATFORM,           reinterpret_cast<cl_context_properties>(m_clPlatformId),
+        CL_CONTEXT_ADAPTER_D3D9EX_KHR, reinterpret_cast<cl_context_properties>(pD3D9ExDevice),
+        0};
 
     m_CtxType = RF_CTX_FROM_DX9EX;
 
@@ -1067,26 +1077,64 @@ RFStatus RFContextCL::finalizeContext(const cl_context_properties* pContextPrope
 }
 
 
+cl_mem RFContextCL::createFromDX9MediaSurface(cl_mem_flags flags, IDirect3DSurface9* resource, UINT subresource, cl_int* errcode_ret) const
+{
+    typedef struct cl_dx9_surface_info_khr
+    {
+        IDirect3DSurface9* resource;
+        HANDLE shared_handle;
+    } cl_dx9_surface_info_khr;
+
+    cl_dx9_surface_info_khr surface = { resource, NULL};
+
+    DWORD dataSize = sizeof(surface.shared_handle);
+    GUID  AMFSharedHandleGUID = {0xbf7e044f, 0x84c5, 0x4386, 0x9b, 0xa0, 0xc6, 0xba, 0xcd, 0x8a, 0x79, 0x3d};
+    HRESULT hr = resource->GetPrivateData((GUID &)AMFSharedHandleGUID, &surface.shared_handle, &dataSize);
+
+    return pfn_clCreateFromDX9MediaSurfaceKHR(m_clCtx, flags, CL_ADAPTER_D3D9EX_KHR, &surface, subresource, errcode_ret);
+}
+
+cl_mem RFContextCL::createFromD3D11Texture2DKHR(cl_mem_flags flags, ID3D11Texture2D* resource, UINT subresource, cl_int* errcode_ret) const
+{
+    return pfn_clCreateFromD3D11Texture2DKHR(m_clCtx, flags, resource, subresource, errcode_ret);
+}
+
+cl_mem RFContextCL::convertImageAmd(cl_mem image, cl_image_format* dstFormat, cl_int* errorcode_ret) const
+{
+    return pfn_clConvertImageAMD(m_clCtx, image, dstFormat, errorcode_ret);
+}
+
+cl_mem RFContextCL::getPlaneFromImageAmd(cl_mem image, cl_uint plane, cl_int* errcode_ret) const
+{
+    return pfn_clGetPlaneFromImageAMD(m_clCtx, image, plane, errcode_ret);
+}
+
+
 void RFContextCL::setMemAccessFunction()
 {
+    m_fnAcquireDX9Obj = pfn_clEnqueueAcquireDX9MediaSurfacesKHR;
+    m_fnReleaseDX9Obj = pfn_clEnqueueReleaseDX9MediaSurfacesKHR;
+    m_fnAcquireDX11Obj = pfn_clEnqueueAcquireD3D11ObjectsKHR;
+    m_fnReleaseDX11Obj = pfn_clEnqueueReleaseD3D11ObjectsKHR;
+
     switch (m_CtxType)
     {
         case RF_CTX_FROM_GL:
-            m_fnAcquireMemObj = clEnqueueAcquireGLObjects;
-            m_fnReleaseMemObj = clEnqueueReleaseGLObjects;
+            m_fnAcquireInputMemObj = clEnqueueAcquireGLObjects;
+            m_fnReleaseInputMemObj = clEnqueueReleaseGLObjects;
             break;
         case RF_CTX_FROM_DX11:
-            m_fnAcquireMemObj = pfn_clEnqueueAcquireD3D11ObjectsKHR;
-            m_fnReleaseMemObj = pfn_clEnqueueReleaseD3D11ObjectsKHR;
+            m_fnAcquireInputMemObj = pfn_clEnqueueAcquireD3D11ObjectsKHR;
+            m_fnReleaseInputMemObj = pfn_clEnqueueReleaseD3D11ObjectsKHR;
             break;
         case RF_CTX_FROM_DX9:
         case RF_CTX_FROM_DX9EX:
-            m_fnAcquireMemObj = pfn_clEnqueueAcquireDX9MediaSurfacesKHR;
-            m_fnReleaseMemObj = pfn_clEnqueueReleaseDX9MediaSurfacesKHR;
+            m_fnAcquireInputMemObj = pfn_clEnqueueAcquireDX9MediaSurfacesKHR;
+            m_fnReleaseInputMemObj = pfn_clEnqueueReleaseDX9MediaSurfacesKHR;
             break;
         default:
-            m_fnAcquireMemObj = NULL;
-            m_fnReleaseMemObj = NULL;
+            m_fnAcquireInputMemObj = NULL;
+            m_fnReleaseInputMemObj = NULL;
             break;
     }
 }
@@ -1238,7 +1286,7 @@ RFStatus RFContextCL::setInputTexture(IDirect3DSurface9* pD3D9Texture, const uns
         HANDLE shared_handle;
     } cl_dx9_surface_info_khr;
 
-    cl_dx9_surface_info_khr surface = { nullptr, NULL };
+    cl_dx9_surface_info_khr surface = {nullptr, NULL};
     surface.resource = pD3D9Texture;
 
     // Create an OpenCL Image2D based on the D3D9 texture.
@@ -1291,9 +1339,9 @@ RFStatus RFContextCL::createBuffers(RFFormat format, unsigned int uiWidth, unsig
         return RF_STATUS_INVALID_DIMENSION;
     }
 
-    m_uiOutputWidth         = uiWidth;
-    m_uiOutputHeight        = uiHeight;
-    m_uiAlignedOutputWidth  = uiAlignedWidth;
+    m_uiOutputWidth = uiWidth;
+    m_uiOutputHeight = uiHeight;
+    m_uiAlignedOutputWidth = uiAlignedWidth;
     m_uiAlignedOutputHeight = uiAlignedHeight;
 
     m_bUseAsyncCopy = bUseAsyncCopy;
@@ -1424,11 +1472,11 @@ RFStatus RFContextCL::deleteBuffers()
         return RF_STATUS_OPENCL_FAIL;
     }
 
-    m_uiInputWidth          = 0;
-    m_uiInputHeight         = 0;
-    m_uiOutputWidth         = 0;
-    m_uiOutputHeight        = 0;
-    m_uiAlignedOutputWidth  = 0;
+    m_uiInputWidth = 0;
+    m_uiInputHeight = 0;
+    m_uiOutputWidth = 0;
+    m_uiOutputHeight = 0;
+    m_uiAlignedOutputWidth = 0;
     m_uiAlignedOutputHeight = 0;
 
     m_uiNumRegisteredRT = 0;
@@ -1493,10 +1541,10 @@ bool RFContextCL::configureKernels()
     m_CSCKernels[RF_KERNEL_RGBA_COPY].uiLocalWorkSize[0] = 16;
     m_CSCKernels[RF_KERNEL_RGBA_COPY].uiLocalWorkSize[1] = 16;
 
-    cl_int4 vDim = { static_cast<int>(m_uiOutputWidth),
-                     static_cast<int>(m_uiOutputHeight),
-                     static_cast<int>(m_uiAlignedOutputWidth),
-                     static_cast<int>(m_uiAlignedOutputHeight) };
+    cl_int4 vDim = {static_cast<int>(m_uiOutputWidth),
+        static_cast<int>(m_uiOutputHeight),
+        static_cast<int>(m_uiAlignedOutputWidth),
+        static_cast<int>(m_uiAlignedOutputHeight)};
 
     for (unsigned int i = 0; i < RF_KERNEL_NUMBER; ++i)
     {
@@ -1540,9 +1588,9 @@ bool RFContextCL::configureKernels()
 
 RFStatus RFContextCL::acquireCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents, cl_event* eventsWait, cl_event* eventReturned)
 {
-    if (m_fnAcquireMemObj)
+    if (m_fnAcquireInputMemObj)
     {
-        if (m_fnAcquireMemObj(clQueue, 1, &m_clInputImage[idx], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
+        if (m_fnAcquireInputMemObj(clQueue, 1, &m_clInputImage[idx], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
         {
             return RF_STATUS_OPENCL_FAIL;
         }
@@ -1557,9 +1605,9 @@ RFStatus RFContextCL::acquireCLMemObj(cl_command_queue clQueue, unsigned int idx
 
 RFStatus RFContextCL::releaseCLMemObj(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents, cl_event* eventsWait, cl_event* eventReturned)
 {
-    if (m_fnReleaseMemObj)
+    if (m_fnReleaseInputMemObj)
     {
-        if (m_fnReleaseMemObj(clQueue, 1, &m_clInputImage[idx], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
+        if (m_fnReleaseInputMemObj(clQueue, 1, &m_clInputImage[idx], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
         {
             return RF_STATUS_OPENCL_FAIL;
         }
@@ -1692,8 +1740,8 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
         SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
 
         SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
-                     m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
-                     nullptr, &m_clCSCFinished[uiDestIdx]));
+                                            m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
+                                            nullptr, &m_clCSCFinished[uiDestIdx]));
 
         clFlush(m_clCmdQueue);
 
@@ -1705,8 +1753,8 @@ RFStatus RFContextCL::processBuffer(bool bRunCSC, bool bInvert, unsigned int uiS
     }
     else
     {
-        const size_t src_origin[3] = { 0, 0, 0 };
-        const size_t region[3] = { m_uiOutputWidth, m_uiOutputHeight, 1 };
+        const size_t src_origin[3] = {0, 0, 0};
+        const size_t region[3] = {m_uiOutputWidth, m_uiOutputHeight, 1};
         if (m_bUseAsyncCopy)
         {
             SAFE_CALL_CL(clEnqueueCopyImageToBuffer(m_clDMAQueue, m_clInputImage[uiSrcIdx], m_clPageLockedBuffer[uiDestIdx], src_origin, region, 0, 1, &clAcquireImageEvent, &m_clDMAFinished[uiDestIdx]));

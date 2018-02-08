@@ -23,7 +23,6 @@
 #include "RFContextAMF.h"
 
 #include <CL/cl.h>
-#include <components/VideoEncoderVCE.h>
 
 #include "AMFWrapper.h"
 #include "RFError.h"
@@ -44,6 +43,9 @@ RFContextAMF::RFContextAMF()
     for (int i = 0; i < MAX_NUM_RENDER_TARGETS; ++i)
     {
         m_pD3D9Surfaces[i] = NULL;
+        m_clNV12Planes[i * 2] = NULL;
+        m_clNV12Planes[i * 2 + 1] = NULL;
+        m_clNV12Memory[i] = AMF_MEMORY_UNKNOWN;
     }
 }
 
@@ -52,9 +54,9 @@ RFContextAMF::~RFContextAMF()
 {
     // The OpenCL context was created by AMF and it should be released by AMF
     // DO not call clRelease here and make sure it is called in RFContextCL!
-    m_clCtx      = NULL;
+    m_clCtx = NULL;
     m_clCmdQueue = NULL;
-    m_clDevId    = NULL;
+    m_clDevId = NULL;
 
     if (m_pSurfaceList)
     {
@@ -65,6 +67,11 @@ RFContextAMF::~RFContextAMF()
     {
         // Surfaces are created by the application, so no need to delete them here.
         m_pD3D9Surfaces[i] = NULL;
+
+        if (m_CtxType != RF_CTX_FROM_DX9)
+        {
+            releaseNV12Interop(i);
+        }
     }
 }
 
@@ -100,6 +107,7 @@ RFStatus RFContextAMF::createContext(DeviceCtx hDC, GraphicsCtx hGLRC)
     CHECK_AMF_ERROR(amfErr);
 
     m_CtxType = RF_CTX_FROM_GL;
+    m_amfMemory = AMF_MEMORY_DX9;
 
     return finalizeContext();
 }
@@ -126,7 +134,7 @@ RFStatus RFContextAMF::createContext(ID3D11Device* pD3DDevice)
     amfErr = m_amfContext->InitDX11(pD3DDevice);
     CHECK_AMF_ERROR(amfErr);
 
-    // We still need to init DX9 unless DX 11.1 is available.
+    // Init DX9 as fallback on Windows 7 systems
     amfErr = m_amfContext->InitDX9(nullptr);
     CHECK_AMF_ERROR(amfErr);
 
@@ -134,6 +142,7 @@ RFStatus RFContextAMF::createContext(ID3D11Device* pD3DDevice)
     CHECK_AMF_ERROR(amfErr);
 
     m_CtxType = RF_CTX_FROM_DX11;
+    m_amfMemory = AMF_MEMORY_DX11;
 
     return finalizeContext();
 }
@@ -164,6 +173,7 @@ RFStatus RFContextAMF::createContext(IDirect3DDevice9Ex* pD3DDeviceEx)
     CHECK_AMF_ERROR(amfErr);
 
     m_CtxType = RF_CTX_FROM_DX9EX;
+    m_amfMemory = AMF_MEMORY_DX9;
 
     return finalizeContext();
 }
@@ -191,6 +201,7 @@ RFStatus RFContextAMF::createContext(IDirect3DDevice9* pD3DDevice)
     CHECK_AMF_ERROR(amfErr);
 
     m_CtxType = RF_CTX_FROM_DX9;
+    m_amfMemory = AMF_MEMORY_DX9;
 
     // In case of DX9 the CSC is done by AMF. The plane count is 1.
     m_uiPlaneCount = 1;
@@ -206,9 +217,9 @@ RFStatus RFContextAMF::finalizeContext()
 {
     cl_int nStatus;
 
-    m_clCtx      = static_cast<cl_context>(m_amfContext->GetOpenCLContext());
+    m_clCtx = static_cast<cl_context>(m_amfContext->GetOpenCLContext());
     m_clCmdQueue = static_cast<cl_command_queue>(m_amfContext->GetOpenCLCommandQueue());
-    m_clDevId    = static_cast<cl_device_id>(m_amfContext->GetOpenCLDeviceID());
+    m_clDevId = static_cast<cl_device_id>(m_amfContext->GetOpenCLDeviceID());
 
     if (!m_clCtx || !m_clCmdQueue || !m_clDevId)
     {
@@ -248,7 +259,6 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
     }
 
     m_amfFormat = AMF_SURFACE_NV12;
-    m_amfMemory = AMF_MEMORY_OPENCL;
 
     m_TargetFormat = RF_NV12;
     m_uiCSCKernelIdx = RF_KERNEL_RGBA_TO_NV12_PLANES;
@@ -267,7 +277,6 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
         if (format == RF_BGRA8)
         {
             m_amfFormat = AMF_SURFACE_BGRA;
-            m_amfMemory = AMF_MEMORY_DX9;
 
             m_uiCSCKernelIdx = RF_KERNEL_UNKNOWN;
         }
@@ -285,7 +294,30 @@ RFStatus RFContextAMF::createBuffers(RFFormat format, unsigned int uiWidth, unsi
     for (unsigned int i = 0; i < NUM_RESULT_BUFFERS; ++i)
     {
         amfErr = m_amfContext->AllocSurface(m_amfMemory, m_amfFormat, m_uiAlignedOutputWidth, m_uiAlignedOutputHeight, &(m_pSurfaceList[i]));
+        if ((amfErr == AMF_DIRECTX_FAILED || amfErr == AMF_NO_DEVICE) && m_amfMemory == AMF_MEMORY_DX11)
+        {
+            m_amfMemory = AMF_MEMORY_DX9;
+            amfErr = m_amfContext->AllocSurface(m_amfMemory, m_amfFormat, m_uiAlignedOutputWidth, m_uiAlignedOutputHeight, &(m_pSurfaceList[i]));
+        }
         CHECK_AMF_ERROR(amfErr);
+
+        if (m_CtxType == RF_CTX_FROM_DX9)
+        {
+            continue;
+        }
+
+        if (m_amfMemory == AMF_MEMORY_DX9)
+        {
+            SAFE_CALL_RF(createNV12InteropFromDX9(i));
+        }
+        else if(m_amfMemory = AMF_MEMORY_DX11)
+        {
+            SAFE_CALL_RF(createNV12InteropFromDX11(i));
+        }
+        else
+        {
+            return RF_STATUS_AMF_FAIL;
+        }
     }
 
     if (m_CtxType == RF_CTX_FROM_DX9)
@@ -341,8 +373,14 @@ RFStatus RFContextAMF::processBuffer(bool /*bRunCSC*/, bool bInvert, unsigned in
     // No need to wait since the session will not allow to encode frames if no free surface is available.
     m_clCSCFinished[uiDestIdx].release();
 
-    cl_mem clEncodeBufferY = static_cast<cl_mem>(getImageBuffer(uiDestIdx, 0));
-    cl_mem clEncodeBufferUV = static_cast<cl_mem>(getImageBuffer(uiDestIdx, 1));
+    cl_mem clEncodeBufferY = getImageBuffer(uiDestIdx, 0);
+    cl_mem clEncodeBufferUV = getImageBuffer(uiDestIdx, 1);
+    if (!clEncodeBufferY || !clEncodeBufferUV)
+    {
+        return RF_STATUS_AMF_FAIL;
+    }
+
+    SAFE_CALL_RF(acquireNV12Planes(m_clCmdQueue, uiDestIdx));
 
     if (!clEncodeBufferY || !clEncodeBufferY)
     {
@@ -367,10 +405,12 @@ RFStatus RFContextAMF::processBuffer(bool /*bRunCSC*/, bool bInvert, unsigned in
     SAFE_CALL_CL(clSetKernelArg(m_CSCKernels[m_uiCSCKernelIdx].kernel, 3, sizeof(cl_int), static_cast<void*>(&nInvert)));
 
     SAFE_CALL_CL(clEnqueueNDRangeKernel(m_clCmdQueue, m_CSCKernels[m_uiCSCKernelIdx].kernel, 2, nullptr,
-                 m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
-                 nullptr, &(m_clCSCFinished[uiDestIdx])));
+                                        m_CSCKernels[m_uiCSCKernelIdx].uiGlobalWorkSize, m_CSCKernels[m_uiCSCKernelIdx].uiLocalWorkSize, 0,
+                                        nullptr, nullptr));
 
     clFlush(m_clCmdQueue);
+
+    SAFE_CALL_RF(releaseNV12Planes(m_clCmdQueue, uiDestIdx, 0, nullptr, &(m_clCSCFinished[uiDestIdx])));
 
     // Release OpenCL object from OpenGL/D3D object.
     SAFE_CALL_RF(releaseCLMemObj(m_clCmdQueue, uiSorceIdx));
@@ -398,28 +438,184 @@ AMFSurfacePtr RFContextAMF::getAMFSurface(unsigned int uiIdx) const
 }
 
 
-void* RFContextAMF::getImageBuffer(unsigned int uiBuffer, unsigned int uiPlaneId)
+cl_mem RFContextAMF::getImageBuffer(unsigned int uiBuffer, unsigned int uiPlaneId)
 {
-    if (uiPlaneId >= m_uiPlaneCount)
+    if (uiBuffer >= MAX_NUM_RENDER_TARGETS || uiPlaneId >= m_uiPlaneCount)
     {
-        return nullptr;
+        return NULL;
     }
 
     AMF_MEMORY_TYPE amfMemType = m_pSurfaceList[uiBuffer]->GetMemoryType();
 
-    if (amfMemType != m_amfMemory)
+    if (amfMemType != m_clNV12Memory[uiBuffer])
     {
-        m_pSurfaceList[uiBuffer]->Convert(m_amfMemory);
+        if (amfMemType == AMF_MEMORY_DX9)
+        {
+            createNV12InteropFromDX9(uiBuffer);
+        }
+        else if (amfMemType == AMF_MEMORY_DX11)
+        {
+            createNV12InteropFromDX11(uiBuffer);
+        }
+        else
+        {
+            return NULL;
+        }
     }
 
-    AMFPlane* pPlane = m_pSurfaceList[uiBuffer]->GetPlaneAt(uiPlaneId);
+    return m_clNV12Planes[uiBuffer * 2 + uiPlaneId];
+}
 
-    if (!pPlane)
+RFStatus RFContextAMF::createNV12InteropFromDX11(unsigned int idx)
+{
+    releaseNV12Interop(idx);
+
+    auto amfSurface = m_pSurfaceList[idx];
+    auto numPlanes = amfSurface->GetPlanesCount();
+    if (numPlanes != 2)
     {
-        return nullptr;
+        return RF_STATUS_AMF_FAIL;
     }
 
-    return pPlane->GetNative();
+    auto plane = amfSurface->GetPlaneAt(0);
+    auto native = plane->GetNative();
+    auto dx11texture = static_cast<ID3D11Texture2D*>(native);
+
+    cl_int nStatus;
+    cl_mem interopTexture = createFromD3D11Texture2DKHR(CL_MEM_WRITE_ONLY, dx11texture, 0, &nStatus);
+    SAFE_CALL_CL(nStatus);
+
+    for (int p = 0; p < 2; ++p)
+    {
+        cl_mem plane = getPlaneFromImageAmd(interopTexture, p, &nStatus);
+        SAFE_CALL_CL(nStatus);
+
+        cl_image_format format;
+        SAFE_CALL_CL(clGetImageInfo(plane, CL_IMAGE_FORMAT, sizeof(cl_image_format), &format, nullptr));
+        SAFE_CALL_CL(nStatus);
+
+        if (format.image_channel_data_type != CL_UNSIGNED_INT8)
+        {
+            format.image_channel_data_type = CL_UNSIGNED_INT8;
+            cl_mem planeUI = convertImageAmd(plane, &format, &nStatus);
+            SAFE_CALL_CL(nStatus);
+            SAFE_CALL_CL(clReleaseMemObject(plane));
+
+            m_clNV12Planes[idx * 2 + p] = planeUI;
+        }
+        else
+        {
+            m_clNV12Planes[idx * 2 + p] = plane;
+        }
+    }
+
+    SAFE_CALL_CL(clReleaseMemObject(interopTexture));
+
+    m_clNV12Memory[idx] = AMF_MEMORY_DX11;
+
+    return RF_STATUS_OK;
+}
+
+RFStatus RFContextAMF::createNV12InteropFromDX9(unsigned int idx)
+{
+    releaseNV12Interop(idx);
+
+    auto amfSurface = m_pSurfaceList[idx];
+    auto numPlanes = amfSurface->GetPlanesCount();
+    if (numPlanes != 2)
+    {
+        return RF_STATUS_AMF_FAIL;
+    }
+
+    auto plane = amfSurface->GetPlaneAt(0);
+    auto native = plane->GetNative();
+    auto dx9Surface = static_cast<IDirect3DSurface9*>(native);
+
+    cl_int nStatus;
+    for (int p = 0; p < 2; ++p)
+    {
+        cl_mem plane = createFromDX9MediaSurface(CL_MEM_WRITE_ONLY, dx9Surface, p, &nStatus);
+        SAFE_CALL_CL(nStatus);
+
+        cl_image_format format;
+        SAFE_CALL_CL(clGetImageInfo(plane, CL_IMAGE_FORMAT, sizeof(cl_image_format), &format, nullptr));
+        SAFE_CALL_CL(nStatus);
+
+        if (format.image_channel_data_type != CL_UNSIGNED_INT8)
+        {
+            format.image_channel_data_type = CL_UNSIGNED_INT8;
+            cl_mem planeUI = convertImageAmd(plane, &format, &nStatus);
+            SAFE_CALL_CL(nStatus);
+            SAFE_CALL_CL(clReleaseMemObject(plane));
+
+            m_clNV12Planes[idx * 2 + p] = planeUI;
+        }
+        else
+        {
+            m_clNV12Planes[idx * 2 + p] = plane;
+        }
+    }
+
+    m_clNV12Memory[idx] = AMF_MEMORY_DX9;
+
+    return RF_STATUS_OK;
+}
+
+RFStatus RFContextAMF::acquireNV12Planes(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents, cl_event *eventsWait, cl_event *eventReturned)
+{
+    auto fnAcquire = m_clNV12Memory[idx] == AMF_MEMORY_DX9 ? m_fnAcquireDX9Obj : (m_clNV12Memory[idx] == AMF_MEMORY_DX11 ? m_fnAcquireDX11Obj : NULL);
+
+    if (fnAcquire)
+    {
+        if (fnAcquire(clQueue, 2, &m_clNV12Planes[idx * 2], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
+        {
+            return RF_STATUS_OPENCL_FAIL;
+        }
+        clFlush(clQueue);
+    }
+    else
+    {
+        return RF_STATUS_AMF_FAIL;
+    }
+
+    return RF_STATUS_OK;
+}
+
+RFStatus RFContextAMF::releaseNV12Planes(cl_command_queue clQueue, unsigned int idx, unsigned int numEvents, cl_event *eventsWait, cl_event *eventReturned)
+{
+    auto fnRelease = m_clNV12Memory[idx] == AMF_MEMORY_DX9 ? m_fnReleaseDX9Obj : (m_clNV12Memory[idx] == AMF_MEMORY_DX11 ? m_fnReleaseDX11Obj : NULL);
+
+    if (fnRelease)
+    {
+        if (fnRelease(clQueue, 2, &m_clNV12Planes[idx * 2], numEvents, eventsWait, eventReturned) != CL_SUCCESS)
+        {
+            return RF_STATUS_OPENCL_FAIL;
+        }
+        clFlush(clQueue);
+    }
+    else
+    {
+        return RF_STATUS_AMF_FAIL;
+    }
+
+    return RF_STATUS_OK;
+}
+
+void RFContextAMF::releaseNV12Interop(unsigned int idx)
+{
+    if (m_clNV12Planes[idx * 2])
+    {
+        clReleaseMemObject(m_clNV12Planes[idx * 2]);
+        m_clNV12Planes[idx * 2] = NULL;
+    }
+
+    if (m_clNV12Planes[idx * 2 + 1])
+    {
+        clReleaseMemObject(m_clNV12Planes[idx * 2 + 1]);
+        m_clNV12Planes[idx * 2 + 1] = NULL;
+    }
+
+    m_clNV12Memory[idx] = AMF_MEMORY_UNKNOWN;
 }
 
 
