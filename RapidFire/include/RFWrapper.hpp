@@ -97,68 +97,63 @@ public:
 
 private:
 
-    RFWrapper();
+    RFWrapper::RFWrapper()
+        : m_hDLL(NULL)
+        , m_bRFFuncLoaded(false)
+    {
+        memset(&rfFunc, 0, sizeof(RFFunctions));
+        m_bRFFuncLoaded = loadFunctions();
+    }
+
     RFWrapper(const RFWrapper&);
 
-    ~RFWrapper();
+    RFWrapper::~RFWrapper()
+    {
+        if (m_hDLL)
+        {
+            FreeLibrary(m_hDLL);
+        }
+
+        m_bRFFuncLoaded = false;
+        memset(&rfFunc, 0, sizeof(RFFunctions));
+    }
 
     RFWrapper& operator=(const RFWrapper&);
 
-    bool loadFunctions();
+    bool RFWrapper::loadFunctions()
+    {
+        m_hDLL = LoadLibrary(TEXT("RapidFire.dll"));
+
+        if (!m_hDLL)
+        {
+            m_hDLL = LoadLibrary(TEXT("RapidFire64.dll"));
+        }
+
+        if (!m_hDLL)
+        {
+            return false;
+        }
+
+        GET_RF_PROC(rfCreateEncodeSession);
+        GET_RF_PROC(rfDeleteEncodeSession);
+        GET_RF_PROC(rfCreateEncoder);
+        GET_RF_PROC(rfCreateEncoder2);
+        GET_RF_PROC(rfRegisterRenderTarget);
+        GET_RF_PROC(rfRemoveRenderTarget);
+        GET_RF_PROC(rfGetRenderTargetState);
+        GET_RF_PROC(rfResizeSession);
+        GET_RF_PROC(rfEncodeFrame);
+        GET_RF_PROC(rfGetEncodedFrame);
+        GET_RF_PROC(rfGetSourceFrame);
+        GET_RF_PROC(rfSetEncodeParameter);
+        GET_RF_PROC(rfGetEncodeParameter);
+        GET_RF_PROC(rfGetMouseData);
+        GET_RF_PROC(rfReleaseEvent);
+
+        return true;
+    }
 
     bool m_bRFFuncLoaded;
 };
-
-RFWrapper::RFWrapper()
-    : m_hDLL(NULL)
-    , m_bRFFuncLoaded(false)
-{
-    memset(&rfFunc, 0, sizeof(RFFunctions));
-    m_bRFFuncLoaded = loadFunctions();
-}
-
-RFWrapper::~RFWrapper()
-{
-    if (m_hDLL)
-    {
-        FreeLibrary(m_hDLL);
-    }
-
-    m_bRFFuncLoaded = false;
-    memset(&rfFunc, 0, sizeof(RFFunctions));
-}
-
-bool RFWrapper::loadFunctions()
-{
-    m_hDLL = LoadLibrary(TEXT("RapidFire.dll"));
-
-    if (!m_hDLL)
-    {
-        m_hDLL = LoadLibrary(TEXT("RapidFire64.dll"));
-    }
-
-    if (!m_hDLL)
-    {
-        return false;
-    }
-
-    GET_RF_PROC(rfCreateEncodeSession);
-    GET_RF_PROC(rfDeleteEncodeSession);
-    GET_RF_PROC(rfCreateEncoder);
-    GET_RF_PROC(rfCreateEncoder2);
-    GET_RF_PROC(rfRegisterRenderTarget);
-    GET_RF_PROC(rfRemoveRenderTarget);
-    GET_RF_PROC(rfGetRenderTargetState);
-    GET_RF_PROC(rfResizeSession);
-    GET_RF_PROC(rfEncodeFrame);
-    GET_RF_PROC(rfGetEncodedFrame);
-    GET_RF_PROC(rfGetSourceFrame);
-    GET_RF_PROC(rfSetEncodeParameter);
-    GET_RF_PROC(rfGetEncodeParameter);
-    GET_RF_PROC(rfGetMouseData);
-    GET_RF_PROC(rfReleaseEvent);
-
-    return true;
-}
 
 #undef GET_RF_PROC
