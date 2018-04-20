@@ -202,6 +202,170 @@ bool RFMouseGrab::getShapeData(int iBlocking, RFMouseData& md)
 }
 
 
+int HasAlphaValues(RFBitmapBuffer* pColor)
+{
+    if (!pColor || !pColor->pPixels || pColor->uiBitsPerPixel != 32)
+    {
+        return 0;
+    }
+
+    uint8_t* pColorPixels = static_cast<uint8_t*>(pColor->pPixels);
+
+    for (unsigned int y = 0; y < pColor->uiHeight; ++y)
+    {
+        for (unsigned int x = 0; x < pColor->uiWidth; ++x)
+        {
+            if (pColorPixels[y * pColor->uiPitch + x * 4 + 3] != 0)
+            {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+int HasMaskValues(RFBitmapBuffer* pMask)
+{
+    if (!pMask || !pMask->pPixels || pMask->uiBitsPerPixel != 1)
+    {
+        return 0;
+    }
+
+    uint8_t* pMaskPixels = static_cast<uint8_t*>(pMask->pPixels);
+    if (pMaskPixels[0] != 0xff && pMaskPixels[0] != 0)
+    {
+        return 1;
+    }
+
+    for (unsigned int y = 0; y < pMask->uiHeight; ++y)
+    {
+        for (unsigned int x = 0; x < pMask->uiPitch; ++x)
+        {
+            if (pMaskPixels[y * pMask->uiPitch + x] != pMaskPixels[0])
+            {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+void MaskAlphaAndPremultiplyColors(RFBitmapBuffer* pMask, RFBitmapBuffer* pColor)
+{
+    if (!pMask || !pColor || !pMask->pPixels || !pColor->pPixels || pMask->uiBitsPerPixel != 1 || pColor->uiBitsPerPixel != 32)
+    {
+        return;
+    }
+
+    int hasMaskValues = HasMaskValues(pMask);
+    uint8_t* pColorPixels = static_cast<uint8_t*>(pColor->pPixels);
+    uint8_t* pMaskPixels = static_cast<uint8_t*>(pMask->pPixels);
+
+    for (unsigned int y = 0; y < pColor->uiHeight; ++y)
+    {
+        for (unsigned int x = 0; x < pColor->uiWidth; ++x)
+        {
+            uint8_t* pColorPixel = &pColorPixels[y * pColor->uiPitch + x * 4];
+
+            if (hasMaskValues && (pMaskPixels[y * pMask->uiPitch + x / 8] >> (7 - (x % 8))) & 1)
+            {
+                pColorPixel[3] = 0;
+            }
+            else
+            {
+                uint8_t alpha  = pColorPixel[3];
+                pColorPixel[0] = (pColorPixel[0] * alpha) / 255;
+                pColorPixel[1] = (pColorPixel[1] * alpha) / 255;
+                pColorPixel[2] = (pColorPixel[2] * alpha) / 255;
+            }
+        }
+    }
+}
+
+
+void ConvertColorToMonochrome(RFMouseData* mouseData)
+{
+    if (!mouseData || !mouseData->color.pPixels || !mouseData->mask.pPixels || mouseData->mask.uiBitsPerPixel != 1 || mouseData->color.uiBitsPerPixel != 32)
+    {
+        return;
+    }
+
+    uint8_t* pColorPixels = static_cast<uint8_t*>(mouseData->color.pPixels);
+
+    for (unsigned int y = 0; y < mouseData->color.uiHeight; ++y)
+    {
+        for (unsigned int x = 0; x < mouseData->color.uiWidth; ++x)
+        {
+            if (*(reinterpret_cast<uint32_t*>(&pColorPixels[y * mouseData->color.uiPitch + x * 4])) != 0)
+            {
+                pColorPixels[y * mouseData->mask.uiPitch + x / 8] |= 1 << (7 - (x % 8));
+            }
+        }
+    }
+
+    unsigned int maskBuffersSize = mouseData->mask.uiHeight * mouseData->mask.uiPitch;
+    memcpy(pColorPixels + maskBuffersSize, pColorPixels, maskBuffersSize);
+    memcpy(pColorPixels, mouseData->mask.pPixels, maskBuffersSize);
+
+    mouseData->mask.pPixels = mouseData->color.pPixels;
+    mouseData->mask.uiHeight *= 2;
+    memset(&mouseData->color, 0, sizeof(mouseData->color));
+}
+
+void ConvertRFMouseData(RFMouseData* input, RFMouseData2* output)
+{
+    if (!input || !input->mask.pPixels || !output)
+    {
+        return;
+    }
+
+    output->iVisible = input->iVisible;
+    output->uiXHot = input->uiXHot;
+    output->uiYHot = input->uiYHot;
+
+    if (input->color.pPixels && HasAlphaValues(&input->color))
+    {
+        output->pShape.uiWidth = input->color.uiWidth;
+        output->pShape.uiHeight = input->color.uiHeight;
+        output->pShape.uiPitch = input->color.uiPitch;
+        output->pShape.uiBitsPerPixel = input->color.uiBitsPerPixel;
+        MaskAlphaAndPremultiplyColors(&input->mask, &input->color);
+        output->pShape.pPixels = input->color.pPixels;
+        output->uiFlags = 0x00000004; // RF_MOUSE_MASKED_COLOR
+        return;
+    }
+
+    if (input->color.pPixels)
+    {
+        ConvertColorToMonochrome(input);
+    }
+
+    output->pShape.uiWidth = input->mask.uiWidth;
+    output->pShape.uiHeight = input->mask.uiHeight;
+    output->pShape.uiPitch = input->mask.uiPitch;
+    output->pShape.uiBitsPerPixel = input->mask.uiBitsPerPixel;
+    output->pShape.pPixels = input->mask.pPixels;
+    output->uiFlags = 0x00000001; // RF_MOUSE_MONOCHROME
+    return;
+}
+
+bool RFMouseGrab::getShapeData2(int iBlocking, RFMouseData2& md)
+{
+    RFMouseData md1;
+    if (!getShapeData(iBlocking, md1))
+    {
+        return false;
+    }
+
+    ConvertRFMouseData(&md1, &md);
+
+    return true;
+}
+
 bool RFMouseGrab::releaseEvent()
 {
     if (m_hNewCursorStateEvent)

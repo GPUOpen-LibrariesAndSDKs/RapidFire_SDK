@@ -80,6 +80,9 @@ public:
     // Can be implemented by a derived class to give access to mouse shape data.
     virtual RFStatus      getMouseData(int iWaitForShapeChange, RFMouseData& md) const;
 
+    // Can be implemented by a derived class to give access to mouse shape data.
+    virtual RFStatus      getMouseData2(int iWaitForShapeChange, RFMouseData2& md) const;
+
 protected:
 
     struct RFSessionProperties

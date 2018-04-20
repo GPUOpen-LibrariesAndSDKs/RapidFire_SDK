@@ -460,6 +460,12 @@ RFStatus RFSession::getMouseData(int iWaitForShapeChange, RFMouseData& md) const
 }
 
 
+RFStatus RFSession::getMouseData2(int iWaitForShapeChange, RFMouseData2& md) const
+{
+    return RF_STATUS_FAIL;
+}
+
+
 RFStatus RFSession::setParameter(const int param, RFProperties value)
 {
     // Set parameter and set protection since it was explicitly set by user

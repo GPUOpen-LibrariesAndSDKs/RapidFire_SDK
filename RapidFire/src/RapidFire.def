@@ -13,5 +13,6 @@ rfGetSourceFrame
 rfSetEncodeParameter
 rfGetEncodeParameter
 rfGetMouseData
+rfGetMouseData2
 rfReleaseEvent
 

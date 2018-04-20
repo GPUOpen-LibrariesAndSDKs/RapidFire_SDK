@@ -26,6 +26,7 @@
 * * File Version 1.0.1 (CL 36735) September 17th 2015
 * * File Version 1.1.0.1          January 25th 2016
 * * File Version 1.1.0.19         September 26th 2016
+* * File Version 1.2.1.0          April 20th 2018
 *****************************************************************************/
 
 #pragma once
@@ -63,6 +64,7 @@ public:
     typedef RFStatus            (RAPIDFIRE_API *RF_SET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, const RFProperties value);
     typedef RFStatus            (RAPIDFIRE_API *RF_GET_ENCODE_PARAMETER)      (RFEncodeSession s, const int param, RFProperties* value);
     typedef RFStatus            (RAPIDFIRE_API *RF_GET_MOUSEDATA)             (RFEncodeSession s, const int iWaitForShapeChange, RFMouseData* md);
+    typedef RFStatus            (RAPIDFIRE_API *RF_GET_MOUSEDATA2)            (RFEncodeSession s, const int iWaitForShapeChange, RFMouseData2* md);
     typedef RFStatus            (RAPIDFIRE_API *RF_RELEASE_EVENT)             (RFEncodeSession s, const RFNotification rfNotification);
 
     static const RFWrapper& getInstance()
@@ -89,6 +91,7 @@ public:
         RF_SET_ENCODE_PARAMETER     rfSetEncodeParameter;
         RF_GET_ENCODE_PARAMETER     rfGetEncodeParameter;
         RF_GET_MOUSEDATA            rfGetMouseData;
+        RF_GET_MOUSEDATA2           rfGetMouseData2;
         RF_RELEASE_EVENT            rfReleaseEvent;
     };
 
@@ -148,6 +151,7 @@ private:
         GET_RF_PROC(rfSetEncodeParameter);
         GET_RF_PROC(rfGetEncodeParameter);
         GET_RF_PROC(rfGetMouseData);
+        GET_RF_PROC(rfGetMouseData2);
         GET_RF_PROC(rfReleaseEvent);
 
         return true;

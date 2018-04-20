@@ -367,6 +367,22 @@ RFStatus RFDOPPSession::getMouseData(int iWaitForShapeChange, RFMouseData& md) c
 }
 
 
+RFStatus RFDOPPSession::getMouseData2(int iWaitForShapeChange, RFMouseData2& md) const
+{
+    if (!m_pMouseGrab)
+    {
+        return RF_STATUS_FAIL;
+    }
+
+    if (!m_pMouseGrab->getShapeData2(iWaitForShapeChange, md))
+    {
+        return RF_STATUS_MOUSEGRAB_NO_CHANGE;
+    }
+
+    return RF_STATUS_OK;
+}
+
+
 RFStatus RFDOPPSession::releaseSessionEvents(const RFNotification rfEvent)
 {
     if (rfEvent == RFDesktopNotification)

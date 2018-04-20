@@ -46,6 +46,8 @@ public:
     // is always new and the function returns true as well.
     bool    getShapeData(int iBlocking, RFMouseData& md);
 
+    bool    getShapeData2(int iBlocking, RFMouseData2& md);
+
     // This function will signal m_hNewDataEvent and can be used to unblock a thread
     // that waits for mouse updates.
     bool    releaseEvent();

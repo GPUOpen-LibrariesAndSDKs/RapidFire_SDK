@@ -56,6 +56,8 @@ private:
 
     virtual RFStatus    getMouseData(int iWaitForShapeChange, RFMouseData& md) const override;
 
+    virtual RFStatus    getMouseData2(int iWaitForShapeChange, RFMouseData2& md) const override;
+
     bool                createGLContext();
     void                dumpDspInfo(const DisplayManager& dpManager);
 

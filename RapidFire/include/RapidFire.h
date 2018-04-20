@@ -27,6 +27,7 @@
 * * File Version 1.1.0.1          January 25th 2016
 * * File Version 1.1.0.19         September 26th 2016
 * * File Version 1.2.0.0          November 3rd 2017
+* * File Version 1.2.1.0          April 20th 2018
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -249,8 +250,8 @@ typedef struct
 * @brief This structure is used to return the cursor shape data.
 *
 * @iVisible: 1 if the cursor is visible and 0 otherwise.
-* @uiXHot:   X position of hot spot.
-* @uiYHot:   Y postiion of hot spot.
+* @uiXHot:   X position of cursor hot spot.
+* @uiYHot:   Y postiion of cursor hot spot.
 * @mask:	 The cursor bitmask bitmap. If the cursor is monochrome, this bitmask
 *			 is formatted so that the upper half is the cursor AND bitmask and the lower
 *			 half is the XOR bitmask.
@@ -270,6 +271,31 @@ typedef struct
     RFBitmapBuffer	mask;
     RFBitmapBuffer	color;
 } RFMouseData;
+
+/**
+*******************************************************************************
+* @typedef RFMouseData2
+* @brief This structure is used to return cursor shape data.
+*        The pPixels buffer contains the cursor shape data in a format
+*        that is compatible with the DXGKARG_SETPOINTERSHAPE struct
+*        used in the kernel mode driver function DxgkddiSetpointershape.
+*
+* @iVisible: 1 if the cursor is visible and 0 otherwise.
+* @uiXHot:   X position of cursor hot spot.
+* @uiYHot:   Y postiion of cursor hot spot.
+* @uiFlags:  1 = Monochrome, 2 = Color, 4 = MaskedColor
+* @pShape:   RFBitmapBuffer containing the cursor shape data.
+*
+*******************************************************************************
+*/
+typedef struct
+{
+    int             iVisible;
+    unsigned int    uiXHot;
+    unsigned int    uiYHot;
+    unsigned int    uiFlags;
+    RFBitmapBuffer  pShape;
+} RFMouseData2;
 
 /**
 *******************************************************************************
@@ -619,7 +645,7 @@ extern "C" {
     /**
     *******************************************************************************
     * @fn rfGetMouseData
-    * @brief This function returns mouse shape data. To use it the session needs to
+    * @brief This function returns the mouse shape data. To use it the session needs to
     * be created with the RF_MOUSE_DATA set to true.
     *
     * @param[in] session:             The encoding session.
@@ -630,6 +656,21 @@ extern "C" {
     *******************************************************************************
     */
     RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession session, const int iWaitForShapeChange, RFMouseData* mouseData);
+
+    /**
+    *******************************************************************************
+    * @fn rfGetMouseData2
+    * @brief This function returns the mouse shape data. To use it the session needs to
+    * be created with the RF_MOUSE_DATA set to true.
+    *
+    * @param[in] session:             The encoding session.
+    * @param[in] iWaitForShapeChange: If set to 1 the call blocks until the mouse shape changed
+    * @param[out] mouseData:          Mouse shape data
+    *
+    * @return RFStatus: RF_STATUS_OK if successful; otherwise an error code.
+    *******************************************************************************
+    */
+    RFStatus RAPIDFIRE_API rfGetMouseData2(RFEncodeSession session, const int iWaitForShapeChange, RFMouseData2* mouseData);
 
     /**
     *******************************************************************************
