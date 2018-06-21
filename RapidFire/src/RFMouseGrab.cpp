@@ -355,12 +355,13 @@ void ConvertRFMouseData(RFMouseData* input, RFMouseData2* output)
 
 bool RFMouseGrab::getShapeData2(int iBlocking, RFMouseData2& md)
 {
-    RFMouseData md1;
+    RFMouseData md1 = {};
     if (!getShapeData(iBlocking, md1))
     {
         return false;
     }
 
+    memset(&md, 0, sizeof(md));
     ConvertRFMouseData(&md1, &md);
 
     return true;

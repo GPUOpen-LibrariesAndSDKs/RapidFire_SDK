@@ -133,6 +133,11 @@ RFStatus RAPIDFIRE_API rfGetEncodeParameter(RFEncodeSession s, const int param, 
         return RF_STATUS_INVALID_SESSION;
     }
 
+    if (!value)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
+    }
+
     return pSession->getEncodeParameter(param, *value);
 }
 
@@ -148,6 +153,11 @@ RFStatus RAPIDFIRE_API rfRegisterRenderTarget(RFEncodeSession s, const RFRenderT
 
     RFTexture rfTex;
     rfTex.rfRT = rt;
+
+    if (!idx)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
+    }
 
     return pSession->registerRenderTarget(rfTex, uiRTWidth, uiRTHeight, *idx);
 }
@@ -169,6 +179,11 @@ RFStatus RAPIDFIRE_API rfRemoveRenderTarget(RFEncodeSession s, const unsigned in
 RFStatus RAPIDFIRE_API rfGetRenderTargetState(RFEncodeSession s, RFRenderTargetState* state, const unsigned int idx)
 {
     RFSession* pSession = reinterpret_cast<RFSession*>(s);
+
+    if (!state)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
+    }
 
     if (!pSession)
     {
@@ -215,6 +230,11 @@ RFStatus RAPIDFIRE_API rfGetEncodedFrame(RFEncodeSession session, unsigned int* 
         return RF_STATUS_INVALID_SESSION;
     }
 
+    if (!uiSize || !pBitStream)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
+    }
+
     return pEncodeSession->getEncodedFrame(*uiSize, *pBitStream);
 }
 
@@ -226,6 +246,11 @@ RFStatus RAPIDFIRE_API rfGetSourceFrame(RFEncodeSession session, unsigned int* u
     if (!pEncodeSession)
     {
         return RF_STATUS_INVALID_SESSION;
+    }
+
+    if (!uiSize || !pBitStream)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
     }
 
     return pEncodeSession->getSourceFrame(*uiSize, *pBitStream);
@@ -241,6 +266,11 @@ RFStatus RAPIDFIRE_API rfGetMouseData(RFEncodeSession s, const int iWaitForShape
         return RF_STATUS_INVALID_SESSION;
     }
 
+    if (!md)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
+    }
+
     return pEncodeSession->getMouseData(iWaitForShapeChange, *md);
 }
 
@@ -252,6 +282,11 @@ RFStatus RAPIDFIRE_API rfGetMouseData2(RFEncodeSession s, const int iWaitForShap
     if (!pEncodeSession)
     {
         return RF_STATUS_INVALID_SESSION;
+    }
+
+    if (!md)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
     }
 
     return pEncodeSession->getMouseData2(iWaitForShapeChange, *md);

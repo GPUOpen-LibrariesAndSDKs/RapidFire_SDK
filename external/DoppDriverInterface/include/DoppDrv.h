@@ -71,6 +71,8 @@ public:
 
     bool getPrimarySurfacePixelFormat(RFFormat& format) const;
 
+    bool isRunningInVirtualEnvironmant() const;
+
     bool getCursorVisibility() const;
 
     // Creates and registers a user event that gets signaled by the driver.

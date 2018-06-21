@@ -251,8 +251,12 @@ RFStatus RFDOPPSession::finalizeContext()
         return RF_STATUS_DOPP_FAIL;
     }
 
-    m_ParameterMap.getParameterValue(RF_DESKTOP_BLOCK_UNTIL_CHANGE, m_bBlockUntilChange);
-    m_ParameterMap.getParameterValue(RF_DESKTOP_UPDATE_ON_CHANGE, m_bUpdateOnlyOnChange);
+    // Only apply the DOPP desktop changed event related parameters when running in a virtual environment
+    if (m_pDrvInterface->isRunningInVirtualEnvironmant())
+    {
+        m_ParameterMap.getParameterValue(RF_DESKTOP_BLOCK_UNTIL_CHANGE, m_bBlockUntilChange);
+        m_ParameterMap.getParameterValue(RF_DESKTOP_UPDATE_ON_CHANGE, m_bUpdateOnlyOnChange);
+    }
 
     RFStatus rfStatus = m_pDeskotpCapture->initDOPP(m_pEncoderSettings->getEncoderWidth(), m_pEncoderSettings->getEncoderHeight(), m_pEncoderSettings->getInputFormat(), m_bUpdateOnlyOnChange, m_bBlockUntilChange);
     m_uiDoppTextureReinits = 0;

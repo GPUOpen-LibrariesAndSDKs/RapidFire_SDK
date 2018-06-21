@@ -28,6 +28,7 @@
 * * File Version 1.1.0.19         September 26th 2016
 * * File Version 1.2.0.0          November 3rd 2017
 * * File Version 1.2.1.0          April 20th 2018
+* * File Version 1.2.1.62         June 21st 2018
 *****************************************************************************/
 
 #ifndef RAPIDFIRE_H_
@@ -87,6 +88,7 @@ typedef enum RFStatus
     RF_STATUS_INVALID_FORMAT              = -35,
     RF_STATUS_INVALID_CONFIG              = -36,
     RF_STATUS_INVALID_ENCODER             = -37,
+    RF_STATUS_INVALID_PARAMETER           = -38,
     RF_STATUS_INVALID_RENDER_TARGET       = -39,
     RF_STATUS_INVALID_DESKTOP_ID          = -41,
     RF_STATUS_INVALID_OPENGL_CONTEXT      = -43,
