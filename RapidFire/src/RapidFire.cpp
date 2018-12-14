@@ -26,6 +26,11 @@
 
 RFStatus RAPIDFIRE_API rfCreateEncodeSession(RFEncodeSession* session, const RFProperties* properties)
 {
+    if (!session || !properties)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
+    }
+
     RFSession* pSession = nullptr;
     RFStatus rfStatus = createRFSession(&pSession, properties);
 
@@ -105,6 +110,11 @@ RFStatus RAPIDFIRE_API rfCreateEncoder2(RFEncodeSession s, const unsigned int ui
     if (!pSession)
     {
         return RF_STATUS_INVALID_SESSION;
+    }
+
+    if (!properties)
+    {
+        return RF_STATUS_INVALID_PARAMETER;
     }
 
     return pSession->createEncoder(uiWidth, uiHeight, properties);

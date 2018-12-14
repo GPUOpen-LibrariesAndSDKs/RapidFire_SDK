@@ -203,9 +203,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
     }
 
     // Create a virtual display
-    if (!setConnectionData(iAmdAdapterIndex, devicePort, 4, "EDID_Emulation.bin"))
+    if (!setConnectionData(iAmdAdapterIndex, devicePort, ADL_CONNECTION_TYPE_VIRTUAL, "EDID_Emulation.bin"))
     {
-        return -1;
+        if (!setConnectionData(iAmdAdapterIndex, devicePort, ADL_CONNECTION_TYPE_DISPLAY_PORT, "EDID_Emulation.bin"))
+        {
+            MessageBox(NULL, "Provided connection type is not supported on this port!\n", "ADL Error", MB_ICONERROR | MB_OK);
+            return -1;
+        }
     }
 
     int iPreviousEmulationMode = connectionState.iEmulationMode;
@@ -595,7 +599,6 @@ bool setConnectionData(int iAdapterIndex, const ADLDevicePort& devicePort, int i
     }
     else
     {
-        MessageBox(NULL, "Provided connection type is not supported on this port!\n", "ADL Error", MB_ICONERROR | MB_OK);
         return false;
     }
 
