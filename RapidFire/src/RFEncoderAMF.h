@@ -93,6 +93,7 @@ private:
     amf::AMFComponentPtr            m_amfEncoder;
     amf::AMFBufferPtr               m_amfEncodedFrame;
 
+    RFVideoCodec                    m_videoCodec;
     const MAPPING_ENTRY*            m_pPropertyNameMap;
     unsigned int                    m_uiPropertyNameMapCount;
 

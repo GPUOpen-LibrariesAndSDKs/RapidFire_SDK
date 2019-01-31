@@ -115,6 +115,7 @@ RFEncoderAMF::RFEncoderAMF()
     , m_uiPendingFrames(0)
     , m_amfEncodedFrame(NULL)
     , m_pContext(nullptr)
+    , m_videoCodec(RF_VIDEO_CODEC_NONE)
     , m_pPropertyNameMap(nullptr)
     , m_uiPropertyNameMapCount(0)
 {
@@ -192,12 +193,14 @@ RFStatus RFEncoderAMF::init(const RFContextCL* pContextCL, const RFEncoderSettin
 
     if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_AVC)
     {
+        m_videoCodec = RF_VIDEO_CODEC_AVC;
         m_pPropertyNameMap = g_AVCPropertyNameMap;
         m_uiPropertyNameMapCount = sizeof(g_AVCPropertyNameMap) / sizeof(MAPPING_ENTRY);
         amfErr = AMFWrapper::CreateComponent(m_amfContext, AMFVideoEncoderVCE_AVC, &m_amfEncoder);
     }
     else if (pConfig->getVideoCodec() == RF_VIDEO_CODEC_HEVC)
     {
+        m_videoCodec = RF_VIDEO_CODEC_HEVC;
         m_pPropertyNameMap = g_HEVCPropertyNameMap;
         m_uiPropertyNameMapCount = sizeof(g_HEVCPropertyNameMap) / sizeof(MAPPING_ENTRY);
         amfErr = AMFWrapper::CreateComponent(m_amfContext, AMFVideoEncoder_HEVC, &m_amfEncoder);
@@ -277,17 +280,28 @@ RFStatus RFEncoderAMF::encode(unsigned int uiBufferIdx, bool bUseInputImage)
 
     amf::AMFDataPtr amfSurface = m_pContext->getAMFSurface(uiBufferIdx);
 
-    // Set default picture type in case that a presubmit parameter had changed it in previous frame.
-    amfErr = amfSurface->SetProperty(AMF_VIDEO_ENCODER_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_PICTURE_TYPE_NONE);
+    // Set default pre submission settings in case it was changed in previous frame.
+    if (m_videoCodec == RF_VIDEO_CODEC_AVC)
+    {
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_PICTURE_TYPE_NONE);
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_INSERT_SPS, false);
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_INSERT_PPS, false);
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_INSERT_AUD, false);
+    }
+    else if (m_videoCodec == RF_VIDEO_CODEC_HEVC)
+    {
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_HEVC_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_HEVC_PICTURE_TYPE_NONE);
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_HEVC_INSERT_HEADER, false);
+        amfSurface->SetProperty(AMF_VIDEO_ENCODER_HEVC_INSERT_AUD, false);
+    }
 
     // Need to submit new settings
-    for (size_t i = m_pPreSubmitSettings.size(); i > 0; --i)
+    for (const auto& pss : m_pPreSubmitSettings)
     {
-        amfErr = amfSurface->SetProperty(m_pPreSubmitSettings[i - 1].first, m_pPreSubmitSettings[i - 1].second);
-        m_pPreSubmitSettings.pop_back();
-
+        amfSurface->SetProperty(pss.first, pss.second);
         // We dont abort if an error occurs when applying the properties. The frame will still be encoded.
     }
+    m_pPreSubmitSettings.clear();
 
     amfErr = amfSurface->SetProperty(AMF_VIDEO_ENCODER_PICTURE_STRUCTURE, AMF_VIDEO_ENCODER_PICTURE_STRUCTURE_FRAME);
     CHECK_AMF_ERROR(amfErr);
@@ -413,13 +427,13 @@ RFStatus RFEncoderAMF::setParameter(const unsigned int uiParameterName, RFParame
     {
         m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_PICTURE_TYPE_P));
     }
-    else if (uiValue && uiParameterName == RF_ENCODER_INSERT_SPS)
+    else if (uiParameterName == RF_ENCODER_INSERT_SPS)
     {
-        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_SPS, true));
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_SPS, uiValue ? true : false));
     }
-    else if (uiValue && uiParameterName == RF_ENCODER_INSERT_PPS)
+    else if (uiParameterName == RF_ENCODER_INSERT_PPS)
     {
-        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_PPS, true));
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_INSERT_PPS, uiValue ? true : false));
     }
     else if (uiParameterName == RF_ENCODER_INSERT_AUD)
     {
@@ -437,9 +451,9 @@ RFStatus RFEncoderAMF::setParameter(const unsigned int uiParameterName, RFParame
     {
         m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_FORCE_PICTURE_TYPE, AMF_VIDEO_ENCODER_HEVC_PICTURE_TYPE_P));
     }
-    else if (uiValue && uiParameterName == RF_ENCODER_HEVC_INSERT_HEADER)
+    else if (uiParameterName == RF_ENCODER_HEVC_INSERT_HEADER)
     {
-        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_INSERT_HEADER, true));
+        m_pPreSubmitSettings.push_back(make_pair(AMF_VIDEO_ENCODER_HEVC_INSERT_HEADER, uiValue ? true : false));
     }
     else if (uiParameterName == RF_ENCODER_HEVC_INSERT_AUD)
     {
